@@ -11,6 +11,7 @@ As of **February 23, 2026**, this folder contains architecture-oriented business
 - `analysis/06-exemptions-and-deduction-rules-dk.md`: exemptions, zero-rated treatment, and deduction impact.
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`: end-to-end filing and assessment scenarios.
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`: scenario universe checklist and coverage status.
+- `analysis/architecture/README.md`: architect-focused documentation pack index.
 
 ## Intended Use
 Use these documents as input for:
@@ -18,6 +19,7 @@ Use these documents as input for:
 - requirements engineering and backlog creation
 - VAT rule engine design
 - data model and integration design for claim handoff
+- architecture decisioning and implementation planning
 
 ## Notes
 - VAT law and SKAT guidance evolve. Implement rules as date-effective policy versions.

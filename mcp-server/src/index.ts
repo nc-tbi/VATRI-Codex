@@ -1,5 +1,7 @@
 ﻿import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { z } from "zod";
 
 const server = new McpServer({
@@ -18,6 +20,33 @@ function isZero(value: number): boolean {
   return Math.abs(value) < 0.000001;
 }
 
+const workspaceRoot = path.resolve(process.cwd(), "..");
+const analysisRoot = path.join(workspaceRoot, "analysis");
+
+async function listMarkdownFiles(rootDir: string): Promise<string[]> {
+  const entries = await fs.readdir(rootDir, { withFileTypes: true });
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(rootDir, entry.name);
+    if (entry.isDirectory()) {
+      const childFiles = await listMarkdownFiles(fullPath);
+      files.push(...childFiles);
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.toLowerCase().endsWith(".md")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+function toPosixRelative(from: string, to: string): string {
+  return path.relative(from, to).split(path.sep).join("/");
+}
+
 server.tool("health_check", "Returns a simple status payload.", async () => {
   return {
     content: [
@@ -28,6 +57,99 @@ server.tool("health_check", "Returns a simple status payload.", async () => {
     ]
   };
 });
+
+server.tool(
+  "get_business_analyst_context_index",
+  "Lists all Markdown source documents in analysis/ used as business analyst context.",
+  async () => {
+    const files = (await listMarkdownFiles(analysisRoot)).sort((a, b) => a.localeCompare(b));
+    const documentIndex = await Promise.all(
+      files.map(async (filePath) => {
+        const stat = await fs.stat(filePath);
+        return {
+          path: toPosixRelative(workspaceRoot, filePath),
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              workspaceRoot: workspaceRoot.split(path.sep).join("/"),
+              analysisRoot: toPosixRelative(workspaceRoot, analysisRoot),
+              documentCount: documentIndex.length,
+              documents: documentIndex
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "get_business_analyst_context_bundle",
+  "Loads latest business analyst documents from analysis/. Reads files at runtime so updates are automatically reflected.",
+  {
+    includeContent: z.boolean().default(true),
+    maxCharsPerFile: z.number().int().positive().max(200000).default(20000),
+    paths: z.array(z.string().min(1)).optional()
+  },
+  async ({ includeContent, maxCharsPerFile, paths }) => {
+    const allFiles = (await listMarkdownFiles(analysisRoot)).sort((a, b) => a.localeCompare(b));
+    const fileSet = new Set(allFiles.map((f) => toPosixRelative(workspaceRoot, f)));
+    const selectedRelativePaths =
+      paths && paths.length > 0
+        ? paths.map((p) => p.replace(/\\/g, "/")).filter((p) => fileSet.has(p))
+        : Array.from(fileSet).sort((a, b) => a.localeCompare(b));
+
+    const documents = await Promise.all(
+      selectedRelativePaths.map(async (relativePath) => {
+        const absolutePath = path.join(workspaceRoot, relativePath);
+        const stat = await fs.stat(absolutePath);
+        const text = includeContent ? await fs.readFile(absolutePath, "utf8") : "";
+        const truncated = includeContent && text.length > maxCharsPerFile;
+
+        return {
+          path: relativePath,
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size,
+          truncated,
+          content: includeContent ? (truncated ? `${text.slice(0, maxCharsPerFile)}\n...[TRUNCATED]` : text) : undefined
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              source: "analysis-markdown-runtime-bundle",
+              requestedPaths: paths ?? null,
+              resolvedDocumentCount: documents.length,
+              includeContent,
+              maxCharsPerFile,
+              documents
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
 
 server.tool(
   "add_numbers",

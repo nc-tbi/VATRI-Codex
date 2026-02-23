@@ -1,0 +1,66 @@
+﻿# 03 - VAT Flows, Filing Obligations, and Registration Basics
+
+## End-to-End Filing Flow
+```mermaid
+flowchart TD
+A[Business transactions] --> B[Bookkeeping by VAT codes]
+B --> C[Period close and aggregation]
+C --> D[Build declaration dataset]
+D --> E[Validate required fields and consistency]
+E --> F[Submit in TastSelv Erhverv]
+F --> G{Net VAT result}
+G -->|Payable| H[Create payable claim]
+G -->|Refund| I[Create refund claim]
+G -->|Zero| J[Create zero-result record]
+H --> K[Send claim to external system]
+I --> K
+J --> K
+```
+
+## Filing Obligation Logic
+```mermaid
+flowchart TD
+A[VAT registered?] -->|No| B[No periodic VAT return obligation]
+A -->|Yes| C[Return required each period]
+C --> D{Any activity?}
+D -->|No| E[Zero declaration]
+D -->|Yes| F[Regular declaration]
+E --> G{Submitted on time?}
+F --> G
+G -->|No| H[Late filing risk: fee/estimated assessment]
+G -->|Yes| I[Compliant period close]
+```
+
+## Registration Baseline
+- VAT registration is generally required once taxable turnover threshold is exceeded.
+- SKAT guidance states threshold baseline of `DKK 50,000`.
+- Registration/change process is performed via `virk.dk`.
+- Once registered, periodic filing obligation continues, including no-activity periods.
+
+## Cadence Model (For Rule Engine)
+- `monthly`: large turnover and/or opt-in cases.
+- `quarterly`: medium turnover ranges, new business cases, and/or opt-in.
+- `half_yearly`: lower turnover cases meeting conditions.
+
+Implement cadence as a policy table with effective dates, not hard-coded constants.
+
+## Filing Due-Date and Compliance Tracking
+For each due return, track:
+- `obligation_id`
+- `period_start`, `period_end`
+- `due_date`
+- `return_type_expected` (`regular` or `zero`)
+- `status` (`due`, `submitted`, `overdue`)
+- `risk_flags` (late fee risk, estimated assessment risk)
+
+## Correction Flow
+- User identifies prior filing error.
+- User submits correction in relevant SKAT correction path.
+- Tax Core must preserve prior version, apply correction logic, and regenerate outcome.
+- If net outcome changes, create new adjustment claim event to downstream system.
+
+## Sources
+- SKAT - Register for VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-registrerer-du-din-virksomhed-for-moms
+- SKAT - File VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
+- SKAT - Deadlines and payment: https://skat.dk/erhverv/moms/frister-indberet-og-betal-moms
+- SKAT - Correct filed VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/ret-tidligere-indberettet-moms

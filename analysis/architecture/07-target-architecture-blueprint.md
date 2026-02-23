@@ -1,4 +1,4 @@
-# 03 - Logical Components and Deployment View (Moved)
+# 07 - Target Architecture Blueprint (Moved)
 
 This file has moved.
 

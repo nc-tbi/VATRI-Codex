@@ -27,6 +27,10 @@ Constraints:
 - pure evaluation (no side effects)
 - deterministic output for identical input/version
 
+Implementation standards:
+- rule/event/API contracts must be schema-versioned and compatibility-checked in CI
+- runtime dependencies and platform choices must be documented with rationale and risk trade-offs
+
 ## Correction Service Contract
 Input:
 - prior `filing_id` or period key
@@ -45,6 +49,9 @@ Output:
 - claim intent record
 - dispatch job with idempotency key
 - status updates (`queued`, `sent`, `acked`, `failed`, `dead_letter`)
+
+Integration standards:
+- synchronous and asynchronous contract standards must be explicitly documented and versioned
 
 ## Audit Contract
 Every service writes evidence entries containing:

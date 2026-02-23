@@ -102,12 +102,14 @@ Copy `mcp-server/mcp.config.example.json` to `mcp-server/mcp.config.json` and re
 
 ## Agent operating contracts
 
-Two role-based contracts define how AI agents must operate in this repository:
+Role-based contracts define how AI agents must operate in this repository:
 
 - **[architect.md](architect.md)** — Solution Architect role. Produces implementable architecture aligned with `analysis/architecture/*.md` as the primary source of truth.
 - **[business-analyst.md](business-analyst.md)** — Business Analyst role. Produces architecture-ready analysis outputs from `analysis/*.md`.
+- **[DESIGNER.md](DESIGNER.md)** — Solution Designer role. Produces implementation-ready designs aligned with approved architecture.
+- **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** — Workspace-wide rule: when a role is assumed, only role-relevant documents are loaded.
 
-Both contracts mandate a **Living Context Rule**: at session start, call `get_business_analyst_context_index` then `get_business_analyst_context_bundle` to load the latest documents before producing any output.
+All contracts mandate a **Living Context Rule** and scoped loading: use role-relevant MCP tools and explicit `paths`, not full-workspace consumption.
 
 ---
 

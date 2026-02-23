@@ -60,6 +60,9 @@ npm start
   - `maxCharsPerFile` (default: `20000`)
   - `paths` (optional subset of files)
 
+Context-scope best practice:
+- For role-based work, pass explicit `paths` to bundle tools and avoid loading entire document sets unless explicitly needed.
+
 - `validate_dk_vat_filing` checks:
   - CVR format
   - date validity and period order

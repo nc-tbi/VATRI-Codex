@@ -8,6 +8,7 @@ Translate architecture into implementable solution design decisions for service 
 - Keep filing and assessment data in relational operational storage.
 - Keep audit evidence append-only and queryable by `trace_id`.
 - Use outbox + queue for claim dispatch reliability.
+- Keep technology and standards choices explicit and justified for the target solution constraints.
 
 ## Service Decomposition
 - `registration-service`
@@ -26,6 +27,7 @@ Translate architecture into implementable solution design decisions for service 
 2. Correction version lineage
 3. Idempotent external dispatch
 4. Operational observability from day one
+5. Clear trade-off documentation for selected technologies and standards
 
 ## First Design Milestone (4-6 weeks)
 - End-to-end flow for `regular` filing through claim creation

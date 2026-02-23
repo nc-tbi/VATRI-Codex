@@ -12,14 +12,19 @@ Produce an implementable architecture that is:
 
 ## Single Source of Truth
 Treat the architect-consumable documentation as authoritative input:
+- `ROLE_CONTEXT_POLICY.md`
 - `architecture/README.md`
 - `architecture/01-target-architecture-blueprint.md`
 - `architecture/02-architectural-principles.md`
+- `architecture/03-future-proof-modern-data-stack-and-standards.md`
 - `architecture/adr/ADR-001-bounded-contexts-and-events.md`
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
 - `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
+- `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-008-open-source-only-technology-policy.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/README.md`
@@ -35,10 +40,15 @@ Also consume relevant VAT domain source documents when needed:
 ## Living Context Rule (Mandatory)
 At the start of each new session, always refresh context from the latest files before producing architecture outputs.
 
+Context Scope Enforcement (mandatory):
+- Only use architect-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
+- Do not consume the entire workspace or run full-repo document scans by default.
+- Load additional files only when required by the active architecture task and cite them.
+
 Preferred refresh method via MCP:
 1. Call `get_architect_context_index`.
-2. Call `get_architect_context_bundle` and load all `architecture/**/*.md` files.
-3. If rule-specific legal/domain details are required, call `get_business_analyst_context_bundle` for targeted `analysis/*.md` files.
+2. Call `get_architect_context_bundle` using explicit `paths` for required architecture documents.
+3. If rule-specific legal/domain details are required, call `get_business_analyst_context_bundle` for targeted `analysis/*.md` files only.
 
 Fallback method (if MCP unavailable):
 1. Read `architecture/README.md`.
@@ -66,6 +76,7 @@ Do not rely on stale, hard-coded assumptions if source documents have changed.
 - Must support reverse charge, exemptions, and deduction-right logic.
 - Must preserve audit trace from filing inputs -> rule evaluation -> claim payload.
 - Must support rule effective dating and deterministic recalculation.
+- Must enforce open-source-only technology policy for core architecture components.
 
 ## Quality Requirements
 - Separate deterministic automation from `Manual/legal` case paths.

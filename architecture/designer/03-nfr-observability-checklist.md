@@ -30,3 +30,11 @@
 - [ ] Scenario regression suite passes for covered scenarios
 - [ ] Manual/legal routing verified for excluded automation cases
 - [ ] Rollback path for rule version deployment tested
+
+## Modernization Standards
+- [ ] Selected API/event contract standards are versioned and documented
+- [ ] Schema registry compatibility checks active in CI
+- [ ] OpenTelemetry traces/metrics/logs correlated by `trace_id`
+- [ ] Event replay and backfill playbooks validated in non-production
+- [ ] Analytical workloads isolated from transactional service databases
+- [ ] Technology choices include documented rationale, portability impact, and operational risk

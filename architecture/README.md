@@ -5,11 +5,15 @@ This folder contains architecture outputs derived from the business analysis pac
 ## Contents
 - `architecture/01-target-architecture-blueprint.md`
 - `architecture/02-architectural-principles.md`
+- `architecture/03-future-proof-modern-data-stack-and-standards.md`
 - `architecture/adr/ADR-001-bounded-contexts-and-events.md`
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
 - `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
+- `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-008-open-source-only-technology-policy.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/README.md`

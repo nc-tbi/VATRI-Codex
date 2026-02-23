@@ -59,3 +59,21 @@
 - Every feature maps to at least one scenario in `analysis/07-...` or class in `analysis/08-...`.
 - No production rule change without regression fixtures and legal reference.
 - All claim-producing paths must prove idempotency and traceability.
+
+## Cross-Cutting Modernization Epics
+### Epic M1: Contract-First and Open Standards
+- Feature M1.1: OpenAPI 3.1 specs for all synchronous service interfaces
+- Feature M1.2: AsyncAPI + CloudEvents contracts for domain events
+- Feature M1.3: Schema registry + compatibility checks in CI pipelines
+
+### Epic M2: Modern Data Platform
+- Feature M2.1: Event streaming backbone for domain event distribution
+- Feature M2.2: Outbox standard library and replay-safe consumers
+- Feature M2.3: Lakehouse ingestion for immutable audit/compliance analytics
+- Feature M2.4: Data quality checks and lineage metadata publication
+
+### Epic M3: Platform Engineering and DevSecOps
+- Feature M3.1: OpenTelemetry instrumentation baseline across services
+- Feature M3.2: GitOps + IaC for environment provisioning and drift control
+- Feature M3.3: Policy-as-code admission controls
+- Feature M3.4: Supply-chain controls (SBOM, signing, provenance verification)

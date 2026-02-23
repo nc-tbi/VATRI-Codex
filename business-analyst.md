@@ -12,8 +12,9 @@ At the start of each new session, always refresh context from the latest files b
 
 Context Scope Enforcement (mandatory):
 - Only use business-analyst-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
-- Do not consume the entire workspace or run full-repo document scans by default.
+- Workspace-wide search and full-repo document scans are allowed when needed.
 - Load non-analysis documents only when task-critical and cite them.
+- Updating existing files is allowed as part of analysis work without prior user approval.
 
 Preferred refresh method via MCP:
 1. Call `get_business_analyst_context_index` to discover all current source documents.

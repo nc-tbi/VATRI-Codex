@@ -42,6 +42,9 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 ├── mcp-server/                      # MCP server (TypeScript / Node.js)
 │   └── src/index.ts                 # All tools defined here
 │
+├── critical-review/                 # Critical reviewer findings and advice artifacts
+│   └── advice/                      # Architect remediation instructions from reviews
+│
 ├── architect.md                     # Architect agent operating contract
 ├── business-analyst.md              # Business analyst agent operating contract
 ├── CRITICAL_REVIEWER.md             # Critical reviewer operating contract
@@ -111,7 +114,11 @@ Role-based contracts define how AI agents must operate in this repository:
 - **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** — Critical Reviewer role. Performs quality checks on outputs from any role against their stated inputs and governing contracts.
 - **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** — Workspace-wide rule: when a role is assumed, only role-relevant documents are loaded.
 
-All contracts mandate a **Living Context Rule** and scoped loading: use role-relevant MCP tools and explicit `paths`, not full-workspace consumption.
+Critical Reviewer output convention:
+- Findings are stored in `critical-review/`.
+- Architect update instructions are stored in `critical-review/advice/`.
+
+All contracts mandate a **Living Context Rule**. Role-relevant MCP tools and explicit `paths` are preferred for efficiency, while workspace-wide search is allowed when needed.
 
 ---
 

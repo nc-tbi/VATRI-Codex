@@ -51,9 +51,10 @@ Always read the relevant role contract before domain work.
 ### Role-Scoped Context Rule (Mandatory)
 When a role is assumed:
 - Load only that role's approved source set.
-- Do not consume the entire workspace by default.
+- Workspace-wide search is allowed when needed.
 - Use targeted MCP `paths` filtering whenever possible.
 - Load out-of-scope files only when task-critical and cite them.
+- Roles may update existing files directly as part of task execution without prior user approval.
 
 Role standards policy:
 - Business Analyst and Architect roles should use open-source standards and vendor-neutral recommendations.

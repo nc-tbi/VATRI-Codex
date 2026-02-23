@@ -1,749 +1,426 @@
-<mxfile host="app.diagrams.net" version="21.0.0">
+<mxfile host="app.diagrams.net" modified="2026-02-23T00:00:00.000Z" agent="Claude Code" version="21.0.0" type="device">
 
-  <!-- PAGE 1: System Context -->
-  <diagram id="p1-system-context" name="1 - System Context">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-
-        <!-- Title -->
-        <mxCell id="title" value="Tax Core — System Context" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="527" y="30" width="600" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Legend -->
-        <mxCell id="leg-generic" value="[GENERIC] — Domain-agnostic, reusable" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="40" y="80" width="260" height="36" as="geometry"/>
-        </mxCell>
-        <mxCell id="leg-dkvat" value="[DK VAT] — Danish VAT-specific" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="320" y="80" width="260" height="36" as="geometry"/>
-        </mxCell>
-
-        <!-- External actors -->
-        <mxCell id="tp" value="Taxpayer /&#xa;Representative" style="shape=mxgraph.archimate3.actor;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="60" y="200" width="80" height="80" as="geometry"/>
-        </mxCell>
-        <mxCell id="erp" value="ERP /&#xa;Bookkeeping" style="shape=mxgraph.archimate3.actor;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="60" y="340" width="80" height="80" as="geometry"/>
-        </mxCell>
-        <mxCell id="reg" value="Registration Source&#xa;(virk.dk) [DK VAT]" style="shape=mxgraph.archimate3.actor;fillColor=#ffe6cc;strokeColor=#d6b656;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="60" y="500" width="80" height="80" as="geometry"/>
-        </mxCell>
-        <mxCell id="skat" value="External Claims&#xa;System (SKAT)&#xa;[DK VAT]" style="shape=mxgraph.archimate3.actor;fillColor=#ffe6cc;strokeColor=#d6b656;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="1460" y="400" width="100" height="80" as="geometry"/>
-        </mxCell>
-        <mxCell id="audrpt" value="Audit and&#xa;Reporting" style="shape=mxgraph.archimate3.actor;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="1460" y="700" width="100" height="80" as="geometry"/>
-        </mxCell>
-
-        <!-- Tax Core Platform boundary -->
-        <mxCell id="platform" value="Tax Core Platform" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];shape=mxgraph.archimate3.application;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#333333;fontSize=14;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="200" y="140" width="1220" height="880" as="geometry"/>
-        </mxCell>
-
-        <!-- API Gateway -->
-        <mxCell id="gw" value="API Gateway&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="280" y="310" width="140" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Generic Platform Services group -->
-        <mxCell id="generic-group" value="Generic Platform Services" style="swimlane;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;startSize=30;" vertex="1" parent="1">
-          <mxGeometry x="480" y="170" width="680" height="620" as="geometry"/>
-        </mxCell>
-        <mxCell id="fs" value="filing-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="60" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="vs" value="validation-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="150" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="as" value="assessment-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="240" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="cors" value="correction-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="330" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="co" value="claim-orchestrator&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="420" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="cc" value="claim-connector&#xa;[DK VAT adapter]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="40" y="510" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="ae" value="audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="500" y="420" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="rs" value="registration-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="260" y="60" width="140" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="obs" value="obligation-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="generic-group">
-          <mxGeometry x="260" y="150" width="140" height="50" as="geometry"/>
-        </mxCell>
-
-        <!-- DK VAT Domain Layer group -->
-        <mxCell id="dkvat-group" value="DK VAT Domain Layer" style="swimlane;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;startSize=30;" vertex="1" parent="1">
-          <mxGeometry x="940" y="170" width="380" height="360" as="geometry"/>
-        </mxCell>
-        <mxCell id="re" value="rule-engine-service&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="dkvat-group">
-          <mxGeometry x="100" y="70" width="160" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="rc" value="Rule Catalog&#xa;(effective-dated rules)&#xa;[DK VAT]" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="dkvat-group">
-          <mxGeometry x="100" y="180" width="160" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Data Plane group -->
-        <mxCell id="data-group" value="Data Plane" style="swimlane;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontStyle=1;startSize=30;" vertex="1" parent="1">
-          <mxGeometry x="940" y="580" width="440" height="380" as="geometry"/>
-        </mxCell>
-        <mxCell id="odb" value="Operational DB&#xa;(ACID Relational)&#xa;[GENERIC]" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="data-group">
-          <mxGeometry x="30" y="60" width="140" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="adb" value="Audit Store&#xa;(Lakehouse / Iceberg)&#xa;[GENERIC]" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="data-group">
-          <mxGeometry x="260" y="60" width="140" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="q" value="Kafka Queue + DLQ&#xa;[GENERIC]" style="shape=mxgraph.flowchart.start2;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="data-group">
-          <mxGeometry x="30" y="200" width="140" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="sr" value="Schema Registry&#xa;[GENERIC]" style="shape=mxgraph.flowchart.database;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="data-group">
-          <mxGeometry x="260" y="200" width="140" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Connections — external to platform -->
-        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="tp" target="gw" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="erp" target="gw" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="reg" target="rs" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-
-        <!-- Internal flow connections -->
-        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="gw" target="fs" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="fs" target="vs" parent="generic-group">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="vs" target="re" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="re" target="as" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="as" target="co" parent="generic-group">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="co" target="cc" parent="generic-group">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="cc" target="skat" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="ae" target="adb" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="adb" target="audrpt" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;dashed=1;" edge="1" source="re" target="rc" parent="dkvat-group">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 1: System Context                                        -->
+  <!-- ============================================================ -->
+  <diagram name="01 System Context" id="d01">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <!-- External actors -->
+  <mxCell id="2" value="Taxpayer /&#xa;Representative" style="shape=mxgraph.basic.person2;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="30" y="230" width="70" height="90" as="geometry"/></mxCell>
+  <mxCell id="3" value="ERP /&#xa;Bookkeeping" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="20" y="390" width="110" height="60" as="geometry"/></mxCell>
+  <mxCell id="4" value="virk.dk&#xa;Registration Source&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="20" y="500" width="110" height="70" as="geometry"/></mxCell>
+  <mxCell id="5" value="SKAT&#xa;External Claims System&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1530" y="400" width="120" height="70" as="geometry"/></mxCell>
+  <mxCell id="6" value="Audit and Reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="1530" y="830" width="120" height="60" as="geometry"/></mxCell>
+  <!-- Portal Layer -->
+  <mxCell id="7" value="Portal Layer" style="swimlane;fontStyle=1;align=center;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="210" y="210" width="190" height="110" as="geometry"/></mxCell>
+  <mxCell id="8" value="portal-bff&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="7"><mxGeometry x="20" y="38" width="150" height="55" as="geometry"/></mxCell>
+  <!-- Tax Core Platform -->
+  <mxCell id="9" value="Tax Core Platform" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#f8f8f8;strokeColor=#333333;" vertex="1" parent="1"><mxGeometry x="470" y="80" width="1010" height="880" as="geometry"/></mxCell>
+  <mxCell id="10" value="API Gateway&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="9"><mxGeometry x="20" y="65" width="150" height="60" as="geometry"/></mxCell>
+  <!-- VAT-GENERIC group -->
+  <mxCell id="11" value="Generic VAT Services [VAT-GENERIC]" style="swimlane;fontStyle=1;align=center;startSize=25;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="9"><mxGeometry x="220" y="50" width="380" height="530" as="geometry"/></mxCell>
+  <mxCell id="12" value="registration-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="40" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="13" value="obligation-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="105" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="14" value="filing-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="170" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="15" value="validation-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="235" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="16" value="assessment-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="300" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="17" value="correction-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="365" width="160" height="50" as="geometry"/></mxCell>
+  <mxCell id="18" value="claim-orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11"><mxGeometry x="20" y="430" width="160" height="50" as="geometry"/></mxCell>
+  <!-- DK VAT Overlay group -->
+  <mxCell id="19" value="DK VAT Overlay [DK VAT]" style="swimlane;fontStyle=1;align=center;startSize=25;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="9"><mxGeometry x="640" y="50" width="200" height="380" as="geometry"/></mxCell>
+  <mxCell id="20" value="rule-engine-service&#xa;(ML §§ rules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="19"><mxGeometry x="20" y="40" width="160" height="60" as="geometry"/></mxCell>
+  <mxCell id="21" value="Rule Catalog&#xa;(DK VAT rules)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="19"><mxGeometry x="35" y="120" width="130" height="80" as="geometry"/></mxCell>
+  <mxCell id="22" value="claim-connector&#xa;(SKAT adapter)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="19"><mxGeometry x="20" y="235" width="160" height="60" as="geometry"/></mxCell>
+  <!-- Data Plane group -->
+  <mxCell id="23" value="Data Plane [PLATFORM]" style="swimlane;fontStyle=1;align=center;startSize=25;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="9"><mxGeometry x="20" y="660" width="960" height="200" as="geometry"/></mxCell>
+  <mxCell id="24" value="Operational DB&#xa;ACID Relational" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="23"><mxGeometry x="15" y="35" width="140" height="90" as="geometry"/></mxCell>
+  <mxCell id="25" value="Audit Store&#xa;Lakehouse / Iceberg" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="23"><mxGeometry x="195" y="35" width="140" height="90" as="geometry"/></mxCell>
+  <mxCell id="26" value="Kafka + DLQ" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="23"><mxGeometry x="375" y="35" width="140" height="90" as="geometry"/></mxCell>
+  <mxCell id="27" value="Schema Registry" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="23"><mxGeometry x="555" y="35" width="140" height="90" as="geometry"/></mxCell>
+  <mxCell id="28" value="audit-evidence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="23"><mxGeometry x="730" y="65" width="210" height="55" as="geometry"/></mxCell>
+  <!-- Edges -->
+  <mxCell id="50" value="portal UI" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="2" target="8" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="51" value="POST /vat-filings&#xa;(OpenAPI 3.1)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="3" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="52" value="status events" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="4" target="12" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="53" value="OpenAPI 3.1" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="8" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="54" value="POST /claims [DK VAT]" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="22" target="5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="55" value="analytics queries" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="25" target="6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="56" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="10" target="14" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="57" value="validate()" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="14" target="15" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="58" value="evaluate()" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="15" target="20" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="59" value="EvaluatedFacts" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="20" target="16" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="60" value="AssessmentCalculated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="16" target="18" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="61" value="claim intent (outbox)" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="18" target="26" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="62" value="dequeue" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="26" target="22" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="63" value="evidence" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="14" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="64" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="16" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="65" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="18" target="28" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="66" value="ingest" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="28" target="25" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="67" value="schema validation" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="26" target="27" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="68" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="10" target="12" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <!-- Legend -->
+  <mxCell id="70" value="Legend" style="swimlane;fontStyle=1;align=center;startSize=20;fillColor=#f8f8f8;strokeColor=#333333;" vertex="1" parent="1"><mxGeometry x="30" y="640" width="170" height="170" as="geometry"/></mxCell>
+  <mxCell id="71" value="[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="70"><mxGeometry x="10" y="30" width="150" height="30" as="geometry"/></mxCell>
+  <mxCell id="72" value="[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="70"><mxGeometry x="10" y="70" width="150" height="30" as="geometry"/></mxCell>
+  <mxCell id="73" value="[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="70"><mxGeometry x="10" y="110" width="150" height="30" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 2: Bounded Context Flow -->
-  <diagram id="p2-bounded-contexts" name="2 - Bounded Context Flow">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-
-        <mxCell id="title" value="Tax Core — Bounded Context Flow" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="527" y="30" width="600" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Legend -->
-        <mxCell id="leg-g" value="[GENERIC]" style="rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="40" y="80" width="160" height="36" as="geometry"/>
-        </mxCell>
-        <mxCell id="leg-d" value="[DK VAT]" style="rounded=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="220" y="80" width="160" height="36" as="geometry"/>
-        </mxCell>
-
-        <!-- Contexts -->
-        <mxCell id="reg-ctx" value="Registration Context&#xa;registration-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="220" y="160" width="200" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="obl-ctx" value="Obligation Context&#xa;obligation-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="220" y="290" width="200" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="fil-ctx" value="Filing Context&#xa;filing-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="220" y="420" width="200" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="val-ctx" value="Validation Context&#xa;validation-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="220" y="550" width="200" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="rule-ctx" value="Tax Rule &amp; Assessment Context&#xa;rule-engine [DK VAT]&#xa;assessment-service [GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="580" y="550" width="240" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="cor-ctx" value="Correction Context&#xa;correction-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="940" y="420" width="200" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="clm-ctx" value="Claim Context&#xa;claim-orchestrator [GENERIC]&#xa;claim-connector [DK VAT adapter]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="940" y="550" width="240" height="70" as="geometry"/>
-        </mxCell>
-        <mxCell id="aud-ctx" value="Audit Context&#xa;audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
-          <mxGeometry x="580" y="760" width="200" height="70" as="geometry"/>
-        </mxCell>
-
-        <!-- Event edges -->
-        <mxCell id="ev1" value="RegistrationStatusChanged&#xa;[CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=0;" edge="1" source="reg-ctx" target="obl-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev2" value="FilingObligationCreated&#xa;[CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="obl-ctx" target="fil-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev3" value="ReturnSubmitted&#xa;[CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="fil-ctx" target="val-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev4" value="ReturnValidated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="val-ctx" target="rule-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev5" value="VatAssessmentCalculated&#xa;[CloudEvents — DK VAT]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="rule-ctx" target="cor-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev6" value="VatAssessmentCalculated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="rule-ctx" target="clm-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev7" value="VatReturnCorrected [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="cor-ctx" target="clm-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev8" value="evidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" source="fil-ctx" target="aud-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev9" value="evidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" source="val-ctx" target="aud-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev10" value="evidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" source="rule-ctx" target="aud-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="ev11" value="evidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" source="clm-ctx" target="aud-ctx" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 2: Three-Layer Architecture                              -->
+  <!-- ============================================================ -->
+  <diagram name="02 Three-Layer Architecture" id="d02">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <!-- DK VAT band -->
+  <mxCell id="2" value="DK VAT Overlay [DK VAT]" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="1570" height="230" as="geometry"/></mxCell>
+  <mxCell id="3" value="rule-engine-service&#xa;ML §§ rule packs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="2"><mxGeometry x="30" y="50" width="200" height="70" as="geometry"/></mxCell>
+  <mxCell id="4" value="Rule Catalog&#xa;effective-dated DK rules" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="2"><mxGeometry x="260" y="40" width="180" height="90" as="geometry"/></mxCell>
+  <mxCell id="5" value="claim-connector&#xa;SKAT adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="2"><mxGeometry x="470" y="50" width="200" height="70" as="geometry"/></mxCell>
+  <mxCell id="6" value="DK VAT Filing Schema&#xa;CVR · Rubrik A/B/C&#xa;salgsmoms / købsmoms" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="2"><mxGeometry x="700" y="40" width="200" height="90" as="geometry"/></mxCell>
+  <mxCell id="7" value="DK Cadence Policy&#xa;50k threshold&#xa;half-yearly / quarterly / monthly" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="2"><mxGeometry x="930" y="40" width="200" height="90" as="geometry"/></mxCell>
+  <mxCell id="8" value="DK Validation Rules&#xa;Rubrik cross-field checks&#xa;CVR format · zero-filing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="2"><mxGeometry x="1160" y="40" width="200" height="90" as="geometry"/></mxCell>
+  <!-- VAT-GENERIC band -->
+  <mxCell id="10" value="Generic VAT Platform [VAT-GENERIC]" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="40" y="320" width="1570" height="230" as="geometry"/></mxCell>
+  <mxCell id="11" value="portal-bff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="30" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="12" value="registration-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="210" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="13" value="obligation-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="390" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="14" value="filing-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="570" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="15" value="validation-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="750" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="16" value="assessment-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="930" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="17" value="correction-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="1110" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="18" value="claim-orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="1290" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="19" value="Rule Catalog mechanism&#xa;(effective-dated rule store)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="30" y="140" width="200" height="60" as="geometry"/></mxCell>
+  <!-- PLATFORM band -->
+  <mxCell id="20" value="Platform Infrastructure [PLATFORM]" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="40" y="600" width="1570" height="230" as="geometry"/></mxCell>
+  <mxCell id="21" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="20"><mxGeometry x="30" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="22" value="audit-evidence" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="20"><mxGeometry x="210" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="23" value="Kafka + DLQ" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="20"><mxGeometry x="390" y="40" width="150" height="80" as="geometry"/></mxCell>
+  <mxCell id="24" value="Schema Registry" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="20"><mxGeometry x="570" y="40" width="150" height="80" as="geometry"/></mxCell>
+  <mxCell id="25" value="Outbox infrastructure" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="20"><mxGeometry x="750" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <mxCell id="26" value="Operational DB&#xa;(ACID Relational)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="20"><mxGeometry x="930" y="40" width="150" height="80" as="geometry"/></mxCell>
+  <mxCell id="27" value="Audit Store&#xa;(Lakehouse / Iceberg)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="20"><mxGeometry x="1110" y="40" width="150" height="80" as="geometry"/></mxCell>
+  <mxCell id="28" value="OpenTelemetry&#xa;(trace_id end-to-end)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="20"><mxGeometry x="1290" y="50" width="150" height="60" as="geometry"/></mxCell>
+  <!-- Overlay arrows -->
+  <mxCell id="40" value="implements" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="3" target="19" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="41" value="populates" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="4" target="19" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="42" value="extends" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="5" target="18" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="43" value="configures" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="6" target="14" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="44" value="configures" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="7" target="13" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="45" value="configures" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="8" target="15" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <!-- VAT-GENERIC to PLATFORM -->
+  <mxCell id="46" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;" edge="1" source="14" target="26" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="47" value="writes to" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;" edge="1" source="22" target="27" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="48" value="publishes to" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;" edge="1" source="25" target="23" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 3: Modern Data Stack Planes -->
-  <diagram id="p3-data-stack" name="3 - Modern Data Stack">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="Tax Core — Modern Data Stack Planes (all GENERIC)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="427" y="30" width="800" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Transactional Plane -->
-        <mxCell id="trans" value="Transactional Plane — System of Decision" style="swimlane;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;startSize=36;" vertex="1" parent="1">
-          <mxGeometry x="100" y="120" width="480" height="180" as="geometry"/>
-        </mxCell>
-        <mxCell id="odb2" value="ACID Relational DB&#xa;Filings · Assessments · Claims · Obligations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="trans">
-          <mxGeometry x="30" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="outbox" value="Outbox Tables&#xa;Reliable event publication" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="trans">
-          <mxGeometry x="250" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Event Plane -->
-        <mxCell id="event" value="Event &amp; Streaming Plane" style="swimlane;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;startSize=36;" vertex="1" parent="1">
-          <mxGeometry x="100" y="360" width="480" height="200" as="geometry"/>
-        </mxCell>
-        <mxCell id="kafka" value="Kafka-compatible Backbone&#xa;Domain events + integration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="event">
-          <mxGeometry x="20" y="56" width="180" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="sreg2" value="Schema Registry&#xa;Avro/Protobuf + CI compatibility" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="event">
-          <mxGeometry x="220" y="56" width="180" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="stream" value="Stateful Stream Processing&#xa;Compliance signals · Risk checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="event">
-          <mxGeometry x="120" y="130" width="220" height="50" as="geometry"/>
-        </mxCell>
-
-        <!-- Analytical Plane -->
-        <mxCell id="analytical" value="Analytical &amp; Compliance Plane" style="swimlane;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;startSize=36;" vertex="1" parent="1">
-          <mxGeometry x="660" y="360" width="480" height="200" as="geometry"/>
-        </mxCell>
-        <mxCell id="lake" value="Lakehouse on Object Storage&#xa;Apache Iceberg open table format" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="analytical">
-          <mxGeometry x="20" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="elt" value="ELT Transformations&#xa;Semantic models · Reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="analytical">
-          <mxGeometry x="250" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="query" value="Federated Query Layer&#xa;Audit · Compliance workloads" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="analytical">
-          <mxGeometry x="120" y="130" width="220" height="50" as="geometry"/>
-        </mxCell>
-
-        <!-- Observability Plane -->
-        <mxCell id="obs-plane" value="Observability Plane" style="swimlane;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;startSize=36;" vertex="1" parent="1">
-          <mxGeometry x="660" y="120" width="480" height="180" as="geometry"/>
-        </mxCell>
-        <mxCell id="otel" value="OpenTelemetry&#xa;Traces · Metrics · Logs · trace_id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="obs-plane">
-          <mxGeometry x="30" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="alerts" value="Alerting&#xa;Overdue · DLQ · Failure bursts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="obs-plane">
-          <mxGeometry x="250" y="56" width="200" height="60" as="geometry"/>
-        </mxCell>
-
-        <!-- Flow arrows -->
-        <mxCell id="fa1" value="publish" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="outbox" target="kafka" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="fa2" value="ingest" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" source="kafka" target="lake" parent="1">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="fa3" value="" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="lake" target="elt" parent="analytical">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="fa4" value="" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="elt" target="query" parent="analytical">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-        <mxCell id="fa5" value="compatibility" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" source="kafka" target="sreg2" parent="event">
-          <mxGeometry relative="1" as="geometry"/>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 3: Portal BFF Integration                                -->
+  <!-- ============================================================ -->
+  <diagram name="03 Portal BFF Integration" id="d03">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="2" value="Taxpayer Portal UI" style="shape=mxgraph.basic.person2;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="60" y="300" width="80" height="100" as="geometry"/></mxCell>
+  <mxCell id="3" value="portal-bff [VAT-GENERIC]&#xa;&#xa;Stateless facade&#xa;Composes UX responses&#xa;No tax domain state" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="240" y="270" width="220" height="140" as="geometry"/></mxCell>
+  <mxCell id="4" value="API Gateway [PLATFORM]&#xa;&#xa;RBAC enforcement&#xa;trace_id injection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="570" y="290" width="180" height="100" as="geometry"/></mxCell>
+  <mxCell id="5" value="registration-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="870" y="140" width="200" height="60" as="geometry"/></mxCell>
+  <mxCell id="6" value="obligation-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="870" y="240" width="200" height="60" as="geometry"/></mxCell>
+  <mxCell id="7" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="870" y="340" width="200" height="60" as="geometry"/></mxCell>
+  <mxCell id="8" value="correction-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="870" y="440" width="200" height="60" as="geometry"/></mxCell>
+  <mxCell id="9" value="filing-service (GET)&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="870" y="540" width="200" height="60" as="geometry"/></mxCell>
+  <mxCell id="10" value="API Coverage Rule:&#xa;100% of portal workflows must be achievable&#xa;via public Tax Core APIs.&#xa;BFF never accesses DB directly." style="text;html=1;strokeColor=#FF0000;fillColor=#ffe6cc;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="240" y="470" width="310" height="90" as="geometry"/></mxCell>
+  <mxCell id="11" value="BFF Constraints:&#xa;No tax calculations&#xa;No rule evaluation&#xa;No tax domain state&#xa;100% API coverage via Tax Core" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=left;verticalAlign=middle;spacingLeft=10;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="240" y="590" width="310" height="100" as="geometry"/></mxCell>
+  <mxCell id="20" value="authenticated request" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="2" target="3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="21" value="OpenAPI 3.1 (trace_id)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="3" target="4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="22" value="POST /registrations" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="23" value="GET /obligations?cvr=..." style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="24" value="POST /vat-filings" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="7" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="25" value="POST /vat-filings (correction)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="8" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="26" value="GET /vat-filings/{id}" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="9" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 4: Happy-Path Sequence -->
-  <diagram id="p4-happy-path" name="4 - Happy Path Sequence">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="Happy-Path Sequence: Regular Filing → Claim Dispatch" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="200" y="20" width="1000" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Lifelines -->
-        <mxCell id="sub-hdr" value="Submitter" style="shape=mxgraph.uml.actor;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="60" y="80" width="40" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="gw-hdr" value="API Gateway&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="160" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="fs-hdr" value="filing-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="310" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="vs-hdr" value="validation&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="460" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="re-hdr" value="rule-engine&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="610" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="as-hdr" value="assessment&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="760" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="co-hdr" value="claim-orch&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="910" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="cc-hdr" value="claim-conn&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1060" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="ecs-hdr" value="SKAT&#xa;Claims" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1210" y="80" width="80" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="ae-hdr" value="audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="1340" y="80" width="100" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Lifeline dashed lines -->
-        <mxCell id="ll-sub" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="sub-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="80" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-gw" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="gw-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="210" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-fs" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="fs-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="360" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-vs" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="vs-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="510" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-re" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="re-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="660" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-as" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="as-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="810" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-co" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="co-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="960" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-cc" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="cc-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1110" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-ecs" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="ecs-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1250" y="1050"/></Array></mxGeometry>
-        </mxCell>
-        <mxCell id="ll-ae" style="edgeStyle=none;dashed=1;endArrow=none;" edge="1" source="ae-hdr" parent="1">
-          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1390" y="1050"/></Array></mxGeometry>
-        </mxCell>
-
-        <!-- Step 1 -->
-        <mxCell id="s1" value="POST /vat-filings (OpenAPI 3.1)" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="80" y="180" as="sourcePoint"/><mxPoint x="210" y="180" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 2 -->
-        <mxCell id="s2" value="forward + inject trace_id" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="210" y="210" as="sourcePoint"/><mxPoint x="360" y="210" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 3 -->
-        <mxCell id="s3" value="normalize + persist snapshot" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="240" as="sourcePoint"/><mxPoint x="360" y="240" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s3a" value="write FilingSnapshot" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="260" as="sourcePoint"/><mxPoint x="1390" y="260" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 4 -->
-        <mxCell id="s4" value="validate(filing_id, trace_id)" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="300" as="sourcePoint"/><mxPoint x="510" y="300" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s4a" value="write ValidationEvidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="510" y="330" as="sourcePoint"/><mxPoint x="1390" y="330" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 5 -->
-        <mxCell id="s5" value="ReturnValidated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="510" y="370" as="sourcePoint"/><mxPoint x="360" y="370" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 6 -->
-        <mxCell id="s6" value="evaluate(facts, rule_version_id) [DK VAT]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="410" as="sourcePoint"/><mxPoint x="660" y="410" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s6a" value="write RuleEvaluationEvidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="440" as="sourcePoint"/><mxPoint x="1390" y="440" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 7 -->
-        <mxCell id="s7" value="EvaluatedFacts + RuleOutcomes [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="480" as="sourcePoint"/><mxPoint x="810" y="480" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 8 -->
-        <mxCell id="s8" value="calculate net_vat + persist assessment_version" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="810" y="510" as="sourcePoint"/><mxPoint x="810" y="510" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s8a" value="write AssessmentEvidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="810" y="540" as="sourcePoint"/><mxPoint x="1390" y="540" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 9 -->
-        <mxCell id="s9" value="ClaimCreated(assessment) [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="810" y="580" as="sourcePoint"/><mxPoint x="960" y="580" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 10 -->
-        <mxCell id="s10" value="build payload + idempotency key" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="610" as="sourcePoint"/><mxPoint x="960" y="610" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s10a" value="persist claim intent (outbox)" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="640" as="sourcePoint"/><mxPoint x="960" y="640" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s10b" value="write ClaimIntentEvidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="660" as="sourcePoint"/><mxPoint x="1390" y="660" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 11 -->
-        <mxCell id="s11" value="dequeue from Kafka" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="700" as="sourcePoint"/><mxPoint x="1110" y="700" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 12 -->
-        <mxCell id="s12" value="POST /claims [SKAT contract]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1110" y="730" as="sourcePoint"/><mxPoint x="1250" y="730" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 13 -->
-        <mxCell id="s13" value="200 OK / claim_ref" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1250" y="760" as="sourcePoint"/><mxPoint x="1110" y="760" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 14 -->
-        <mxCell id="s14" value="ClaimDispatched [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1110" y="800" as="sourcePoint"/><mxPoint x="960" y="800" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s14a" value="write DispatchOutcomeEvidence" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="830" as="sourcePoint"/><mxPoint x="1390" y="830" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 15 -->
-        <mxCell id="s15" value="state → claim_created" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="960" y="870" as="sourcePoint"/><mxPoint x="360" y="870" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <!-- Step 16 -->
-        <mxCell id="s16" value="201 Created {filing_id, trace_id, status}" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="360" y="910" as="sourcePoint"/><mxPoint x="210" y="910" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="s17" value="201 Created" style="edgeStyle=orthogonalEdgeStyle;fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="210" y="940" as="sourcePoint"/><mxPoint x="80" y="940" as="targetPoint"/></mxGeometry>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 4: Bounded Context Flow                                  -->
+  <!-- ============================================================ -->
+  <diagram name="04 Bounded Context Flow" id="d04">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="2" value="Portal BFF Context&#xa;portal-bff [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="680" y="40" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="3" value="Registration Context&#xa;registration-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="200" y="180" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="4" value="Obligation Context&#xa;obligation-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="680" y="180" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="5" value="Filing Context&#xa;filing-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="680" y="330" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="6" value="Validation Context&#xa;validation-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="200" y="480" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="7" value="Tax Rule and Assessment Context&#xa;rule-engine-service [DK VAT]&#xa;assessment-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="680" y="480" width="280" height="80" as="geometry"/></mxCell>
+  <mxCell id="8" value="Correction Context&#xa;correction-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="200" y="640" width="280" height="70" as="geometry"/></mxCell>
+  <mxCell id="9" value="Claim Context&#xa;claim-orchestrator [VAT-GENERIC]&#xa;claim-connector [DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="680" y="640" width="280" height="80" as="geometry"/></mxCell>
+  <mxCell id="10" value="Audit Context&#xa;audit-evidence [PLATFORM]&#xa;Audit Store (Lakehouse / Iceberg)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="1160" y="400" width="280" height="80" as="geometry"/></mxCell>
+  <mxCell id="20" value="API calls" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="2" target="3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="21" value="API calls" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="2" target="4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="22" value="API calls" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="2" target="5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="23" value="RegistrationStatusChanged [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="3" target="4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="24" value="ObligationCreated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="4" target="5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="25" value="ReturnSubmitted [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="5" target="6" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="26" value="ReturnValidated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="6" target="7" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="27" value="AssessmentCalculated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="7" target="9" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="28" value="AssessmentCalculated [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="7" target="8" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="29" value="ReturnCorrected [CloudEvents]" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;" edge="1" source="8" target="9" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="30" value="evidence" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="5" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="31" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="6" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="32" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="7" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="33" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;endArrow=open;endFill=0;" edge="1" source="9" target="10" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 5: Error Path - Validation Block -->
-  <diagram id="p5-validation-error" name="5 - Error Path: Validation Block">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="Error Path: Validation Block [GENERIC behaviour]" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="300" y="30" width="800" height="40" as="geometry"/>
-        </mxCell>
-
-        <!-- Lifelines -->
-        <mxCell id="sub-h" value="Submitter" style="shape=mxgraph.uml.actor;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="160" y="100" width="40" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="fs-h" value="filing-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="440" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="vs-h" value="validation-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="740" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="ae-h" value="audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1040" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="ll1" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="180" y="160" as="sourcePoint"/><mxPoint x="180" y="700" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="ll2" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="500" y="160" as="sourcePoint"/><mxPoint x="500" y="700" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="ll3" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="800" y="160" as="sourcePoint"/><mxPoint x="800" y="700" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="ll4" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1100" y="160" as="sourcePoint"/><mxPoint x="1100" y="700" as="targetPoint"/></mxGeometry>
-        </mxCell>
-
-        <mxCell id="es1" value="POST /vat-filings" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="180" y="220" as="sourcePoint"/><mxPoint x="500" y="220" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es2" value="validate(filing_id, trace_id)" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="500" y="280" as="sourcePoint"/><mxPoint x="800" y="280" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es3" value="detect blocking error(s)" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="800" y="340" as="sourcePoint"/><mxPoint x="800" y="340" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es4" value="write ValidationEvidence (blocked)" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="800" y="380" as="sourcePoint"/><mxPoint x="1100" y="380" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es5" value="ReturnValidated (blocked, errors[]) [CloudEvents]" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="800" y="430" as="sourcePoint"/><mxPoint x="500" y="430" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es6" value="status = validation_failed" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="500" y="480" as="sourcePoint"/><mxPoint x="500" y="480" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="es7" value="422 {errors[], trace_id}" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="500" y="520" as="sourcePoint"/><mxPoint x="180" y="520" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="note1" value="Pipeline halted — no rule evaluation or claim dispatch" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="580" y="570" width="360" height="50" as="geometry"/>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 5: Modern Data Stack Planes                              -->
+  <!-- ============================================================ -->
+  <diagram name="05 Modern Data Stack Planes" id="d05">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="2" value="Transactional Plane [PLATFORM] — System of Decision" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="1570" height="170" as="geometry"/></mxCell>
+  <mxCell id="3" value="ACID Relational DB&#xa;Filings · Assessments · Claims&#xa;Obligations · Registrations" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="2"><mxGeometry x="40" y="45" width="250" height="100" as="geometry"/></mxCell>
+  <mxCell id="4" value="Outbox Tables&#xa;Reliable event publication&#xa;Transactional outbox pattern" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="2"><mxGeometry x="330" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="5" value="Schema Migration Discipline&#xa;Backward-compatible rollout&#xa;No destructive in-place changes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="2"><mxGeometry x="630" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="10" value="Event and Streaming Plane [PLATFORM] — System of Integration" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="40" y="260" width="1570" height="170" as="geometry"/></mxCell>
+  <mxCell id="11" value="Kafka-compatible Broker&#xa;Domain event backbone&#xa;All async inter-service comms" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;html=1;" vertex="1" parent="10"><mxGeometry x="40" y="45" width="250" height="100" as="geometry"/></mxCell>
+  <mxCell id="12" value="Schema Registry&#xa;Avro / Protobuf schemas&#xa;CI/CD compatibility gates" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;html=1;" vertex="1" parent="10"><mxGeometry x="330" y="45" width="250" height="100" as="geometry"/></mxCell>
+  <mxCell id="13" value="Stateful Stream Processing&#xa;Compliance and risk signals&#xa;Quality checks · ObligationOverdue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="630" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="14" value="CloudEvents Envelope&#xa;Standard event format&#xa;All domain events use CloudEvents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10"><mxGeometry x="930" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="20" value="Analytical and Compliance Plane [PLATFORM] — System of Record" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="40" y="480" width="1570" height="170" as="geometry"/></mxCell>
+  <mxCell id="21" value="Lakehouse&#xa;Apache Iceberg open table format&#xa;Object storage · Immutable" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="20"><mxGeometry x="40" y="45" width="250" height="100" as="geometry"/></mxCell>
+  <mxCell id="22" value="ELT Transformations&#xa;Semantic models&#xa;Regulatory and operational reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20"><mxGeometry x="330" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="23" value="Federated Query Layer&#xa;Audit and compliance workloads&#xa;Isolated from transactional DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20"><mxGeometry x="630" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="24" value="End-to-end lineage metadata&#xa;Source filing fields → reporting&#xa;Freshness and completeness checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20"><mxGeometry x="930" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="30" value="Observability Plane [PLATFORM] — System of Insight" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="40" y="700" width="1570" height="170" as="geometry"/></mxCell>
+  <mxCell id="31" value="OpenTelemetry&#xa;Traces · Metrics · Logs&#xa;trace_id end-to-end incl. portal BFF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30"><mxGeometry x="40" y="45" width="280" height="100" as="geometry"/></mxCell>
+  <mxCell id="32" value="Alerting&#xa;Overdue spikes · DLQ growth&#xa;Failure bursts · BFF error rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30"><mxGeometry x="360" y="55" width="250" height="80" as="geometry"/></mxCell>
+  <mxCell id="33" value="Per-service metrics&#xa;bff_requests · filings_received&#xa;dispatch_success_rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30"><mxGeometry x="650" y="55" width="280" height="80" as="geometry"/></mxCell>
+  <!-- Flow arrows between planes -->
+  <mxCell id="40" value="Outbox publish" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;" edge="1" source="4" target="11" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="41" value="ingest to Lakehouse" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;endFill=1;" edge="1" source="11" target="21" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 6: Error Path - Dispatch Failure and Retry -->
-  <diagram id="p6-dispatch-retry" name="6 - Error Path: Dispatch Retry">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="Error Path: Claim Dispatch Failure and Retry [GENERIC + DK VAT adapter]" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="200" y="30" width="1000" height="40" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="cc-h" value="claim-connector&#xa;[DK VAT adapter]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="160" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="ecs-h" value="SKAT Claims&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="380" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="q-h" value="Kafka Queue&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="600" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="dlq-h" value="Dead Letter Queue&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="820" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="co-h" value="claim-orchestrator&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1040" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="ae2-h" value="audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1270" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="r1" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="140" as="sourcePoint"/><mxPoint x="225" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="r2" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="440" y="140" as="sourcePoint"/><mxPoint x="440" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="r3" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="140" as="sourcePoint"/><mxPoint x="660" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="r4" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="885" y="140" as="sourcePoint"/><mxPoint x="885" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="r5" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1105" y="140" as="sourcePoint"/><mxPoint x="1105" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="r6" style="dashed=1;endArrow=none;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1330" y="140" as="sourcePoint"/><mxPoint x="1330" y="900" as="targetPoint"/></mxGeometry>
-        </mxCell>
-
-        <mxCell id="dr1" value="POST /claims" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="210" as="sourcePoint"/><mxPoint x="440" y="210" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr2" value="5xx / timeout" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="440" y="260" as="sourcePoint"/><mxPoint x="225" y="260" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr3" value="write DispatchAttemptFailed" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="300" as="sourcePoint"/><mxPoint x="1330" y="300" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr4" value="requeue (attempt n, exponential backoff)" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="340" as="sourcePoint"/><mxPoint x="660" y="340" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="note-backoff" value="Exponential backoff: 1s, 2s, 4s... max 5 attempts" style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="460" y="360" width="320" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="dr5" value="retry dequeue" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="660" y="420" as="sourcePoint"/><mxPoint x="225" y="420" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr6" value="POST /claims (idempotency key preserved)" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="460" as="sourcePoint"/><mxPoint x="440" y="460" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr7" value="still failing" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="440" y="510" as="sourcePoint"/><mxPoint x="225" y="510" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr8" value="move to dead letter" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="560" as="sourcePoint"/><mxPoint x="885" y="560" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr9" value="ClaimDispatchFailed [CloudEvents]" style="fontSize=10;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="225" y="610" as="sourcePoint"/><mxPoint x="1105" y="610" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="dr10" value="write DispatchFailed (dead_letter)" style="fontSize=10;dashed=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry"><mxPoint x="1105" y="650" as="sourcePoint"/><mxPoint x="1330" y="650" as="targetPoint"/></mxGeometry>
-        </mxCell>
-        <mxCell id="note-alert" value="Alert fired — operator playbook activated" style="shape=note;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="860" y="700" width="360" height="50" as="geometry"/>
-        </mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 6: Happy-Path Sequence                                   -->
+  <!-- ============================================================ -->
+  <diagram name="06 Happy-Path Sequence" id="d06">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1400" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="p1" value="User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="30" y="30" width="120" height="50" as="geometry"/></mxCell>
+  <mxCell id="p2" value="portal-bff&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="200" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p3" value="API Gateway&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="390" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p4" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="580" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p5" value="validation-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="770" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p6" value="rule-engine&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="960" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p7" value="assessment-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1150" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p8" value="claim-orchestrator&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1340" y="30" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p9" value="Outbox / Kafka&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1530" y="30" width="130" height="50" as="geometry"/></mxCell>
+  <mxCell id="p10" value="claim-connector&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1710" y="30" width="130" height="50" as="geometry"/></mxCell>
+  <mxCell id="p11" value="SKAT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1890" y="30" width="110" height="50" as="geometry"/></mxCell>
+  <mxCell id="p12" value="audit-evidence&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="2060" y="30" width="130" height="50" as="geometry"/></mxCell>
+  <!-- Steps as horizontal bands -->
+  <mxCell id="s1" value="1. submit filing (portal action)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="30" y="120" width="290" height="35" as="geometry"/></mxCell>
+  <mxCell id="s1a" value="" style="edgeStyle=elbowEdgeStyle;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" source="p1" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="155" y="138"/><mxPoint x="270" y="138"/></Array></mxGeometry></mxCell>
+  <mxCell id="s2" value="2. POST /vat-filings (trace_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="200" y="170" width="280" height="35" as="geometry"/></mxCell>
+  <mxCell id="s2a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p2" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="188"/><mxPoint x="460" y="188"/></Array></mxGeometry></mxCell>
+  <mxCell id="s3" value="3. forward" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="390" y="210" width="190" height="35" as="geometry"/></mxCell>
+  <mxCell id="s3a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p3" target="p4" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="228"/><mxPoint x="650" y="228"/></Array></mxGeometry></mxCell>
+  <mxCell id="s4" value="4. normalize · FilingSnapshot → audit-evidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="580" y="255" width="380" height="35" as="geometry"/></mxCell>
+  <mxCell id="s4a" value="FilingSnapshot" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="290"/><mxPoint x="2125" y="290"/></Array></mxGeometry></mxCell>
+  <mxCell id="s5" value="5. validate(filing_id, trace_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="580" y="305" width="340" height="35" as="geometry"/></mxCell>
+  <mxCell id="s5a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p4" target="p5" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="323"/><mxPoint x="840" y="323"/></Array></mxGeometry></mxCell>
+  <mxCell id="s6" value="6. field + cross-field checks [VAT-GENERIC + DK VAT schema]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="770" y="345" width="400" height="35" as="geometry"/></mxCell>
+  <mxCell id="s6a" value="ValidationEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="840" y="380"/><mxPoint x="2125" y="380"/></Array></mxGeometry></mxCell>
+  <mxCell id="s7" value="7. ReturnValidated (passed) [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="580" y="400" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s7a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p4" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="840" y="418"/><mxPoint x="650" y="418"/></Array></mxGeometry></mxCell>
+  <mxCell id="s8" value="8. evaluate(facts, rule_version_id) [DK VAT]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="580" y="440" width="440" height="35" as="geometry"/></mxCell>
+  <mxCell id="s8a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p4" target="p6" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="458"/><mxPoint x="1030" y="458"/></Array></mxGeometry></mxCell>
+  <mxCell id="s9" value="9. deterministic eval vs Rule Catalog (ML §§)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="960" y="480" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s9a" value="RuleEvaluationEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p6" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1030" y="515"/><mxPoint x="2125" y="515"/></Array></mxGeometry></mxCell>
+  <mxCell id="s10" value="10. EvaluatedFacts [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="960" y="535" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s10a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p6" target="p7" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1030" y="553"/><mxPoint x="1220" y="553"/></Array></mxGeometry></mxCell>
+  <mxCell id="s11" value="11. net_vat = output-input+adj · derive result_type · append assessment_version" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1150" y="575" width="480" height="35" as="geometry"/></mxCell>
+  <mxCell id="s11a" value="AssessmentEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p7" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1220" y="610"/><mxPoint x="2125" y="610"/></Array></mxGeometry></mxCell>
+  <mxCell id="s12" value="12. AssessmentCalculated [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1150" y="630" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s12a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p7" target="p8" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1220" y="648"/><mxPoint x="1410" y="648"/></Array></mxGeometry></mxCell>
+  <mxCell id="s13" value="13. build claim + idempotency key" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1340" y="670" width="280" height="35" as="geometry"/></mxCell>
+  <mxCell id="s13a" value="persist claim intent (transactional)" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p8" target="p9" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1410" y="705"/><mxPoint x="1595" y="705"/></Array></mxGeometry></mxCell>
+  <mxCell id="s13b" value="ClaimIntentEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p8" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1410" y="730"/><mxPoint x="2125" y="730"/></Array></mxGeometry></mxCell>
+  <mxCell id="s14" value="14. dequeue (Kafka)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1530" y="750" width="260" height="35" as="geometry"/></mxCell>
+  <mxCell id="s14a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p9" target="p10" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1595" y="768"/><mxPoint x="1775" y="768"/></Array></mxGeometry></mxCell>
+  <mxCell id="s15" value="15. POST /claims [DK VAT SKAT contract]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1710" y="795" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s15a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p10" target="p11" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1775" y="813"/><mxPoint x="1945" y="813"/></Array></mxGeometry></mxCell>
+  <mxCell id="s16" value="16. 200 OK / claim_ref" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1710" y="840" width="240" height="35" as="geometry"/></mxCell>
+  <mxCell id="s16a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p11" target="p10" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1945" y="858"/><mxPoint x="1775" y="858"/></Array></mxGeometry></mxCell>
+  <mxCell id="s17" value="17. ClaimDispatched [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1340" y="875" width="400" height="35" as="geometry"/></mxCell>
+  <mxCell id="s17a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p10" target="p8" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1775" y="893"/><mxPoint x="1410" y="893"/></Array></mxGeometry></mxCell>
+  <mxCell id="s17b" value="DispatchOutcomeEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p8" target="p12" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1410" y="918"/><mxPoint x="2125" y="918"/></Array></mxGeometry></mxCell>
+  <mxCell id="s18" value="18. 201 {filing_id, trace_id, status, result_type}" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="200" y="945" width="400" height="35" as="geometry"/></mxCell>
+  <mxCell id="s18a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="650" y="963"/><mxPoint x="460" y="963"/></Array></mxGeometry></mxCell>
+  <mxCell id="s18b" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p3" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="460" y="985"/><mxPoint x="270" y="985"/></Array></mxGeometry></mxCell>
+  <mxCell id="s18c" value="filing confirmed" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="270" y="1008"/><mxPoint x="90" y="1008"/></Array></mxGeometry></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 7: Correction Flow -->
-  <diagram id="p7-correction" name="7 - Correction Flow">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="Correction Flow [GENERIC orchestration, DK VAT delta rules]" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="200" y="30" width="1000" height="40" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="cs-h" value="Submitter" style="shape=mxgraph.uml.actor;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="100" y="100" width="40" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="fsc-h" value="filing-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="280" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="csc-h" value="correction-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="500" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="asc-h" value="assessment-service&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="740" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="coc-h" value="claim-orchestrator&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="980" y="100" width="130" height="40" as="geometry"/>
-        </mxCell>
-        <mxCell id="aec-h" value="audit-evidence&#xa;[GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="1220" y="100" width="120" height="40" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="cl1" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="120" y="160" as="sourcePoint"/><mxPoint x="120" y="900" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cl2" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="340" y="160" as="sourcePoint"/><mxPoint x="340" y="900" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cl3" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="565" y="160" as="sourcePoint"/><mxPoint x="565" y="900" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cl4" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="160" as="sourcePoint"/><mxPoint x="805" y="900" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cl5" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1045" y="160" as="sourcePoint"/><mxPoint x="1045" y="900" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cl6" style="dashed=1;endArrow=none;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1280" y="160" as="sourcePoint"/><mxPoint x="1280" y="900" as="targetPoint"/></mxGeometry></mxCell>
-
-        <mxCell id="cf1" value="POST /vat-filings (filing_type=correction, prior_filing_id)" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="120" y="210" as="sourcePoint"/><mxPoint x="340" y="210" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf2" value="correct(prior_filing_id, corrected_facts)" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="340" y="260" as="sourcePoint"/><mxPoint x="565" y="260" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf3" value="load prior assessment_version (immutable read)" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="565" y="310" as="sourcePoint"/><mxPoint x="565" y="310" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf4" value="compute delta (increase / decrease / neutral) [DK VAT]" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="565" y="350" as="sourcePoint"/><mxPoint x="565" y="350" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf5" value="create new assessment_version (linked to prior)" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="565" y="400" as="sourcePoint"/><mxPoint x="805" y="400" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf6" value="write CorrectionAssessmentEvidence" style="fontSize=10;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="440" as="sourcePoint"/><mxPoint x="1280" y="440" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf7" value="write CorrectionLineageEvidence" style="fontSize=10;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="565" y="480" as="sourcePoint"/><mxPoint x="1280" y="480" as="targetPoint"/></mxGeometry></mxCell>
-
-        <mxCell id="cf-alt" value="[delta != neutral]" style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1"><mxGeometry x="600" y="510" width="200" height="30" as="geometry"/></mxCell>
-        <mxCell id="cf8" value="VatReturnCorrected → ClaimCreated (adjustment) [CloudEvents]" style="fontSize=10;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="560" as="sourcePoint"/><mxPoint x="1045" y="560" as="targetPoint"/></mxGeometry></mxCell>
-        <mxCell id="cf9" value="write AdjustmentClaimEvidence" style="fontSize=10;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1045" y="600" as="sourcePoint"/><mxPoint x="1280" y="600" as="targetPoint"/></mxGeometry></mxCell>
-
-        <mxCell id="cf10" value="201 {filing_id, assessment_version, delta_type, trace_id}" style="fontSize=10;dashed=1;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="340" y="660" as="sourcePoint"/><mxPoint x="120" y="660" as="targetPoint"/></mxGeometry></mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 7: Error — Validation Block                              -->
+  <!-- ============================================================ -->
+  <diagram name="07 Error — Validation Block" id="d07">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="p1" value="User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="120" height="50" as="geometry"/></mxCell>
+  <mxCell id="p2" value="portal-bff&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="230" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p3" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="450" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p4" value="validation-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="670" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p5" value="audit-evidence&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="890" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="s1" value="1. submit filing" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="130" width="280" height="35" as="geometry"/></mxCell>
+  <mxCell id="s1a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p1" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="100" y="148"/><mxPoint x="300" y="148"/></Array></mxGeometry></mxCell>
+  <mxCell id="s2" value="2. POST /vat-filings" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="230" y="175" width="260" height="35" as="geometry"/></mxCell>
+  <mxCell id="s2a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p2" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="300" y="193"/><mxPoint x="520" y="193"/></Array></mxGeometry></mxCell>
+  <mxCell id="s3" value="3. validate(filing_id, trace_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="450" y="220" width="320" height="35" as="geometry"/></mxCell>
+  <mxCell id="s3a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p3" target="p4" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="238"/><mxPoint x="740" y="238"/></Array></mxGeometry></mxCell>
+  <mxCell id="s4" value="4. Blocking error detected" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#FF0000;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="670" y="265" width="280" height="35" as="geometry"/></mxCell>
+  <mxCell id="s5" value="5. ValidationEvidence (blocked)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="670" y="310" width="340" height="35" as="geometry"/></mxCell>
+  <mxCell id="s5a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p5" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="740" y="328"/><mxPoint x="960" y="328"/></Array></mxGeometry></mxCell>
+  <mxCell id="s6" value="6. ReturnValidated (blocked, errors[]) [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="450" y="355" width="380" height="35" as="geometry"/></mxCell>
+  <mxCell id="s6a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="740" y="373"/><mxPoint x="520" y="373"/></Array></mxGeometry></mxCell>
+  <mxCell id="s7" value="7. status = validation_failed" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="450" y="400" width="280" height="35" as="geometry"/></mxCell>
+  <mxCell id="s8" value="8. 422 {errors[], trace_id}" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="230" y="445" width="300" height="35" as="geometry"/></mxCell>
+  <mxCell id="s8a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p3" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="520" y="463"/><mxPoint x="300" y="463"/></Array></mxGeometry></mxCell>
+  <mxCell id="s9" value="9. validation errors (UX-formatted) · trace_id for support" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="490" width="400" height="35" as="geometry"/></mxCell>
+  <mxCell id="s9a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="300" y="508"/><mxPoint x="100" y="508"/></Array></mxGeometry></mxCell>
+  <mxCell id="note1" value="Pipeline halted — no rule evaluation, no assessment, no claim dispatch" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="450" y="575" width="450" height="50" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
-  <!-- PAGE 8: State Machines -->
-  <diagram id="p8-state-machines" name="8 - State Machines">
-    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-        <mxCell id="title" value="State Machines [both GENERIC]" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="527" y="30" width="600" height="40" as="geometry"/>
-        </mxCell>
+  <!-- ============================================================ -->
+  <!-- PAGE 8: Error — Dispatch Failure, Retry, DLQ                 -->
+  <!-- ============================================================ -->
+  <diagram name="08 Error — Dispatch Failure" id="d08">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="p1" value="claim-connector&#xa;[DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="40" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p2" value="SKAT Claims" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="260" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p3" value="Kafka Queue&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="480" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p4" value="DLQ [PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="700" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p5" value="claim-orchestrator&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="920" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p6" value="audit-evidence&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1140" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="s1" value="1. POST /claims" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="130" width="330" height="35" as="geometry"/></mxCell>
+  <mxCell id="s1a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p1" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="148"/><mxPoint x="330" y="148"/></Array></mxGeometry></mxCell>
+  <mxCell id="s2" value="2. 5xx / timeout" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f8cecc;strokeColor=#FF0000;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="175" width="260" height="35" as="geometry"/></mxCell>
+  <mxCell id="s2a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;strokeColor=#FF0000;" edge="1" source="p2" target="p1" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="330" y="193"/><mxPoint x="110" y="193"/></Array></mxGeometry></mxCell>
+  <mxCell id="s3" value="3. DispatchAttemptFailed (evidence)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="220" width="380" height="35" as="geometry"/></mxCell>
+  <mxCell id="s3a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p1" target="p6" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="238"/><mxPoint x="1210" y="238"/></Array></mxGeometry></mxCell>
+  <mxCell id="s4" value="4. requeue (exponential backoff)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="265" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s4a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p1" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="283"/><mxPoint x="550" y="283"/></Array></mxGeometry></mxCell>
+  <mxCell id="s5" value="5. retry dequeue" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="310" width="240" height="35" as="geometry"/></mxCell>
+  <mxCell id="s5a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p3" target="p1" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="550" y="328"/><mxPoint x="110" y="328"/></Array></mxGeometry></mxCell>
+  <mxCell id="repeat" value="(steps 1-5 repeat up to 5 attempts with exponential backoff)" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="360" width="460" height="35" as="geometry"/></mxCell>
+  <mxCell id="s6" value="6. dead letter (max retries exceeded)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f8cecc;strokeColor=#FF0000;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="415" width="380" height="35" as="geometry"/></mxCell>
+  <mxCell id="s6a" value="" style="edgeStyle=elbowEdgeStyle;html=1;strokeColor=#FF0000;" edge="1" source="p1" target="p4" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="433"/><mxPoint x="770" y="433"/></Array></mxGeometry></mxCell>
+  <mxCell id="s7" value="7. ClaimDispatchFailed (dead_letter=true) [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f8cecc;strokeColor=#FF0000;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="40" y="460" width="500" height="35" as="geometry"/></mxCell>
+  <mxCell id="s7a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;strokeColor=#FF0000;" edge="1" source="p1" target="p5" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="110" y="478"/><mxPoint x="990" y="478"/></Array></mxGeometry></mxCell>
+  <mxCell id="s8" value="8. DispatchFailed evidence (dead_letter)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="920" y="510" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s8a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p6" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="990" y="528"/><mxPoint x="1210" y="528"/></Array></mxGeometry></mxCell>
+  <mxCell id="note1" value="ALERT: DLQ growth · Operator playbook: inspect DLQ, restore SKAT connectivity, reprocess messages" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="700" y="600" width="540" height="50" as="geometry"/></mxCell>
+  </root></mxGraphModel>
+  </diagram>
 
-        <!-- Filing State Machine -->
-        <mxCell id="fsm-title" value="Filing State Machine [GENERIC]" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=14;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="100" y="90" width="600" height="30" as="geometry"/>
-        </mxCell>
+  <!-- ============================================================ -->
+  <!-- PAGE 9: Correction Flow                                       -->
+  <!-- ============================================================ -->
+  <diagram name="09 Correction Flow" id="d09">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <mxCell id="p1" value="User" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="30" y="40" width="120" height="50" as="geometry"/></mxCell>
+  <mxCell id="p2" value="portal-bff&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="220" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p3" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="430" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p4" value="correction-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="640" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p5" value="assessment-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="850" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p6" value="claim-orchestrator&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1060" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="p7" value="audit-evidence&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1270" y="40" width="140" height="50" as="geometry"/></mxCell>
+  <mxCell id="s1" value="1. submit correction" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="30" y="130" width="290" height="35" as="geometry"/></mxCell>
+  <mxCell id="s1a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p1" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="90" y="148"/><mxPoint x="290" y="148"/></Array></mxGeometry></mxCell>
+  <mxCell id="s2" value="2. POST /vat-filings (filing_type=correction, prior_filing_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="220" y="175" width="410" height="35" as="geometry"/></mxCell>
+  <mxCell id="s2a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p2" target="p3" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="290" y="193"/><mxPoint x="500" y="193"/></Array></mxGeometry></mxCell>
+  <mxCell id="s3" value="3. correct(prior_filing_id, corrected_facts)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="430" y="220" width="370" height="35" as="geometry"/></mxCell>
+  <mxCell id="s3a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p3" target="p4" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="238"/><mxPoint x="710" y="238"/></Array></mxGeometry></mxCell>
+  <mxCell id="s4" value="4. load prior assessment (immutable read)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="265" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s5" value="5. DK VAT age gate [DK VAT config]: &gt;3 years → manual/legal routing" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="310" width="440" height="35" as="geometry"/></mxCell>
+  <mxCell id="s6" value="6. compute delta: increase / decrease / neutral [VAT-GENERIC]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="355" width="430" height="35" as="geometry"/></mxCell>
+  <mxCell id="s7" value="7. createCorrectionVersion(corrected_facts, delta, prior_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="400" width="430" height="35" as="geometry"/></mxCell>
+  <mxCell id="s7a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p4" target="p5" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="710" y="418"/><mxPoint x="920" y="418"/></Array></mxGeometry></mxCell>
+  <mxCell id="s8" value="8. CorrectionAssessmentEvidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="850" y="445" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s8a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p7" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="920" y="463"/><mxPoint x="1340" y="463"/></Array></mxGeometry></mxCell>
+  <mxCell id="s9" value="9. CorrectionLineageEvidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="490" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s9a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p7" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="710" y="508"/><mxPoint x="1340" y="508"/></Array></mxGeometry></mxCell>
+  <mxCell id="altbox" value="alt: delta != neutral" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;fontStyle=3;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="640" y="540" width="200" height="30" as="geometry"/></mxCell>
+  <mxCell id="s10" value="10. ReturnCorrected → adjustment claim [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="850" y="580" width="410" height="35" as="geometry"/></mxCell>
+  <mxCell id="s10a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p6" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="920" y="598"/><mxPoint x="1130" y="598"/></Array></mxGeometry></mxCell>
+  <mxCell id="s11" value="11. AdjustmentClaimEvidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="1060" y="625" width="360" height="35" as="geometry"/></mxCell>
+  <mxCell id="s11a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p6" target="p7" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1130" y="643"/><mxPoint x="1340" y="643"/></Array></mxGeometry></mxCell>
+  <mxCell id="s12" value="12. 201 {filing_id, assessment_version, delta_type, trace_id}" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1"><mxGeometry x="220" y="680" width="460" height="35" as="geometry"/></mxCell>
+  <mxCell id="s12a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p3" target="p2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="698"/><mxPoint x="290" y="698"/></Array></mxGeometry></mxCell>
+  <mxCell id="s12b" value="correction confirmed" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="290" y="730"/><mxPoint x="90" y="730"/></Array></mxGeometry></mxCell>
+  </root></mxGraphModel>
+  </diagram>
 
-        <mxCell id="f-start" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="380" y="150" width="30" height="30" as="geometry"/></mxCell>
-        <mxCell id="f-received" value="received" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="330" y="220" width="130" height="50" as="geometry"/></mxCell>
-        <mxCell id="f-vfail" value="validation_failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1"><mxGeometry x="100" y="340" width="150" height="50" as="geometry"/></mxCell>
-        <mxCell id="f-validated" value="validated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="540" y="340" width="130" height="50" as="geometry"/></mxCell>
-        <mxCell id="f-assessed" value="assessed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="540" y="460" width="130" height="50" as="geometry"/></mxCell>
-        <mxCell id="f-claimed" value="claim_created" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="540" y="580" width="130" height="50" as="geometry"/></mxCell>
-        <mxCell id="f-end1" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="165" y="460" width="30" height="30" as="geometry"/></mxCell>
-        <mxCell id="f-end2" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="597" y="695" width="30" height="30" as="geometry"/></mxCell>
-
-        <mxCell id="ft1" value="POST accepted" style="fontSize=10;" edge="1" source="f-start" target="f-received" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft2" value="blocking error" style="fontSize=10;" edge="1" source="f-received" target="f-vfail" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft3" value="all checks pass" style="fontSize=10;" edge="1" source="f-received" target="f-validated" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft4" value="rule eval + assessment" style="fontSize=10;" edge="1" source="f-validated" target="f-assessed" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft5" value="claim intent queued" style="fontSize=10;" edge="1" source="f-assessed" target="f-claimed" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft6" value="resubmit" style="fontSize=10;" edge="1" source="f-vfail" target="f-end1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ft7" value="terminal" style="fontSize=10;" edge="1" source="f-claimed" target="f-end2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-
-        <!-- Claim Dispatch State Machine -->
-        <mxCell id="csm-title" value="Claim Dispatch State Machine [GENERIC]" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=14;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="900" y="90" width="600" height="30" as="geometry"/>
-        </mxCell>
-
-        <mxCell id="c-start" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1175" y="150" width="30" height="30" as="geometry"/></mxCell>
-        <mxCell id="c-queued" value="queued" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1140" y="220" width="120" height="50" as="geometry"/></mxCell>
-        <mxCell id="c-sent" value="sent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1140" y="340" width="120" height="50" as="geometry"/></mxCell>
-        <mxCell id="c-acked" value="acked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1"><mxGeometry x="960" y="460" width="120" height="50" as="geometry"/></mxCell>
-        <mxCell id="c-failed" value="failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1320" y="460" width="120" height="50" as="geometry"/></mxCell>
-        <mxCell id="c-dlq" value="dead_letter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" vertex="1" parent="1"><mxGeometry x="1320" y="600" width="120" height="50" as="geometry"/></mxCell>
-        <mxCell id="c-end1" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1012" y="580" width="30" height="30" as="geometry"/></mxCell>
-        <mxCell id="c-end2" value="" style="ellipse;fillColor=#000000;strokeColor=#ffffff;" vertex="1" parent="1"><mxGeometry x="1372" y="710" width="30" height="30" as="geometry"/></mxCell>
-
-        <mxCell id="ct1" value="outbox created" style="fontSize=10;" edge="1" source="c-start" target="c-queued" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct2" value="connector dequeues" style="fontSize=10;" edge="1" source="c-queued" target="c-sent" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct3" value="external confirms" style="fontSize=10;" edge="1" source="c-sent" target="c-acked" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct4" value="dispatch error" style="fontSize=10;" edge="1" source="c-sent" target="c-failed" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct5" value="retry (backoff)" style="fontSize=10;" edge="1" source="c-failed" target="c-sent" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1500" y="485"/><mxPoint x="1500" y="365"/></Array></mxGeometry></mxCell>
-        <mxCell id="ct6" value="max retries" style="fontSize=10;" edge="1" source="c-failed" target="c-dlq" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct7" value="success" style="fontSize=10;" edge="1" source="c-acked" target="c-end1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="ct8" value="operator action" style="fontSize=10;" edge="1" source="c-dlq" target="c-end2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-      </root>
-    </mxGraphModel>
+  <!-- ============================================================ -->
+  <!-- PAGE 10: State Machines                                       -->
+  <!-- ============================================================ -->
+  <diagram name="10 State Machines" id="d10">
+  <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+  <mxCell id="0"/><mxCell id="1" parent="0"/>
+  <!-- Filing State Machine -->
+  <mxCell id="fsm_t" value="Filing State Machine [VAT-GENERIC]" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=14;" vertex="1" parent="1"><mxGeometry x="100" y="30" width="460" height="40" as="geometry"/></mxCell>
+  <mxCell id="f0" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1"><mxGeometry x="305" y="90" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="f1" value="received" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="240" y="170" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="f2" value="validation_failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="60" y="300" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="f3" value="validated" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="420" y="300" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="f4" value="assessed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="420" y="430" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="f5" value="claim_created" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="420" y="560" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="f_e1" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;double=1;" vertex="1" parent="1"><mxGeometry x="120" y="440" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="f_e2" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;double=1;" vertex="1" parent="1"><mxGeometry x="480" y="670" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="fe0" value="POST accepted" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f0" target="f1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe1" value="blocking error" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f1" target="f2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe2" value="all checks pass" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f1" target="f3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe3" value="rule eval + assessment" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f3" target="f4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe4" value="claim queued" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f4" target="f5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe5" value="resubmit" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f2" target="f_e1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="fe6" value="terminal" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="f5" target="f_e2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <!-- Claim Dispatch State Machine -->
+  <mxCell id="csm_t" value="Claim Dispatch State Machine [VAT-GENERIC]" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=14;" vertex="1" parent="1"><mxGeometry x="870" y="30" width="560" height="40" as="geometry"/></mxCell>
+  <mxCell id="c0" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1"><mxGeometry x="1100" y="90" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="c1" value="queued" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1040" y="170" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="c2" value="sent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1040" y="300" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="c3" value="acked" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="850" y="430" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="c4" value="failed" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1230" y="430" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="c5" value="dead_letter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1230" y="560" width="150" height="50" as="geometry"/></mxCell>
+  <mxCell id="c_e1" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;double=1;" vertex="1" parent="1"><mxGeometry x="910" y="550" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="c_e2" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#000000;strokeColor=#000000;double=1;" vertex="1" parent="1"><mxGeometry x="1290" y="680" width="30" height="30" as="geometry"/></mxCell>
+  <mxCell id="ce0" value="outbox record" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c0" target="c1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce1" value="connector dequeues" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c1" target="c2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce2" value="external confirms" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c2" target="c3" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce3" value="dispatch error" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c2" target="c4" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce4" value="retry (backoff)" style="edgeStyle=orthogonalEdgeStyle;html=1;curved=1;" edge="1" source="c4" target="c2" parent="1"><mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1420" y="455"/><mxPoint x="1460" y="325"/><mxPoint x="1230" y="325"/></Array></mxGeometry></mxCell>
+  <mxCell id="ce5" value="max retries" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c4" target="c5" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce6" value="success" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c3" target="c_e1" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  <mxCell id="ce7" value="operator action" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="c5" target="c_e2" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
+  </root></mxGraphModel>
   </diagram>
 
 </mxfile>

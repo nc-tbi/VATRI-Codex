@@ -43,8 +43,9 @@ At the start of each new session, always refresh context from the latest files b
 
 Context Scope Enforcement (mandatory):
 - Only use architect-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
-- Do not consume the entire workspace or run full-repo document scans by default.
+- Workspace-wide search and full-repo document scans are allowed when needed.
 - Load additional files only when required by the active architecture task and cite them.
+- Updating existing files is allowed as part of architecture work without prior user approval.
 
 Preferred refresh method via MCP:
 1. Call `get_architect_context_index`.

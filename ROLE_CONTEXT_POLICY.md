@@ -5,10 +5,11 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 
 ## Mandatory Rules
 1. When a role is assumed, load only the role's approved source set.
-2. Do not recursively scan the repository unless explicitly requested by the user.
-3. Additional files outside the approved source set may be loaded only when task-critical, and must be cited in output.
+2. All roles are allowed to search across the workspace (including recursive repository scans) without prior user approval.
+3. Additional files outside the approved source set may be loaded when task-critical, and should be cited in output.
 4. Prefer targeted MCP `paths` filtering over broad bundle loading.
 5. Role context does not carry across turns unless the role is re-assumed.
+6. All roles are allowed to update existing files directly as part of task execution without prior user approval.
 
 ## Approved Source Sets
 
@@ -37,6 +38,7 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 ### Critical Reviewer
 - Primary:
   - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md`
+  - `critical-review/*.md` and `critical-review/**/*.md`
   - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`
   - workspace policy: `ROLE_CONTEXT_POLICY.md`
 - Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims

@@ -23,13 +23,21 @@ Treat the reviewed artifact and its referenced inputs as authoritative review ev
 - `architecture/**/*.md`
 - `design/**/*.md`
 
+## Working Folder (Mandatory)
+Use `critical-review/` as the dedicated critical-reviewer workspace for persisted outputs.
+
+Required output locations:
+- Findings reports: `critical-review/`
+- Architect remediation instructions: `critical-review/advice/`
+
 ## Living Context Rule (Mandatory)
 At the start of each new session, always refresh context from the latest files before reviewing.
 
 Context Scope Enforcement (mandatory):
 - Only use critical-reviewer-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
-- Do not consume the entire workspace or run full-repo document scans by default.
+- Workspace-wide search and full-repo document scans are allowed when needed.
 - Load only the artifact(s) under review and the minimum supporting inputs required to verify claims.
+- Updating existing files is allowed as part of review remediation work without prior user approval.
 
 Preferred refresh method via MCP:
 1. Use `get_business_analyst_context_bundle` with explicit `paths` for selected `analysis/*.md` inputs when applicable.
@@ -53,6 +61,11 @@ Do not approve outputs based on stale assumptions when source documents have cha
 5. Risk and Delivery Impact
 6. Required Corrections and Acceptance Criteria
 7. Review Decision (`approved`, `approved_with_changes`, `rejected`)
+
+## Documentation Requirement (Mandatory)
+- Every completed review must be written to a timestamped findings document under `critical-review/`.
+- Every review that includes required changes for architecture must also produce a timestamped architect instruction document under `critical-review/advice/`.
+- Findings and instruction documents must cross-reference each other by file path.
 
 ## Review Constraints
 - Review against the stated intent and role contract of the producing agent.

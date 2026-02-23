@@ -23,6 +23,8 @@
 ### Epic E5: Obligation Engine
 - Feature F5.1: Cadence policy table (effective dated)
 - Feature F5.2: Obligation lifecycle states (`due`, `submitted`, `overdue`)
+- Feature F5.3: EU-sales obligation lifecycle (`eu_sales_due`, `eu_sales_submitted`, `eu_sales_overdue`)
+- Feature F5.4: Preliminary assessment lifecycle (`preliminary_assessment_issued`, `preliminary_assessment_superseded`, `final_assessment_calculated`)
 
 ## Phase 3: Claims Integration
 ### Epic E6: Claim Orchestration and Connector
@@ -33,6 +35,7 @@
 ### Epic E7: Reconciliation and Operations
 - Feature F7.1: Dispatch status reconciliation
 - Feature F7.2: Alerting for failures and backlog growth
+- Feature F7.3: Customs/told reconciliation workflow and mismatch resolution controls
 
 ## Phase 4: Corrections and Controls
 ### Epic E8: Correction Versioning
@@ -43,6 +46,20 @@
 - Feature F9.1: Obligation dashboard
 - Feature F9.2: Validation and warning analytics
 - Feature F9.3: Assessment and correction anomaly detection
+- Feature F9.4: Preliminary-to-final assessment supersession audit dashboard
+
+## Phase 4A: Integration Boundaries
+### Epic E12: Customs and External Regulatory Boundaries
+- Feature F12.1: Customs/told inbound assessment contract (`POST /imports/customs-assessments`)
+- Feature F12.2: Customs integration failure and retry event handling
+- Feature F12.3: Customs reconciliation contract (`POST /imports/customs-reconciliation`)
+- Feature F12.4: Audit evidence model for customs source references and reconciliation outcomes
+
+### Epic E13: Contracted VAT Data Semantics
+- Feature F13.1: Architecture-level reverse-charge field contract enforcement
+- Feature F13.2: Architecture-level deduction-right field contract enforcement
+- Feature F13.3: Validation -> rule -> assessment -> audit field lineage tests
+- Feature F13.4: DKK normalization and rounding policy versioning + replay fixtures
 
 ## Phase 5: Advanced Scenarios
 ### Epic E10: Needs-Module Coverage
@@ -59,6 +76,7 @@
 - Every feature maps to at least one scenario in `analysis/07-...` or class in `analysis/08-...`.
 - No production rule change without regression fixtures and legal reference.
 - All claim-producing paths must prove idempotency and traceability.
+- S08, S09, and S19 must each have explicit scenario -> capability -> contract coverage in release evidence.
 
 ## Cross-Cutting Modernization Epics
 ### Epic M1: Contract-First and Open Standards

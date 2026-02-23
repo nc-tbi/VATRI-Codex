@@ -50,10 +50,17 @@ L --> A
 Core events:
 - `VatRegistrationStatusChanged`
 - `FilingObligationCreated`
+- `EuSalesObligationCreated`
+- `EuSalesObligationSubmitted`
 - `VatReturnSubmitted`
 - `VatReturnValidated`
 - `VatAssessmentCalculated`
+- `PreliminaryAssessmentTriggered`
+- `PreliminaryAssessmentIssued`
+- `PreliminaryAssessmentSupersededByFiledReturn`
 - `VatReturnCorrected`
+- `CustomsAssessmentImported`
+- `CustomsIntegrationFailed`
 - `ClaimCreated`
 - `ClaimDispatched`
 - `ClaimDispatchFailed`
@@ -65,6 +72,7 @@ PORTAL[Portal UI] --> BFF[Portal BFF]
 BFF --> API[Tax Core API Gateway]
 API --> REGAPI[Registration API]
 API --> OBLAPI[Obligation API]
+API --> EUSAPI[EU-Sales Obligation API]
 API --> FILAPI[Filing API]
 API --> CORAPI[Correction API]
 API --> QRYAPI[Assessment and Status API]
@@ -72,10 +80,13 @@ API --> CLMAPI[Claim API]
 
 REGAPI --> REGSVC[Registration Service]
 OBLAPI --> OBLSVC[Obligation Service]
+EUSAPI --> EUSVC[EU-Sales Obligation Service]
 FILAPI --> FIL[Filing Service]
 CORAPI --> COR[Correction Service]
 QRYAPI --> ASM[Assessment Service]
 CLMAPI --> ORC[Claim Orchestrator]
+EUSVC --> EUX[EU-Sales Reporting Connector]
+FIL --> CUS[Customs or Told Adapter]
 
 FIL --> VAL[Validation Service]
 VAL --> RULE[VAT Rule Engine]
@@ -95,6 +106,8 @@ ASM --> AUD
 ORC --> AUD
 ORC --> Q[(Queue and DLQ)]
 Q --> CON
+CUS --> AUD
+EUSVC --> AUD
 ```
 
 Consistency model:
@@ -125,6 +138,10 @@ Tax Core API surface (minimum):
   - `POST /obligations/generate`
   - `GET /obligations/{taxpayer_id}`
   - `PATCH /obligations/{obligation_id}/status`
+- EU-sales obligations (separate from domestic VAT return):
+  - `POST /eu-sales-obligations/generate`
+  - `GET /eu-sales-obligations/{taxpayer_id}`
+  - `POST /eu-sales-obligations/{obligation_id}/submissions`
 - Filings:
   - `POST /vat-filings`
   - `GET /vat-filings/{filing_id}`
@@ -138,6 +155,34 @@ Tax Core API surface (minimum):
   - `GET /claims/{claim_id}`
   - outbound `POST /claims` to external claims system
 
+EU-sales obligation lifecycle contract:
+- States:
+  - `eu_sales_due`
+  - `eu_sales_submitted`
+  - `eu_sales_overdue`
+- Domain events:
+  - `EuSalesObligationCreated`
+  - `EuSalesObligationSubmitted`
+  - `EuSalesObligationOverdue`
+
+Customs or told integration boundary (non-EU imports):
+- Ownership: `Customs or Told Adapter` owned by Tax Core integration layer.
+- Contracts:
+  - Inbound API/event for customs/import VAT facts:
+    - `POST /imports/customs-assessments`
+    - event `CustomsAssessmentImported`
+  - Reconciliation API:
+    - `POST /imports/customs-reconciliation`
+- Failure and recovery events:
+  - `CustomsIntegrationFailed`
+  - `CustomsIntegrationRetried`
+  - `CustomsReconciliationMismatchDetected`
+- Audit evidence expectations:
+  - persist source reference (`customs_reference_id`)
+  - payload hash
+  - import timestamp
+  - reconciliation outcome linked to `trace_id`
+
 Claim payload:
 - `claim_id`, `taxpayer_id`, `period_start`, `period_end`, `result_type`, `amount`, `currency`, `filing_reference`, `rule_version_id`, `calculation_trace_id`, `created_at`
 
@@ -147,6 +192,48 @@ Idempotency:
 API parity rule:
 - All user actions available in the portal must map to public Tax Core API operations.
 - Portal BFF must not contain hidden business rules that diverge from Tax Core domain behavior.
+
+Preliminary assessment lifecycle and replacement semantics:
+- Preliminary lifecycle states:
+  - `preliminary_assessment_pending`
+  - `preliminary_assessment_issued`
+  - `preliminary_assessment_superseded`
+  - `final_assessment_calculated`
+- Trigger and replacement events:
+  - `PreliminaryAssessmentTriggered` (deadline passed with no filing)
+  - `PreliminaryAssessmentIssued`
+  - `PreliminaryAssessmentSupersededByFiledReturn`
+  - `FinalAssessmentCalculatedFromFiledReturn`
+- Contract rule:
+  - preliminary outcomes are immutable records and never deleted
+  - final assessment references superseded preliminary record by `supersedes_assessment_id`
+  - audit store keeps bidirectional linkage between preliminary and final outcomes
+
+Architecture-level data contract fields (reverse charge and deduction rights):
+- Reverse-charge minimum fields:
+  - `supply_type`
+  - `counterparty_country`
+  - `counterparty_vat_id`
+  - `place_of_supply_country`
+  - `reverse_charge_applied`
+  - `reverse_charge_reason_code`
+  - `eu_transaction_category`
+- Deduction-right minimum fields:
+  - `deduction_right_type`
+  - `deduction_percentage`
+  - `deduction_basis_reference`
+  - `allocation_method_id`
+- Context flow:
+  - Filing captures fields -> Validation checks required combinations -> Rule Engine evaluates eligibility and percentages -> Assessment computes deductible result -> Audit persists full input/output lineage
+
+DKK normalization and rounding policy ownership:
+- Ownership: Tax Core architecture and rule governance (not portal/BFF).
+- Policy:
+  - normalize monetary inputs to `DKK`
+  - compute using high precision decimal in rule/assessment paths
+  - round output/claim amounts at finalization with configured deterministic `rounding_policy_version_id`
+- Audit requirements:
+  - store pre-round amount, rounded amount, and `rounding_policy_version_id` for replay and legal traceability.
 
 Interface and contract standards:
 - Synchronous APIs: `OpenAPI 3.1` with versioned contracts and backward-compatibility policy.

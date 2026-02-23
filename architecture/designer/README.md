@@ -13,6 +13,7 @@ This subfolder is for the solution designer and contains implementation-oriented
 - `architecture/03-future-proof-modern-data-stack-and-standards.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
 
 ## Design Freedom
 - Standards and technology selections remain open in the designer role unless the active architecture scope explicitly constrains them.

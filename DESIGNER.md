@@ -24,6 +24,7 @@ Treat the following architecture documents as authoritative designer input:
 - `architecture/adr/ADR-005-versioned-corrections.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/01-solution-design-brief.md`

@@ -34,6 +34,14 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Secondary (only when needed): selected `analysis/*.md` for rule details
 - Standards policy: keep standards and technology options open unless explicitly constrained by approved architecture scope.
 
+### Critical Reviewer
+- Primary:
+  - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md`
+  - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`
+  - workspace policy: `ROLE_CONTEXT_POLICY.md`
+- Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims
+- Standards policy: perform evidence-first quality checks; do not expand scope beyond requested review targets.
+
 ## MCP Usage Guidance
 - Architect:
   - Use `get_architect_context_index`
@@ -44,6 +52,10 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Designer:
   - Use `get_architect_context_bundle` with explicit designer-relevant `paths`
   - Load `design/**/*.md` directly for active design deliverables
+- Critical Reviewer:
+  - Use `get_business_analyst_context_bundle` with explicit `paths` for analysis inputs under review
+  - Use `get_architect_context_bundle` with explicit `paths` for architecture inputs under review
+  - Load selected `design/**/*.md` files directly for design reviews
 
 ## Enforcement Intent
 This is a living policy. Update it whenever role scope, folder ownership, or source-of-truth boundaries change.

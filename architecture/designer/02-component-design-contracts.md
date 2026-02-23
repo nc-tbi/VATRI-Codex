@@ -1,5 +1,33 @@
 # 02 - Component Design Contracts
 
+# Portal BFF Contract
+Input:
+- authenticated user context
+- portal commands (register, view obligations, submit filing, submit correction, view status)
+
+Output:
+- normalized API calls to Tax Core API gateway
+- UX-oriented response composition (without tax-rule ownership)
+
+Constraints:
+- BFF does not execute tax calculation or legal-rule decisions
+- BFF must remain stateless for tax domain state and delegate writes to Tax Core APIs
+
+## Registration and Obligation API Contracts
+Registration input examples:
+- taxpayer identity payload
+- registration effective date
+- registration status updates
+
+Obligation input examples:
+- obligation generation command
+- obligation status transition command
+
+Minimum outputs:
+- `registration_id`/`taxpayer_id`
+- `obligation_id`, `status`, `due_date`
+- `trace_id`
+
 ## Filing Service Contract
 Input:
 - Canonical filing payload per `analysis/02-vat-form-fields-dk.md`
@@ -52,6 +80,9 @@ Output:
 
 Integration standards:
 - synchronous and asynchronous contract standards must be explicitly documented and versioned
+
+API coverage rule:
+- Registrations, obligations, filings, corrections, and status retrieval must be available through Tax Core APIs.
 
 ## Audit Contract
 Every service writes evidence entries containing:

@@ -25,6 +25,7 @@ Treat the architect-consumable documentation as authoritative input:
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-008-open-source-only-technology-policy.md`
+- `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/README.md`

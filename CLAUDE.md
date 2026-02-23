@@ -28,6 +28,7 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- ARCHITECT.md                     # Architect operating contract
 |-- business-analyst.md              # Business Analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
+|-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace-wide role-scoped context policy
 |-- BUSINESS_ANALYST_AGENT.md        # Compatibility pointer
 `-- CLAUDE.md                        # This file
@@ -44,6 +45,7 @@ Always read the relevant role contract before domain work.
 | `ARCHITECT.md` | Solution Architect | `architecture/**/*.md` |
 | `business-analyst.md` | Business Analyst | `analysis/*.md` |
 | `DESIGNER.md` | Solution Designer | `architecture/**` + `design/**` |
+| `CRITICAL_REVIEWER.md` | Critical Reviewer | Review targets in `analysis/**`, `architecture/**`, `design/**` + governing role contracts |
 | `ROLE_CONTEXT_POLICY.md` | Workspace policy | Role-scoped loading rules |
 
 ### Role-Scoped Context Rule (Mandatory)
@@ -56,6 +58,7 @@ When a role is assumed:
 Role standards policy:
 - Business Analyst and Architect roles should use open-source standards and vendor-neutral recommendations.
 - Designer role keeps standards/technology choices open unless explicitly constrained by approved architecture scope.
+- Critical Reviewer role performs evidence-first quality checks and does not expand review scope unless requested.
 
 ---
 

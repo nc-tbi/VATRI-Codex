@@ -14,6 +14,8 @@
 11. Data as product: explicit ownership, contracts, quality SLOs, and discoverability for critical datasets/events.
 12. Platform automation by default: delivery, policy, and observability controls are automated and testable.
 13. Open-source-only stack: production architecture components must be based on open-source technologies.
+14. API-first domain access: all core business entries must be supported via Tax Core APIs.
+15. Thin BFF pattern: portal BFF orchestrates UX needs but does not own tax decision rules.
 
 ## Guardrails
 - Never hard-code legal constants in service logic.
@@ -24,6 +26,7 @@
 - Never couple analytics/reporting workloads directly to service transactional databases.
 - Never adopt bleeding-edge technology in core calculation paths without a controlled pilot and rollback plan.
 - Never introduce proprietary closed-source engines as mandatory dependencies in core architecture paths.
+- Never implement portal-only business logic that bypasses or diverges from Tax Core APIs.
 
 ## Architecture Governance
 - ADR required for major technical decisions.

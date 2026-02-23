@@ -25,6 +25,7 @@
 - [ ] Metrics exported by each service
 - [ ] `trace_id` propagated end-to-end
 - [ ] Alerts configured for overdue spikes, failure bursts, DLQ growth
+- [ ] Portal UI and BFF request chains are trace-correlated into Tax Core services
 
 ## Release Readiness
 - [ ] Scenario regression suite passes for covered scenarios
@@ -38,3 +39,4 @@
 - [ ] Event replay and backfill playbooks validated in non-production
 - [ ] Analytical workloads isolated from transactional service databases
 - [ ] Technology choices include documented rationale, portability impact, and operational risk
+- [ ] API parity tests confirm portal workflows are fully supported via public Tax Core APIs

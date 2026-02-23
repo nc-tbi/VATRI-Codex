@@ -6,19 +6,25 @@
 - Preserve end-to-end audit trace from filing input to claim dispatch.
 - Externalize rules with effective dating and legal references.
 - Enforce open-source-only technology choices across runtime, data, integration, and platform tooling.
+- Provide a taxpayer self-service portal for VAT workflows through a dedicated BFF layer.
+- Provide API-first Tax Core ingress so all entry types can be submitted programmatically.
 
 ## 2. Context and Boundaries
 ```mermaid
 flowchart LR
-TP[Taxpayer or Representative] --> IN[Submission Channel]
-ERP[ERP or Bookkeeping] --> IN
-REG[Registration Source] --> TC[Tax Core]
-IN --> TC
+TP[Taxpayer or Representative] --> PORTAL[Self-Service Portal UI]
+PORTAL --> BFF[Portal BFF]
+ERP[ERP or Bookkeeping] --> API[Tax Core API Layer]
+REG[Registration Source] --> API
+BFF --> API
+API --> TC[Tax Core Engine]
 TC --> ECS[External Claims System]
 TC --> AUD[Audit and Reporting]
 ```
 
 In scope:
+- taxpayer self-service portal and portal BFF
+- API-first ingestion for registration, obligation, filing, correction, and status queries
 - obligation, filing, validation, assessment, correction, claim dispatch, audit evidence
 
 Out of scope:
@@ -55,7 +61,22 @@ Core events:
 ## 4. Component and Deployment Architecture
 ```mermaid
 flowchart LR
-API[API Gateway] --> FIL[Filing Service]
+PORTAL[Portal UI] --> BFF[Portal BFF]
+BFF --> API[Tax Core API Gateway]
+API --> REGAPI[Registration API]
+API --> OBLAPI[Obligation API]
+API --> FILAPI[Filing API]
+API --> CORAPI[Correction API]
+API --> QRYAPI[Assessment and Status API]
+API --> CLMAPI[Claim API]
+
+REGAPI --> REGSVC[Registration Service]
+OBLAPI --> OBLSVC[Obligation Service]
+FILAPI --> FIL[Filing Service]
+CORAPI --> COR[Correction Service]
+QRYAPI --> ASM[Assessment Service]
+CLMAPI --> ORC[Claim Orchestrator]
+
 FIL --> VAL[Validation Service]
 VAL --> RULE[VAT Rule Engine]
 RULE --> ASM[Assessment Service]
@@ -64,7 +85,9 @@ ASM --> ORC[Claim Orchestrator]
 COR --> ORC
 ORC --> CON[External Claim Connector]
 RULE --> CAT[(Rule Catalog)]
-FIL --> DB[(Operational DB)]
+REGSVC --> DB[(Operational DB)]
+OBLSVC --> DB
+FIL --> DB
 ASM --> DB
 VAL --> AUD[(Audit Store)]
 RULE --> AUD
@@ -89,16 +112,41 @@ Modern runtime and data platform profile:
 - Query layer: open-source federated SQL engine/warehouse for audit/regulatory analytics without coupling to service databases.
 
 ## 5. Integration Contracts and Data Flows
-Primary APIs:
-- `POST /vat-filings`
-- `GET /vat-filings/{filing_id}`
-- outbound `POST /claims`
+Primary ingress channels:
+- Portal channel: `Self-Service Portal UI -> Portal BFF -> Tax Core API Gateway`
+- Direct API channel: external clients/integrators call Tax Core APIs directly
+
+Tax Core API surface (minimum):
+- Registration:
+  - `POST /registrations`
+  - `PATCH /registrations/{taxpayer_id}`
+  - `GET /registrations/{taxpayer_id}`
+- Obligations:
+  - `POST /obligations/generate`
+  - `GET /obligations/{taxpayer_id}`
+  - `PATCH /obligations/{obligation_id}/status`
+- Filings:
+  - `POST /vat-filings`
+  - `GET /vat-filings/{filing_id}`
+- Corrections:
+  - `POST /vat-filings/{filing_id}/corrections`
+  - `GET /corrections/{correction_id}`
+- Assessment and status:
+  - `GET /assessments/{assessment_id}`
+  - `GET /tax-periods/{taxpayer_id}/{period_end}/status`
+- Claims:
+  - `GET /claims/{claim_id}`
+  - outbound `POST /claims` to external claims system
 
 Claim payload:
 - `claim_id`, `taxpayer_id`, `period_start`, `period_end`, `result_type`, `amount`, `currency`, `filing_reference`, `rule_version_id`, `calculation_trace_id`, `created_at`
 
 Idempotency:
 - key = `taxpayer_id + period_end + assessment_version`
+
+API parity rule:
+- All user actions available in the portal must map to public Tax Core API operations.
+- Portal BFF must not contain hidden business rules that diverge from Tax Core domain behavior.
 
 Interface and contract standards:
 - Synchronous APIs: `OpenAPI 3.1` with versioned contracts and backward-compatibility policy.
@@ -143,11 +191,12 @@ Open-source-only compliance rule:
 - Tooling novelty risk -> apply “adopt where value is proven” governance with explicit maturity gates.
 
 ## 9. Delivery Phasing and Migration Plan
-1. Foundation: filing schema, intake, baseline validation, audit scaffold
+1. Foundation: API gateway, registration/obligation/filing API contracts, baseline validation, audit scaffold
 2. Assessment Core: rule engine, reverse charge, exemptions, obligations
-3. Claims Integration: orchestrator, connector, retry/idempotency
-4. Corrections and Controls: versioning, lineage, dashboards, alerts
-5. Advanced Scenarios: modules for `Needs module`, routed `Manual/legal`
+3. Portal and BFF: taxpayer self-service UI, portal BFF orchestration, API parity validation
+4. Claims Integration: orchestrator, connector, retry/idempotency
+5. Corrections and Controls: versioning, lineage, dashboards, alerts
+6. Advanced Scenarios: modules for `Needs module`, routed `Manual/legal`
 
 Future-proofing workstream (cross-phase):
 - F1. Introduce schema registry + contract compatibility checks.

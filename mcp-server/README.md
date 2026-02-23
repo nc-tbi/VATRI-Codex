@@ -6,13 +6,18 @@ Minimal MCP server scaffold for work use, implemented in TypeScript over stdio t
 - `health_check` tool
 - `get_business_analyst_context_index` tool (lists analysis Markdown source files)
 - `get_business_analyst_context_bundle` tool (loads latest analysis docs at runtime)
+- `get_architect_context_index` tool (lists architecture Markdown source files)
+- `get_architect_context_bundle` tool (loads latest architecture docs at runtime)
 - `add_numbers` tool
 - `create_vat_claim_stub` tool (draft Tax Core claim payload)
 - `validate_dk_vat_filing` tool (field validation + derived VAT result)
 - `evaluate_dk_vat_filing_obligation` tool (obligation and cadence decision)
 
 ## Why the context tools matter
-The business analyst context tools read `analysis/**/*.md` on each call. This means document updates are automatically reflected without changing server code.
+- Business analyst context tools read `analysis/**/*.md` on each call.
+- Architect context tools read `architecture/**/*.md` on each call.
+
+This means document updates are automatically reflected without changing server code.
 
 ## Prerequisites
 - Node.js 18+ (you have Node 24)
@@ -39,8 +44,18 @@ npm start
 2. Call `get_business_analyst_context_bundle` with `includeContent=true`.
 3. Perform analysis using the returned document set as current source of truth.
 
+## Suggested next-session startup sequence for Architect mode
+1. Call `get_architect_context_index`.
+2. Call `get_architect_context_bundle` with `includeContent=true`.
+3. Perform architecture design using the returned document set as current source of truth.
+
 ## Tool notes
 - `get_business_analyst_context_bundle` inputs:
+  - `includeContent` (default: `true`)
+  - `maxCharsPerFile` (default: `20000`)
+  - `paths` (optional subset of files)
+
+- `get_architect_context_bundle` inputs:
   - `includeContent` (default: `true`)
   - `maxCharsPerFile` (default: `20000`)
   - `paths` (optional subset of files)

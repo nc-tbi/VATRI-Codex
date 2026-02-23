@@ -22,6 +22,7 @@ function isZero(value: number): boolean {
 
 const workspaceRoot = path.resolve(process.cwd(), "..");
 const analysisRoot = path.join(workspaceRoot, "analysis");
+const architectureRoot = path.join(workspaceRoot, "architecture");
 
 async function listMarkdownFiles(rootDir: string): Promise<string[]> {
   const entries = await fs.readdir(rootDir, { withFileTypes: true });
@@ -96,6 +97,43 @@ server.tool(
 );
 
 server.tool(
+  "get_architect_context_index",
+  "Lists all Markdown source documents in architecture/ used as architect context.",
+  async () => {
+    const files = (await listMarkdownFiles(architectureRoot)).sort((a, b) => a.localeCompare(b));
+    const documentIndex = await Promise.all(
+      files.map(async (filePath) => {
+        const stat = await fs.stat(filePath);
+        return {
+          path: toPosixRelative(workspaceRoot, filePath),
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              workspaceRoot: workspaceRoot.split(path.sep).join("/"),
+              architectureRoot: toPosixRelative(workspaceRoot, architectureRoot),
+              documentCount: documentIndex.length,
+              documents: documentIndex
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
   "get_business_analyst_context_bundle",
   "Loads latest business analyst documents from analysis/. Reads files at runtime so updates are automatically reflected.",
   {
@@ -136,6 +174,62 @@ server.tool(
             {
               generatedAt: new Date().toISOString(),
               source: "analysis-markdown-runtime-bundle",
+              requestedPaths: paths ?? null,
+              resolvedDocumentCount: documents.length,
+              includeContent,
+              maxCharsPerFile,
+              documents
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "get_architect_context_bundle",
+  "Loads latest architect documents from architecture/. Reads files at runtime so updates are automatically reflected.",
+  {
+    includeContent: z.boolean().default(true),
+    maxCharsPerFile: z.number().int().positive().max(200000).default(20000),
+    paths: z.array(z.string().min(1)).optional()
+  },
+  async ({ includeContent, maxCharsPerFile, paths }) => {
+    const allFiles = (await listMarkdownFiles(architectureRoot)).sort((a, b) => a.localeCompare(b));
+    const fileSet = new Set(allFiles.map((f) => toPosixRelative(workspaceRoot, f)));
+    const selectedRelativePaths =
+      paths && paths.length > 0
+        ? paths.map((p) => p.replace(/\\/g, "/")).filter((p) => fileSet.has(p))
+        : Array.from(fileSet).sort((a, b) => a.localeCompare(b));
+
+    const documents = await Promise.all(
+      selectedRelativePaths.map(async (relativePath) => {
+        const absolutePath = path.join(workspaceRoot, relativePath);
+        const stat = await fs.stat(absolutePath);
+        const text = includeContent ? await fs.readFile(absolutePath, "utf8") : "";
+        const truncated = includeContent && text.length > maxCharsPerFile;
+
+        return {
+          path: relativePath,
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size,
+          truncated,
+          content: includeContent ? (truncated ? `${text.slice(0, maxCharsPerFile)}\n...[TRUNCATED]` : text) : undefined
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              source: "architecture-markdown-runtime-bundle",
               requestedPaths: paths ?? null,
               resolvedDocumentCount: documents.length,
               includeContent,

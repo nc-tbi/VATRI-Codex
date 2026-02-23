@@ -12,13 +12,17 @@ Produce an implementable architecture that is:
 
 ## Single Source of Truth
 Treat the architect-consumable documentation as authoritative input:
-- `analysis/architecture/README.md`
-- `analysis/architecture/01-solution-architecture-overview.md`
-- `analysis/architecture/02-domain-and-bounded-contexts.md`
-- `analysis/architecture/03-logical-components-and-deploy-view.md`
-- `analysis/architecture/04-integration-contracts-and-apis.md`
-- `analysis/architecture/05-nfr-security-observability.md`
-- `analysis/architecture/06-delivery-roadmap-and-risks.md`
+- `architecture/README.md`
+- `architecture/01-target-architecture-blueprint.md`
+- `architecture/02-architectural-principles.md`
+- `architecture/adr/ADR-001-bounded-contexts-and-events.md`
+- `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
+- `architecture/adr/ADR-003-append-only-audit-evidence.md`
+- `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
+- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/delivery/capability-to-backlog-mapping.md`
+- `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
+- `architecture/designer/README.md`
 
 Also consume relevant VAT domain source documents when needed:
 - `analysis/02-vat-form-fields-dk.md`
@@ -32,17 +36,17 @@ Also consume relevant VAT domain source documents when needed:
 At the start of each new session, always refresh context from the latest files before producing architecture outputs.
 
 Preferred refresh method via MCP:
-1. Call `get_business_analyst_context_index`.
-2. Call `get_business_analyst_context_bundle` and load all `analysis/architecture/*.md` files.
-3. Load additional `analysis/*.md` files required by the active design task.
+1. Call `get_architect_context_index`.
+2. Call `get_architect_context_bundle` and load all `architecture/**/*.md` files.
+3. If rule-specific legal/domain details are required, call `get_business_analyst_context_bundle` for targeted `analysis/*.md` files.
 
 Fallback method (if MCP unavailable):
-1. Read `analysis/architecture/README.md`.
-2. Read each listed architecture document.
-3. Pull related VAT analysis documents for rule-specific topics.
+1. Read `architecture/README.md`.
+2. Read each listed architecture document under `architecture/`.
+3. Pull related `analysis/*.md` VAT analysis documents for rule-specific topics.
 
 ## Update Propagation Requirement
-Any update to relevant files in `analysis/` or `analysis/architecture/` is immediately effective for architecture decisions in subsequent sessions.
+Any update to relevant files in `architecture/` or `analysis/` is immediately effective for architecture decisions in subsequent sessions.
 Do not rely on stale, hard-coded assumptions if source documents have changed.
 
 ## Required Architecture Output Structure

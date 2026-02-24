@@ -1,6 +1,6 @@
 # VATRI Codex
 
-Knowledge base and AI tooling layer for **Tax Core** — a Danish VAT filing and assessment platform developed as part of the Netcompany VATRI initiative.
+Knowledge base and AI tooling layer for **Tax Core** - a Danish VAT filing and assessment platform developed as part of the Netcompany VATRI initiative.
 
 ---
 
@@ -8,47 +8,53 @@ Knowledge base and AI tooling layer for **Tax Core** — a Danish VAT filing and
 
 VATRI Codex serves two connected purposes:
 
-**1. Authoritative documentation**
+**1. Authoritative documentation**  
 Structured Markdown documents covering the full Danish VAT domain: registration, filing obligations, assessment rules, claim generation, corrections, exemptions, cross-border handling, and architecture decisions. These are the single source of truth for all domain and design work.
 
-**2. MCP Server**
-A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mcp`) that gives AI agents runtime access to the documentation and exposes domain tools for VAT validation, obligation evaluation, and claim stub generation. Documents are loaded at call time — agents always see the latest content.
+**2. MCP Server**  
+A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mcp`) that gives AI agents runtime access to the documentation and exposes domain tools for VAT validation, obligation evaluation, and claim stub generation. Documents are loaded at call time - agents always see the latest content.
 
 ---
 
 ## Repository structure
 
-```
+```text
 /
-├── analysis/                        # Business and domain analysis (primary source of truth)
-│   ├── 01-vat-system-overview-dk.md
-│   ├── 02-vat-form-fields-dk.md
-│   ├── 03-vat-flows-obligations.md
-│   ├── 04-tax-core-architecture-input.md
-│   ├── 05-reverse-charge-and-cross-border-dk.md
-│   ├── 06-exemptions-and-deduction-rules-dk.md
-│   ├── 07-filing-scenarios-and-claim-outcomes-dk.md
-│   ├── 08-scenario-universe-coverage-matrix-dk.md
-│   └── architecture/                # Architecture analysis pack (01–08)
-│
-├── architecture/                    # Architecture outputs
-│   ├── 01-target-architecture-blueprint.md
-│   ├── 02-architectural-principles.md
-│   ├── adr/                         # Architecture Decision Records (ADR-001–005)
-│   ├── delivery/                    # Capability-to-backlog mapping
-│   ├── designer/                    # Design briefs, component contracts, NFR checklist
-│   └── traceability/                # Scenario-to-architecture traceability matrix
-│
-├── mcp-server/                      # MCP server (TypeScript / Node.js)
-│   └── src/index.ts                 # All tools defined here
-│
-├── critical-review/                 # Critical reviewer findings and advice artifacts
-│   └── advice/                      # Architect remediation instructions from reviews
-│
-├── architect.md                     # Architect agent operating contract
-├── business-analyst.md              # Business analyst agent operating contract
-├── CRITICAL_REVIEWER.md             # Critical reviewer operating contract
-└── CLAUDE.md                        # Claude Code project guide
+|-- analysis/                        # Business and domain analysis (primary source of truth)
+|   |-- 01-vat-system-overview-dk.md
+|   |-- 02-vat-form-fields-dk.md
+|   |-- 03-vat-flows-obligations.md
+|   |-- 04-tax-core-architecture-input.md
+|   |-- 05-reverse-charge-and-cross-border-dk.md
+|   |-- 06-exemptions-and-deduction-rules-dk.md
+|   |-- 07-filing-scenarios-and-claim-outcomes-dk.md
+|   |-- 08-scenario-universe-coverage-matrix-dk.md
+|   `-- architecture/                # Architecture analysis pack (01-08)
+|
+|-- architecture/                    # Architecture outputs
+|   |-- 01-target-architecture-blueprint.md
+|   |-- 02-architectural-principles.md
+|   |-- adr/                         # Architecture Decision Records (ADR)
+|   |-- delivery/                    # Capability-to-backlog mapping
+|   |-- designer/                    # Design briefs, component contracts, NFR checklist
+|   `-- traceability/                # Scenario-to-architecture traceability matrix
+|
+|-- design/                          # Solution design outputs
+|-- critical-review/                 # Critical reviewer findings and advice artifacts
+|   `-- advice/                      # Role-targeted remediation instructions from reviews
+|-- optimization/                    # Coding optimizer findings and optimization plans
+|   `-- advice/                      # Role/process remediation instructions
+|
+|-- mcp-server/                      # MCP server (TypeScript / Node.js)
+|   `-- src/index.ts                 # All tools defined here
+|
+|-- architect.md                     # Architect operating contract
+|-- business-analyst.md              # Business analyst operating contract
+|-- DESIGNER.md                      # Designer operating contract
+|-- CRITICAL_REVIEWER.md             # Critical reviewer operating contract
+|-- CODING_OPTIMIZER.md              # Coding optimizer operating contract
+|-- ROLE_CONTEXT_POLICY.md           # Workspace role context policy
+`-- CLAUDE.md                        # Project guide
 ```
 
 ---
@@ -79,8 +85,12 @@ The MCP server exposes the following tools to AI agents:
 |---|---|
 | `health_check` | Server liveness check |
 | `get_business_analyst_context_index` | List all `analysis/` documents with metadata |
-| `get_business_analyst_context_bundle` | Load document contents at runtime (always current) |
-| `validate_dk_vat_filing` | Validate a Danish VAT filing — field rules, cross-field checks, derived result |
+| `get_business_analyst_context_bundle` | Load analysis document contents at runtime (always current) |
+| `get_architect_context_index` | List all `architecture/` documents with metadata |
+| `get_architect_context_bundle` | Load architecture document contents at runtime (always current) |
+| `get_role_context_index` | List role-scoped context files for any supported role |
+| `get_role_context_bundle` | Load role-scoped context bundle using explicit role plus optional paths |
+| `validate_dk_vat_filing` | Validate a Danish VAT filing (field rules, cross-field checks, derived result) |
 | `evaluate_dk_vat_filing_obligation` | Determine filing obligation, cadence, and compliance status |
 | `create_vat_claim_stub` | Generate a structured claim payload from VAT totals |
 
@@ -94,6 +104,7 @@ node dist/index.js
 ```
 
 For development (no compile step):
+
 ```bash
 npm run dev
 ```
@@ -108,27 +119,32 @@ Copy `mcp-server/mcp.config.example.json` to `mcp-server/mcp.config.json` and re
 
 Role-based contracts define how AI agents must operate in this repository:
 
-- **[architect.md](architect.md)** — Solution Architect role. Produces implementable architecture aligned with `analysis/architecture/*.md` as the primary source of truth.
-- **[business-analyst.md](business-analyst.md)** — Business Analyst role. Produces architecture-ready analysis outputs from `analysis/*.md`.
-- **[DESIGNER.md](DESIGNER.md)** — Solution Designer role. Produces implementation-ready designs aligned with approved architecture.
-- **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** — Critical Reviewer role. Performs quality checks on outputs from any role against their stated inputs and governing contracts.
-- **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** — Workspace-wide rule: when a role is assumed, only role-relevant documents are loaded.
+- **[architect.md](architect.md)** - Solution Architect role.
+- **[business-analyst.md](business-analyst.md)** - Business Analyst role.
+- **[DESIGNER.md](DESIGNER.md)** - Solution Designer role.
+- **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** - Critical Reviewer role.
+- **[CODING_OPTIMIZER.md](CODING_OPTIMIZER.md)** - Coding Optimizer role.
+- **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** - Workspace-wide role context and governance policy.
 
 Critical Reviewer output convention:
 - Findings are stored in `critical-review/`.
-- Architect update instructions are stored in `critical-review/advice/`.
+- Role-targeted update instructions are stored in `critical-review/advice/`.
 
-All contracts mandate a **Living Context Rule**. Role-relevant MCP tools and explicit `paths` are preferred for efficiency, while workspace-wide search is allowed when needed.
+Coding Optimizer output convention:
+- Findings are stored in `optimization/`.
+- Role/process remediation instructions are stored in `optimization/advice/`.
+
+All contracts mandate a living context rule. Role-relevant MCP tools and explicit `paths` are preferred for efficiency.
 
 ---
 
 ## Key design principles
 
-- **Deterministic** — identical inputs under the same rule version produce identical outputs
-- **Traceable** — every assessment traces from filing input through rule evaluation to claim payload
-- **Immutable filings** — corrections create new versions; prior filings are never overwritten
-- **Date-effective rules** — VAT law changes are captured as versioned policy entries, not code changes
-- **Living documentation** — all Markdown documents are authoritative and loaded at runtime by the MCP server
+- **Deterministic** - identical inputs under the same rule version produce identical outputs.
+- **Traceable** - every assessment traces from filing input through rule evaluation to claim payload.
+- **Immutable filings** - corrections create new versions; prior filings are never overwritten.
+- **Date-effective rules** - VAT law changes are captured as versioned policy entries, not code changes.
+- **Living documentation** - all Markdown documents are authoritative and loaded at runtime by the MCP server.
 
 ---
 
@@ -139,4 +155,4 @@ All contracts mandate a **Living Context Rule**. Role-relevant MCP tools and exp
 
 ---
 
-*Part of the Netcompany VATRI initiative — Danish VAT modernisation.*
+*Part of the Netcompany VATRI initiative - Danish VAT modernisation.*

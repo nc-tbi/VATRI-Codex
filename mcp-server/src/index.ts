@@ -23,6 +23,17 @@ function isZero(value: number): boolean {
 const workspaceRoot = path.resolve(process.cwd(), "..");
 const analysisRoot = path.join(workspaceRoot, "analysis");
 const architectureRoot = path.join(workspaceRoot, "architecture");
+const designRoot = path.join(workspaceRoot, "design");
+const criticalReviewRoot = path.join(workspaceRoot, "critical-review");
+const optimizationRoot = path.join(workspaceRoot, "optimization");
+
+const roleSchema = z.enum([
+  "architect",
+  "business_analyst",
+  "designer",
+  "critical_reviewer",
+  "coding_optimizer"
+]);
 
 async function listMarkdownFiles(rootDir: string): Promise<string[]> {
   const entries = await fs.readdir(rootDir, { withFileTypes: true });
@@ -46,6 +57,71 @@ async function listMarkdownFiles(rootDir: string): Promise<string[]> {
 
 function toPosixRelative(from: string, to: string): string {
   return path.relative(from, to).split(path.sep).join("/");
+}
+
+async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function listMarkdownFilesIfExists(rootDir: string): Promise<string[]> {
+  if (!(await pathExists(rootDir))) {
+    return [];
+  }
+
+  return listMarkdownFiles(rootDir);
+}
+
+function dedupeAndSort(values: string[]): string[] {
+  return Array.from(new Set(values)).sort((a, b) => a.localeCompare(b));
+}
+
+async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<string[]> {
+  const commonGovernance = [
+    "ROLE_CONTEXT_POLICY.md",
+    "CLAUDE.md",
+    "README.md"
+  ];
+
+  const contractFiles = [
+    "architect.md",
+    "business-analyst.md",
+    "DESIGNER.md",
+    "CRITICAL_REVIEWER.md",
+    "CODING_OPTIMIZER.md"
+  ];
+
+  const roleSpecificRoots: Record<z.infer<typeof roleSchema>, string[]> = {
+    architect: [architectureRoot],
+    business_analyst: [analysisRoot],
+    designer: [architectureRoot, designRoot],
+    critical_reviewer: [analysisRoot, architectureRoot, designRoot, criticalReviewRoot],
+    coding_optimizer: [optimizationRoot, criticalReviewRoot]
+  };
+
+  const roots = roleSpecificRoots[role];
+  const roleFiles = (await Promise.all(roots.map((root) => listMarkdownFilesIfExists(root)))).flat();
+
+  const roleGovernance: Record<z.infer<typeof roleSchema>, string[]> = {
+    architect: ["architect.md", "ROLE_CONTEXT_POLICY.md"],
+    business_analyst: ["business-analyst.md", "ROLE_CONTEXT_POLICY.md"],
+    designer: ["DESIGNER.md", "ROLE_CONTEXT_POLICY.md"],
+    critical_reviewer: [...contractFiles, "ROLE_CONTEXT_POLICY.md", "README.md", "mcp-server/README.md"],
+    coding_optimizer: [...contractFiles, ...commonGovernance]
+  };
+
+  const governanceFiles = await Promise.all(
+    roleGovernance[role].map(async (relativePath) => {
+      const absolutePath = path.join(workspaceRoot, relativePath);
+      return (await pathExists(absolutePath)) ? absolutePath : null;
+    })
+  );
+
+  return dedupeAndSort([...roleFiles, ...governanceFiles.filter((value): value is string => value !== null)]);
 }
 
 server.tool("health_check", "Returns a simple status payload.", async () => {
@@ -230,6 +306,104 @@ server.tool(
             {
               generatedAt: new Date().toISOString(),
               source: "architecture-markdown-runtime-bundle",
+              requestedPaths: paths ?? null,
+              resolvedDocumentCount: documents.length,
+              includeContent,
+              maxCharsPerFile,
+              documents
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "get_role_context_index",
+  "Lists all Markdown source documents in role-scoped context for the selected role.",
+  {
+    role: roleSchema
+  },
+  async ({ role }) => {
+    const files = await getRoleContextFiles(role);
+    const documentIndex = await Promise.all(
+      files.map(async (filePath) => {
+        const stat = await fs.stat(filePath);
+        return {
+          path: toPosixRelative(workspaceRoot, filePath),
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              role,
+              workspaceRoot: workspaceRoot.split(path.sep).join("/"),
+              documentCount: documentIndex.length,
+              documents: documentIndex
+            },
+            null,
+            2
+          )
+        }
+      ]
+    };
+  }
+);
+
+server.tool(
+  "get_role_context_bundle",
+  "Loads latest role-scoped documents for the selected role. Reads files at runtime so updates are automatically reflected.",
+  {
+    role: roleSchema,
+    includeContent: z.boolean().default(true),
+    maxCharsPerFile: z.number().int().positive().max(200000).default(20000),
+    paths: z.array(z.string().min(1)).optional()
+  },
+  async ({ role, includeContent, maxCharsPerFile, paths }) => {
+    const allFiles = await getRoleContextFiles(role);
+    const fileSet = new Set(allFiles.map((f) => toPosixRelative(workspaceRoot, f)));
+    const selectedRelativePaths =
+      paths && paths.length > 0
+        ? paths.map((p) => p.replace(/\\/g, "/")).filter((p) => fileSet.has(p))
+        : Array.from(fileSet).sort((a, b) => a.localeCompare(b));
+
+    const documents = await Promise.all(
+      selectedRelativePaths.map(async (relativePath) => {
+        const absolutePath = path.join(workspaceRoot, relativePath);
+        const stat = await fs.stat(absolutePath);
+        const text = includeContent ? await fs.readFile(absolutePath, "utf8") : "";
+        const truncated = includeContent && text.length > maxCharsPerFile;
+
+        return {
+          path: relativePath,
+          updatedAt: stat.mtime.toISOString(),
+          sizeBytes: stat.size,
+          truncated,
+          content: includeContent ? (truncated ? `${text.slice(0, maxCharsPerFile)}\n...[TRUNCATED]` : text) : undefined
+        };
+      })
+    );
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            {
+              generatedAt: new Date().toISOString(),
+              role,
+              source: "role-scoped-markdown-runtime-bundle",
               requestedPaths: paths ?? null,
               resolvedDocumentCount: documents.length,
               includeContent,

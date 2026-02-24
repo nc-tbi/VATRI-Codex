@@ -3,25 +3,42 @@
 ## Purpose
 Ensure each role consumes only role-relevant documents and does not load the entire workspace by default.
 
+## Standards Baseline (Canonical)
+- Use open-source standards and vendor-neutral recommendations by default.
+- For architecture decisions and recommendations that affect core platform components, selected technologies must comply with `architecture/adr/ADR-008-open-source-only-technology-policy.md`.
+
 ## Mandatory Rules
 1. When a role is assumed, load only the role's approved source set.
-2. All roles are allowed to search across the workspace (including recursive repository scans) without prior user approval.
-3. Additional files outside the approved source set may be loaded when task-critical, and should be cited in output.
-4. Prefer targeted MCP `paths` filtering over broad bundle loading.
-5. Role context does not carry across turns unless the role is re-assumed.
-6. All roles are allowed to update existing files directly as part of task execution without prior user approval.
+2. Default initial context load budget is targeted and small: maximum `12` files or approximately `120k` characters before requesting additional evidence.
+3. Workspace-wide recursive scans are allowed only when one of these conditions holds:
+   - user explicitly requests repo-wide search
+   - targeted lookups fail to resolve a needed fact
+   - task type is cross-role review or optimization
+4. Additional files outside the approved source set may be loaded when task-critical and must be cited in output.
+5. Prefer MCP tools with explicit `paths` filtering over broad bundle loading.
+6. Role context does not carry across turns unless the role is re-assumed.
+7. Edit authority is scoped by role ownership:
+   - Roles may update files in their owned workspace folders and their own contract file.
+   - Cross-role contract changes and workspace governance changes (`ROLE_CONTEXT_POLICY.md`, `README.md`, `CLAUDE.md`) require explicit user instruction.
+
+## Role-Owned Workspaces
+- Architect: `architecture/`
+- Business Analyst: `analysis/`
+- Designer: `design/`
+- Critical Reviewer: `critical-review/`
+- Coding Optimizer: `optimization/`
 
 ## Approved Source Sets
 
 ### Architect
 - Primary: `architecture/**/*.md`
 - Secondary (only when needed): selected `analysis/*.md` for legal/rule specifics
-- Standards policy: use open-source standards and open-source technology recommendations for architecture outputs.
+- Standards policy: follow the Standards Baseline; architecture outputs must satisfy ADR-008 for core technology choices.
 
 ### Business Analyst
 - Primary: `analysis/*.md`
 - Secondary (only when needed): selected `architecture/*.md` for alignment checks
-- Standards policy: use open-source standards and vendor-neutral recommendations in architecture-facing analysis outputs.
+- Standards policy: follow the Standards Baseline in architecture-facing recommendations.
 
 ### Designer
 - Primary:
@@ -39,10 +56,18 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Primary:
   - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md`
   - `critical-review/*.md` and `critical-review/**/*.md`
-  - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`
+  - role contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`
   - workspace policy: `ROLE_CONTEXT_POLICY.md`
 - Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims
 - Standards policy: perform evidence-first quality checks; do not expand scope beyond requested review targets.
+
+### Coding Optimizer
+- Primary:
+  - role/governance contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
+  - optimization artifacts: `optimization/*.md` and `optimization/**/*.md`
+  - review artifacts when relevant: `critical-review/*.md` and `critical-review/**/*.md`
+- Secondary (only when needed): selected `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md` to validate optimization opportunities against real workflow outputs
+- Standards policy: optimize for quality-preserving efficiency; do not reduce compliance, traceability, determinism, or security guardrails.
 
 ## MCP Usage Guidance
 - Architect:
@@ -52,12 +77,11 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - Use `get_business_analyst_context_index`
   - Use `get_business_analyst_context_bundle` with explicit `paths` when possible
 - Designer:
-  - Use `get_architect_context_bundle` with explicit designer-relevant `paths`
-  - Load `design/**/*.md` directly for active design deliverables
+  - Use `get_role_context_bundle` with `role=designer` and explicit `paths` when possible
 - Critical Reviewer:
-  - Use `get_business_analyst_context_bundle` with explicit `paths` for analysis inputs under review
-  - Use `get_architect_context_bundle` with explicit `paths` for architecture inputs under review
-  - Load selected `design/**/*.md` files directly for design reviews
+  - Use `get_role_context_bundle` with `role=critical_reviewer` and explicit `paths` when possible
+- Coding Optimizer:
+  - Use `get_role_context_bundle` with `role=coding_optimizer` and explicit `paths` when possible
 
 ## Enforcement Intent
-This is a living policy. Update it whenever role scope, folder ownership, or source-of-truth boundaries change.
+This is a living policy. Update it whenever role scope, folder ownership, source-of-truth boundaries, or MCP tool capabilities change.

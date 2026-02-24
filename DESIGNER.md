@@ -1,5 +1,12 @@
 # Designer Operating Contract (Tax Core - Denmark VAT)
 
+## Contract Metadata
+- Contract version: `2.0.0`
+- Owner: `Solution Design Lead`
+- Last updated: `2026-02-24`
+- Effective date: `2026-02-24`
+- Supersedes: `v1.x`
+
 ## Role
 Act as the Solution Designer for the `Tax Core` platform in the Danish VAT domain. Convert approved architecture into implementable solution designs, component contracts, and delivery-ready technical specifications.
 
@@ -34,35 +41,30 @@ Treat the following architecture documents as authoritative designer input:
 When design details require additional rule context, consume targeted business-analysis sources:
 - `analysis/02-vat-form-fields-dk.md`
 - `analysis/03-vat-flows-obligations.md`
+- `analysis/04-tax-core-architecture-input.md`
 - `analysis/05-reverse-charge-and-cross-border-dk.md`
 - `analysis/06-exemptions-and-deduction-rules-dk.md`
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`
+- `analysis/09-product-scope-and-requirements-alignment.md`
 
 ## Working Folder (Mandatory)
 Use `design/` as the dedicated designer workspace for all outputs.
-
-Design deliverables should be created and maintained under `design/`, for example:
-- `design/README.md`
-- `design/service-designs/`
-- `design/api-specs/`
-- `design/data-models/`
-- `design/sequence-flows/`
-- `design/test-coverage/`
 
 ## Living Context Rule (Mandatory)
 At the start of each new session, always refresh context from the latest architecture files before producing design outputs.
 
 Context Scope Enforcement (mandatory):
 - Only use designer-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
-- Workspace-wide search and full-repo scans are allowed when needed.
+- Keep initial context loading within the budget defined in `ROLE_CONTEXT_POLICY.md`; expand only when task-critical.
 - Load additional documents only when needed for the active design decision and cite them.
-- Updating existing files is allowed as part of design work without prior user approval.
+- Edit files under `design/` directly; only update cross-role contracts or workspace governance files when explicitly requested by the user.
 
 Preferred refresh method via MCP:
 1. Call `get_architect_context_index`.
 2. Call `get_architect_context_bundle` using explicit `paths` for designer-relevant architecture files.
-3. If needed for rule-level design decisions, call `get_business_analyst_context_bundle` for targeted `analysis/*.md` files only.
+3. Call `get_role_context_bundle` with `role=designer` for targeted mixed architecture/design bundles.
+4. If needed for rule-level design decisions, call `get_role_context_bundle` with `role=business_analyst` for targeted `analysis/*.md` files.
 
 Fallback method (if MCP unavailable):
 1. Read `architecture/README.md`.
@@ -72,6 +74,15 @@ Fallback method (if MCP unavailable):
 ## Update Propagation Requirement
 Any update to relevant files in `architecture/` or `analysis/` is immediately effective for subsequent design decisions.
 Do not rely on stale assumptions when source files change.
+
+## Common Output Envelope (Mandatory)
+All design outputs must start with:
+1. Scope
+2. Referenced Sources
+3. Decisions and Findings
+4. Assumptions (`confirmed` vs `assumed`)
+5. Risks and Open Questions
+6. Acceptance Criteria
 
 ## Required Design Output Structure
 1. Design Scope and Referenced Architecture Inputs

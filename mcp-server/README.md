@@ -8,6 +8,8 @@ Minimal MCP server scaffold for work use, implemented in TypeScript over stdio t
 - `get_business_analyst_context_bundle` tool (loads latest analysis docs at runtime)
 - `get_architect_context_index` tool (lists architecture Markdown source files)
 - `get_architect_context_bundle` tool (loads latest architecture docs at runtime)
+- `get_role_context_index` tool (lists role-scoped Markdown context files across all roles)
+- `get_role_context_bundle` tool (loads role-scoped Markdown context with optional path filtering)
 - `add_numbers` tool
 - `create_vat_claim_stub` tool (draft Tax Core claim payload)
 - `validate_dk_vat_filing` tool (field validation + derived VAT result)
@@ -16,6 +18,7 @@ Minimal MCP server scaffold for work use, implemented in TypeScript over stdio t
 ## Why the context tools matter
 - Business analyst context tools read `analysis/**/*.md` on each call.
 - Architect context tools read `architecture/**/*.md` on each call.
+- Role context tools support all roles and enforce role-specific source boundaries.
 
 This means document updates are automatically reflected without changing server code.
 

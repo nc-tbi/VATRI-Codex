@@ -23,12 +23,14 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- analysis/                        # Authoritative business/domain analysis
 |-- architecture/                    # Architecture outputs (blueprint, principles, ADRs, delivery, traceability)
 |-- design/                          # Designer working folder and solution design outputs
+|-- optimization/                    # Coding optimizer findings and advice artifacts
 |-- mcp-server/                      # MCP server (TypeScript/Node.js)
 |   |-- src/index.ts                 # MCP tools and runtime context loading
-|-- ARCHITECT.md                     # Architect operating contract
+|-- architect.md                     # Architect operating contract
 |-- business-analyst.md              # Business Analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
 |-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
+|-- CODING_OPTIMIZER.md              # Coding Optimizer operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace-wide role-scoped context policy
 |-- BUSINESS_ANALYST_AGENT.md        # Compatibility pointer
 `-- CLAUDE.md                        # This file
@@ -42,24 +44,27 @@ Always read the relevant role contract before domain work.
 
 | File | Role | Primary source scope |
 |---|---|---|
-| `ARCHITECT.md` | Solution Architect | `architecture/**/*.md` |
+| `architect.md` | Solution Architect | `architecture/**/*.md` |
 | `business-analyst.md` | Business Analyst | `analysis/*.md` |
 | `DESIGNER.md` | Solution Designer | `architecture/**` + `design/**` |
 | `CRITICAL_REVIEWER.md` | Critical Reviewer | Review targets in `analysis/**`, `architecture/**`, `design/**` + governing role contracts |
+| `CODING_OPTIMIZER.md` | Coding Optimizer | Role contracts, workspace governance docs, and targeted delivery artifacts for optimization |
 | `ROLE_CONTEXT_POLICY.md` | Workspace policy | Role-scoped loading rules |
 
 ### Role-Scoped Context Rule (Mandatory)
 When a role is assumed:
 - Load only that role's approved source set.
-- Workspace-wide search is allowed when needed.
+- Keep initial context loading within the budget in `ROLE_CONTEXT_POLICY.md`.
+- Workspace-wide search is allowed only for task-critical cases defined in `ROLE_CONTEXT_POLICY.md`.
 - Use targeted MCP `paths` filtering whenever possible.
 - Load out-of-scope files only when task-critical and cite them.
-- Roles may update existing files directly as part of task execution without prior user approval.
+- Roles may edit files in their owned workspaces; cross-role contract and governance edits require explicit user instruction.
 
 Role standards policy:
-- Business Analyst and Architect roles should use open-source standards and vendor-neutral recommendations.
+- Business Analyst and Architect roles follow the standards baseline in `ROLE_CONTEXT_POLICY.md`.
 - Designer role keeps standards/technology choices open unless explicitly constrained by approved architecture scope.
 - Critical Reviewer role performs evidence-first quality checks and does not expand review scope unless requested.
+- Coding Optimizer role improves role/process/token efficiency while preserving compliance and quality guardrails.
 
 ---
 
@@ -73,6 +78,8 @@ Role standards policy:
 - `get_business_analyst_context_bundle`
 - `get_architect_context_index`
 - `get_architect_context_bundle`
+- `get_role_context_index`
+- `get_role_context_bundle`
 
 ### Domain tools
 - `health_check`

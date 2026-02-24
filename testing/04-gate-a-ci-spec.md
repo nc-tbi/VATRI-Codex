@@ -14,7 +14,7 @@ Define the mandatory Gate A CI checks for Sprint 1 and map them to implemented t
 - Gate A is implemented as `npm run test:gate-a` in `build/package.json`.
 - Sprint 1 fixture metadata (`scenario_id`, `risk_tier`, `gate`) is available in shared fixtures.
 - Integration coverage for `S01/S02/S03/S20` and traceability assertions is implemented in one dedicated suite.
-- Current execution state (2026-02-24): Gate A passes. All GA-TS-* typecheck blockers resolved; `npm run test:gate-a` runs to full green (105/105 tests, 0 typecheck errors across 7 workspaces). See `05-gate-a-defect-remediation-tracker.md` GA-RUN-004 for latest rerun evidence.
+- Current execution state (2026-02-24): Gate A is blocked by the new defect-prevention service-risk pack (`phase1-defect-prevention-004.test.ts`). Baseline GA-TS typecheck blockers remain resolved, but unresolved runtime/contract defects now fail the gate (`GA-RUN-007`).
 
 ## Assumptions (`confirmed` vs `assumed`)
 - `confirmed`: `test` and `typecheck` are baseline checks required for PR quality in build workspace.
@@ -23,6 +23,7 @@ Define the mandatory Gate A CI checks for Sprint 1 and map them to implemented t
 ## Risks and Open Questions
 - Contract lint checks are not yet implemented as a separate command and should be added as Gate A extension.
 - Scenario-metadata reporting is currently in fixture/test labels and should be exported into CI artifacts in a later sprint.
+- New service-level risk tests intentionally fail until code remediation lands for duplicate filing idempotency, claim request enforcement, assessment retrieval contract, audit durability, and Kafka publisher lifecycle.
 
 ## Acceptance Criteria
 - Gate A command exists and can be executed in CI.
@@ -53,7 +54,32 @@ npm run test:gate-a
 | Check | Status | Note |
 |---|---|---|
 | `test:gate-a` script exists | Done | Added to `build/package.json` |
-| Domain tests (`npm run test -w @tax-core/domain`) | Pass | `105/105` tests passing |
-| Workspace typecheck (`npm run typecheck --workspaces --if-present`) | Pass | 0 errors across all 7 workspaces — all GA-TS-* defects resolved |
-| Gate A overall verdict | **Pass** | Rerun evidence: `GA-RUN-004` in `05-gate-a-defect-remediation-tracker.md` |
+| Domain tests (`npm run test -w @tax-core/domain`) | Fail | `phase1-defect-prevention-004.test.ts`: `4` pass, `5` fail (runtime/contract defects) |
+| Workspace typecheck (`npm run typecheck --workspaces --if-present`) | Pass | 0 errors across all 7 workspaces; GA-TS-* defects remain resolved |
+| Gate A overall verdict | **Blocked** | Rerun evidence: `GA-RUN-007` in `05-gate-a-defect-remediation-tracker.md` |
+
+## Gate A-SVC Extension (Required from Review 004)
+Purpose:
+- Add explicit service-level quality gates for `build/services/**` risk paths.
+
+Required gates:
+1. Idempotency gate:
+   - duplicate filing/claim submissions do not create inconsistent DB/event side effects.
+2. Contract parity gate:
+   - OpenAPI required fields and runtime handler expectations are aligned for request/response payloads.
+3. Audit durability gate:
+   - evidence is durably persisted and queryable from persistent storage; memory-only behavior fails the gate.
+
+Required CI path:
+- Add executable service integration command (example): `npm run test:svc-integration`.
+- Run this in PR/mainline and publish evidence by:
+  - service (`filing`, `assessment`, `amendment`, `claim`, `validation`, `rule-engine`)
+  - case ID (`TC-S1-SVC-*`)
+  - backlog ID (`TB-S1-SVC-*`)
+
+Failure policy:
+- Contract mismatch or idempotency side-effect defect: `blocker`.
+- Audit durability failure: `blocker`.
+- Non-critical observability/reporting gap with approved waiver: `non-blocker`.
+
 

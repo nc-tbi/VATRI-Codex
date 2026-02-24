@@ -53,6 +53,22 @@ Backlog:
 | TB-S1-04 | Implement append-only audit evidence assertions (`trace_id` presence) | `S01-S03`, `S20` | Integration | Code Builder | TB-S1-03 | Tests prove evidence write for key decisions and no mutation semantics | Done |
 | TB-S1-05 | Define Gate A CI job (unit + integration + static contract lint) | all in-sprint | Contract/Process | Platform/DevOps + Test Manager | TB-S1-02/03 | CI gate enforced; failing and passing behavior demonstrated | Done |
 
+### Sprint 1A - Service Integration Lane (`build/services/**`, Gate A-SVC)
+Objective:
+- Validate service-level API + DB + eventing interactions and explicitly cover high-risk contract/idempotency/audit behaviors.
+
+Backlog:
+| ID | Work Item | Scenario IDs | Layer | Owner | Gate | Failure Policy | Dependencies | DoD | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| TB-S1-SVC-01 | Filing service integration smoke (happy + duplicate submission side-effects) | `S01`, `S20` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S1-03 | API/DB/event assertions pass incl. duplicate behavior | Planned |
+| TB-S1-SVC-02 | Assessment service integration smoke (POST/GET contract and persistence parity) | `S01-S03` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S1-03 | Retrieval path aligns with POST flow and DB state | Planned |
+| TB-S1-SVC-03 | Amendment service integration smoke (lineage + event flow) | `S04-S05` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S3-01 | Amendment persistence and emitted events align with contract | Planned |
+| TB-S1-SVC-04 | Claim orchestrator integration smoke (request contract + idempotency side-effects) | `S01-S05`, `S19` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S3-01 | Duplicate claim path side-effect safety proven | Planned |
+| TB-S1-SVC-05 | Validation service integration smoke (error envelope + severity contract parity) | `S20` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S1-02 | Runtime response contract matches API specification | Planned |
+| TB-S1-SVC-06 | Rule-engine service integration smoke (rule resolution + response/event parity) | `S06-S15` | Integration/Service | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S2-01 | Resolved rules and runtime payloads match contract | Planned |
+| TB-S1-SVC-07 | Audit durability verification (persisted evidence, no memory-only path) | `S01`, `S19`, `S20` | Integration/Audit | Code Builder + Tester | `Gate A-SVC` | Blocker | TB-S1-SVC-01..06 | Durable evidence assertions pass against persisted store | Planned |
+| TB-S1-SVC-08 | Service lane CI execution path (`test:svc-integration`) and report publication | all SVC items | Process | Platform/DevOps + Tester | `Gate A-SVC` | Blocker | TB-S1-SVC-01..07 | CI lane runs and publishes pass/fail evidence by service | Planned |
+
 ### Sprint 2 - Rule and Obligation Core (Phase 2, Gate B prework)
 Objective:
 - Lock deterministic rule behavior and obligation-state correctness with replay-ready fixtures.
@@ -124,6 +140,7 @@ Backlog:
 | TB-X-02 | Defect taxonomy dashboard (`critical/high/medium/low` with trend) | all sprints | Test Manager + Platform/DevOps | Weekly dashboard under `testing/` available | Planned |
 | TB-X-03 | Flaky test quarantine + recovery policy | all CI lanes | Code Builder + Test Manager | Flake budget and remediation SLA documented | Planned |
 | TB-X-04 | Risk waiver process for gate exceptions | release governance | Test Manager + Architect | Waiver template and approval path approved | Planned |
+| TB-X-05 | Service-level contract/idempotency/audit defect triage policy | `build/services/**` | Test Manager + Tester + Code Builder | Failure policy applied consistently as blocker/non-blocker with owner and due date | Planned |
 
 ## 4. Coverage Ledger (Execution Tracking Template)
 | Scenario ID | Planned Sprint | Primary Suite ID(s) | Automation Target | Owner | Current Status |
@@ -192,8 +209,32 @@ Backlog:
 - Sub-result 1: `npm run test -w @tax-core/domain` **PASS** (`105/105`)
 - Sub-result 2: `npm run typecheck --workspaces --if-present` **PASS** (`0 errors, all 7 workspaces`)
 - Blocker check: baseline blocker set still maps to `GA-TS-001..004`; no new typecheck blocker IDs observed.
+
+### Evidence E5 - Defect-prevention pack 004 activation (GA-RUN-005) (2026-02-24)
+- Command: `cd build && npm run test:gate-a`
+- Outcome: **FAIL**
+- Sub-result 1: `npm run test -w @tax-core/domain` **FAIL**
+- Failing suite: `build/packages/domain/src/__tests__/phase1-defect-prevention-004.test.ts`
+- Failing cases (5):
+  - duplicate filing contract/side-effect safety (`S01`)
+  - claim required-field runtime enforcement (`S01`)
+  - assessment POST-to-GET identifier contract (`S01`)
+  - audit durability across process boundary (`S20`)
+  - Kafka publisher lifecycle (connect/disconnect churn) (`S19`)
+- Sub-result 2: workspace typecheck phase not executed because test phase failed first.
+- Impact: Gate A is blocked pending code remediation for findings from review 004.
+
+### Evidence E6 - Baseline rerun refresh (GA-RUN-006 / GA-RUN-007) (2026-02-24)
+- Command 1: `cd build && npm run typecheck --workspaces --if-present`
+- Outcome 1: **PASS** (`0 errors, all 7 workspaces`)
+- Command 2: `cd build && npm run test:gate-a`
+- Outcome 2: **FAIL**
+- Failing suite/cases: unchanged from `GA-RUN-005` (`phase1-defect-prevention-004.test.ts`, 5 failing tests).
+- Impact: typecheck blockers remain resolved, but Gate A stays blocked on unresolved service runtime/contract defects.
+
 ### Current Gate-A verdict
-- `TB-S1-05`: **Done**
-- Promotion recommendation: **proceed** — Gate A passes. CI enforcement (PR check wiring) is the next Platform/DevOps action.
-- Source of execution evidence: `GA-RUN-002` in `testing/05-gate-a-defect-remediation-tracker.md`; local rerun on 2026-02-24.
+- `TB-S1-05`: **Blocked** (regression: service-risk defect-prevention pack 004 failing)
+- Promotion recommendation: **hold** - Gate A blocked by unresolved service runtime/contract defects from review 004.
+- Source of execution evidence: `GA-RUN-007` in `testing/05-gate-a-defect-remediation-tracker.md`; local rerun on 2026-02-24.
+
 

@@ -1,72 +1,178 @@
-﻿<mxfile host="app.diagrams.net" modified="2026-02-24T12:00:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
-  <diagram id="sysctx01" name="System Context">
-    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
+  <diagram id="sys_ctx_formal" name="System Context">
+    <mxGraphModel dx="1678" dy="1131" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2100" pageHeight="1300" math="0" shadow="0">
       <root>
-        <mxCell id="0"/>
-        <mxCell id="1" parent="0"/>
-
-        <mxCell id="2" value="Taxpayer and Representative" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="40" y="120" width="220" height="70" as="geometry"/>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=18;fontStyle=1;" value="System Context - VAT Filing and Assessment" vertex="1">
+          <mxGeometry height="60" width="860" x="620" y="20" as="geometry" />
         </mxCell>
-        <mxCell id="3" value="ERP or API Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="40" y="240" width="220" height="70" as="geometry"/>
+        <mxCell id="3" parent="1" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=28;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" value="External Actors" vertex="1">
+          <mxGeometry height="560" width="360" x="30" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="4" value="Registration Source (virk.dk)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="40" y="360" width="220" height="70" as="geometry"/>
+        <mxCell id="4" parent="3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Taxpayer / Representative" vertex="1">
+          <mxGeometry height="70" width="290" x="30" y="55" as="geometry" />
         </mxCell>
-
-        <mxCell id="5" value="Tax Core VAT Platform" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="330" y="80" width="560" height="420" as="geometry"/>
+        <mxCell id="5" parent="3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="ERP / API Client" vertex="1">
+          <mxGeometry height="70" width="290" x="30" y="145" as="geometry" />
         </mxCell>
-        <mxCell id="6" value="Portal BFF and API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
-          <mxGeometry x="20" y="50" width="230" height="70" as="geometry"/>
+        <mxCell id="6" parent="3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Audit and Reporting Users" vertex="1">
+          <mxGeometry height="70" width="290" x="30" y="235" as="geometry" />
         </mxCell>
-        <mxCell id="7" value="Core VAT Services&#xa;Registration, Obligation, Filing, Assessment, Amendment, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
-          <mxGeometry x="20" y="150" width="360" height="110" as="geometry"/>
+        <mxCell id="7" parent="3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Operations Team" vertex="1">
+          <mxGeometry height="70" width="290" x="30" y="325" as="geometry" />
         </mxCell>
-        <mxCell id="8" value="DK VAT Overlay&#xa;Rule Engine, Claim Connector, EU Reporting Connector, Customs Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="5">
-          <mxGeometry x="20" y="280" width="360" height="100" as="geometry"/>
+        <mxCell id="8" parent="1" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=28;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" value="VAT Solution Boundary" vertex="1">
+          <mxGeometry height="900" width="1160" x="440" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="9" value="Data and Audit Plane&#xa;Operational DB, Event Backbone, Audit Store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="5">
-          <mxGeometry x="400" y="170" width="140" height="180" as="geometry"/>
+        <mxCell id="9" parent="8" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=24;fillColor=#d5e8d4;strokeColor=#82b366;" value="Entry and UX Layer" vertex="1">
+          <mxGeometry height="180" width="350" x="20" y="45" as="geometry" />
         </mxCell>
-
-        <mxCell id="10" value="External Claims System (SKAT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="960" y="130" width="240" height="70" as="geometry"/>
+        <mxCell id="10" parent="9" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" value="Portal UI" vertex="1">
+          <mxGeometry height="55" width="140" x="20" y="45" as="geometry" />
         </mxCell>
-        <mxCell id="11" value="EU Sales Reporting System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="960" y="250" width="240" height="70" as="geometry"/>
+        <mxCell id="11" parent="9" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" value="portal-bff" vertex="1">
+          <mxGeometry height="55" width="140" x="180" y="45" as="geometry" />
         </mxCell>
-        <mxCell id="12" value="Customs and Told Source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
-          <mxGeometry x="960" y="370" width="240" height="70" as="geometry"/>
+        <mxCell id="12" parent="9" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" value="api-gateway" vertex="1">
+          <mxGeometry height="50" width="140" x="100" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="13" value="Audit and Reporting Consumers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="960" y="490" width="240" height="70" as="geometry"/>
+        <mxCell id="13" parent="8" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="VAT-GENERIC Core" vertex="1">
+          <mxGeometry height="430" width="420" x="390" y="45" as="geometry" />
         </mxCell>
-
-        <mxCell id="20" value="Portal interactions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="2" target="6">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="14" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="registration-service" vertex="1">
+          <mxGeometry height="55" width="180" x="20" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="21" value="API submissions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="3" target="6">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="15" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="obligation-service" vertex="1">
+          <mxGeometry height="55" width="180" x="220" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="22" value="Status events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="4" target="7">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="16" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="filing-service" vertex="1">
+          <mxGeometry height="55" width="180" x="20" y="115" as="geometry" />
         </mxCell>
-        <mxCell id="23" value="Claim dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="8" target="10">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="17" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="validation-service" vertex="1">
+          <mxGeometry height="55" width="180" x="220" y="115" as="geometry" />
         </mxCell>
-        <mxCell id="24" value="EU sales submission" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="8" target="11">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="18" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="assessment-service" vertex="1">
+          <mxGeometry height="55" width="180" x="20" y="190" as="geometry" />
         </mxCell>
-        <mxCell id="25" value="Import VAT facts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="12" target="8">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="19" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="amendment-service" vertex="1">
+          <mxGeometry height="55" width="180" x="220" y="190" as="geometry" />
         </mxCell>
-        <mxCell id="26" value="Audit evidence and analytics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="9" target="13">
-          <mxGeometry relative="1" as="geometry"/>
+        <mxCell id="20" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="claim-orchestrator" vertex="1">
+          <mxGeometry height="55" width="180" x="20" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="21" parent="13" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" value="registration-projection-service" vertex="1">
+          <mxGeometry height="55" width="180" x="220" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="22" parent="8" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=24;fillColor=#f8cecc;strokeColor=#b85450;" value="DK VAT Overlay" vertex="1">
+          <mxGeometry height="430" width="310" x="830" y="45" as="geometry" />
+        </mxCell>
+        <mxCell id="23" parent="22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" value="rule-engine-service" vertex="1">
+          <mxGeometry height="55" width="270" x="20" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="24" parent="22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" value="system-s-registration-adapter" vertex="1">
+          <mxGeometry height="55" width="270" x="20" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="25" parent="22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" value="system-s-accounting-adapter" vertex="1">
+          <mxGeometry height="55" width="270" x="20" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="26" parent="22" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b85450;" value="system-s-connector" vertex="1">
+          <mxGeometry height="55" width="270" x="20" y="265" as="geometry" />
+        </mxCell>
+        <mxCell id="27" parent="8" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=24;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Data and Evidence Plane" vertex="1">
+          <mxGeometry height="360" width="1120" x="20" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="28" parent="27" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="Operational DB" vertex="1">
+          <mxGeometry height="85" width="180" x="280" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="29" parent="27" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="Kafka + DLQ" vertex="1">
+          <mxGeometry height="85" width="180" x="650" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="30" parent="27" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="Schema Registry" vertex="1">
+          <mxGeometry height="85" width="180" x="860" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="31" parent="27" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="audit-evidence" vertex="1">
+          <mxGeometry height="85" width="180" x="30" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="32" parent="27" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="Audit Store (Lakehouse)" vertex="1">
+          <mxGeometry height="85" width="220" x="10" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="33" parent="27" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="OpenTelemetry" vertex="1">
+          <mxGeometry height="70" width="180" x="280" y="177.5" as="geometry" />
+        </mxCell>
+        <mxCell id="34" parent="27" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;" value="Alerting and Operations" vertex="1">
+          <mxGeometry height="70" width="220" x="140" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="52" edge="1" parent="8" source="11" style="endArrow=block;html=1;" target="12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="53" edge="1" parent="8" source="12" style="endArrow=block;html=1;" target="14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="54" edge="1" parent="8" source="12" style="endArrow=block;html=1;" target="16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="55" edge="1" parent="8" source="16" style="endArrow=block;html=1;" target="17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="56" edge="1" parent="8" source="17" style="endArrow=block;html=1;" target="23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="57" edge="1" parent="8" source="23" style="endArrow=block;html=1;" target="18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="58" edge="1" parent="8" source="18" style="endArrow=block;html=1;" target="20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="59" edge="1" parent="8" source="20" style="endArrow=block;html=1;" target="26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="63" edge="1" parent="8" source="16" style="endArrow=block;html=1;" target="28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="64" edge="1" parent="8" source="18" style="endArrow=block;html=1;" target="28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="65" edge="1" parent="8" source="20" style="endArrow=block;html=1;" target="29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="66" edge="1" parent="8" source="29" style="endArrow=block;html=1;" target="30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="67" edge="1" parent="8" source="31" style="endArrow=block;html=1;" target="32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="68" edge="1" parent="8" source="31" style="endArrow=block;html=1;" target="33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="69" edge="1" parent="8" source="33" style="endArrow=block;html=1;" target="34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="35" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="System S (Registration + Taxpayer Accounting + Claims)&#xa;Trusted network; no authentication between systems" vertex="1">
+          <mxGeometry height="170" width="390" x="1650" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="50" edge="1" parent="1" source="4" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="10" value="portal interactions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="51" edge="1" parent="1" source="5" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="12" value="API submissions">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="60" edge="1" parent="1" source="24" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="35" value="registration sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="61" edge="1" parent="1" source="25" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="35" value="accounting ingestion">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="62" edge="1" parent="1" source="26" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="35" value="claim dispatch">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="70" edge="1" parent="1" source="6" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="32" value="audit queries">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="71" edge="1" parent="1" source="7" style="edgeStyle=orthogonalEdgeStyle;endArrow=block;html=1;" target="34" value="incident handling">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
 </mxfile>
-

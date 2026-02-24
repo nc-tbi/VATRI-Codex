@@ -77,9 +77,9 @@ This design uses a three-layer model to clearly separate reusable infrastructure
 
 ```mermaid
 flowchart TB
-    DK["DK VAT Overlay [DK VAT]\nML rules, CVR, Rubrik A/B/C, System S\nDKK thresholds and cadence policy data"]
-    VAT["Generic VAT Platform [VAT-GENERIC]\nfiling, validation, assessment, claim\ncorrection, obligation, registration, BFF\nrule catalog mechanism"]
-    PLAT["Platform Infrastructure [PLATFORM]\nAPI gateway, event backbone, audit store\nschema registry, outbox, observability"]
+    DK["DK VAT Overlay (DK VAT)<br/>ML rules, CVR, Rubrik A/B/C, System S<br/>DKK thresholds and cadence policy data"]
+    VAT["Generic VAT Platform (VAT-GENERIC)<br/>filing, validation, assessment, claim<br/>amendment, obligation, registration, BFF<br/>rule catalog mechanism"]
+    PLAT["Platform Infrastructure (PLATFORM)<br/>API gateway, event backbone, audit store<br/>schema registry, outbox, observability"]
 
     DK --> VAT
     VAT --> PLAT
@@ -145,14 +145,14 @@ S01-S34 per `architecture/traceability/scenario-to-architecture-traceability-mat
 
 ```mermaid
 flowchart LR
-    Taxpayer["Taxpayer /\nRepresentative"]
+    Taxpayer["Taxpayer /<br/>Representative"]
     ERP["ERP / Bookkeeping"]
-    S_REG["System S Registration API\n(external) [System S]"]
-    S_ACC["System S Taxpayer Accounting API\n(external) [System S]"]
+    S_REG["System S Registration API<br/>(external) [System S]"]
+    S_ACC["System S Taxpayer Accounting API<br/>(external) [System S]"]
     AUD_RPT["Audit and Reporting"]
 
     subgraph PORTAL["Portal Layer"]
-        BFF["portal-bff\n[VAT-GENERIC]"]
+        BFF["portal-bff<br/>[VAT-GENERIC]"]
     end
 
     subgraph TAX_CORE["Tax Core Platform"]
@@ -171,15 +171,15 @@ flowchart LR
 
         subgraph DK_OVERLAY["DK VAT Overlay [DK VAT]"]
             RE["rule-engine-service"]
-            RC[("Rule Catalog\n(ML Â§Â§ rules)")]
-            CC["system-s-connector\n(System S accounting adapter)"]
+            RC[("Rule Catalog<br/>(ML sections rules)")]
+            CC["system-s-connector<br/>(System S accounting adapter)"]
             EUX["system-s-registration-adapter"]
             CUS["system-s-accounting-adapter"]
         end
 
         subgraph DATA_PLANE["Data Plane [PLATFORM]"]
-            ODB[("Operational DB\nACID Relational")]
-            ADB[("Audit Store\nLakehouse / Iceberg")]
+            ODB[("Operational DB<br/>ACID Relational")]
+            ADB[("Audit Store<br/>Lakehouse / Iceberg")]
             Q[("Kafka + DLQ")]
             SR[("Schema Registry")]
             AE["audit-evidence"]
@@ -226,13 +226,13 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph DK["DK VAT Overlay [DK VAT]"]
-        DK1["rule-engine-service\nML Â§Â§ rule packs"]
-        DK2["Rule Catalog\neffective-dated DK rules"]
-        DK3["system-s-connector\nSystem S adapter"]
-        DK4["DK VAT Filing Schema\nCVR Â· Rubrik A/B/C Â· salgsmoms/kÃ¸bsmoms"]
-        DK5["DK Cadence Policy\n50k threshold Â· half-yearly/quarterly/monthly"]
-        DK6["system-s-registration-adapter\nEU reporting adapter"]
-        DK7["system-s-accounting-adapter\nimport VAT facts Â· reconciliation"]
+        DK1["rule-engine-service<br/>DK rule packs"]
+        DK2["Rule Catalog<br/>effective-dated DK rules"]
+        DK3["system-s-connector<br/>System S adapter"]
+        DK4["DK VAT Filing Schema<br/>CVR, Rubrik A/B/C, VAT fields"]
+        DK5["DK Cadence Policy<br/>50k threshold, half-yearly/quarterly/monthly"]
+        DK6["system-s-registration-adapter<br/>registration adapter"]
+        DK7["system-s-accounting-adapter<br/>accounting pull and reconciliation"]
     end
 
     subgraph VAT["Generic VAT Platform [VAT-GENERIC]"]
@@ -245,7 +245,7 @@ flowchart TB
         V6["assessment-service"]
         V7["amendment-service"]
         V8["claim-orchestrator"]
-        V9["Rule Catalog mechanism\n(effective-dated rule store)"]
+        V9["Rule Catalog mechanism<br/>(effective-dated rule store)"]
     end
 
     subgraph PLAT["Platform Infrastructure [PLATFORM]"]
@@ -289,12 +289,18 @@ flowchart LR
     CS["amendment-service [VAT-GENERIC]"]
 
     UI -->|authenticated requests| BFF
-    BFF -->|POST /registration/parties| GW --> RS
-    BFF -->|GET /obligations| GW --> OBS
-    BFF -->|POST/GET registration projection| GW --> EUSOBS
-    BFF -->|POST /vat-filings| GW --> FS
-    BFF -->|POST /vat-filings amendment| GW --> CS
-    BFF -->|GET /vat-filings/:id| GW --> FS
+    BFF -->|POST /registration/parties| GW
+    GW --> RS
+    BFF -->|GET /obligations| GW
+    GW --> OBS
+    BFF -->|POST/GET registration projection| GW
+    GW --> EUSOBS
+    BFF -->|POST /vat-filings| GW
+    GW --> FS
+    BFF -->|POST /vat-filings amendment| GW
+    GW --> CS
+    BFF -->|GET /vat-filings/:id| GW
+    GW --> FS
 
     style BFF fill:#d5e8d4,stroke:#82b366
     style UI fill:#f5f5f5,stroke:#666
@@ -304,17 +310,17 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    BFF_CTX["Portal BFF Context\nportal-bff (VAT-GENERIC)"]
-    REG_CTX["Registration Context\nregistration-service (VAT-GENERIC)"]
-    OBL_CTX["Obligation Context\nobligation-service (VAT-GENERIC)"]
-    EUS_CTX["System S Registration Sync Context\nsystem-s-registration-projection-service (VAT-GENERIC)\nsystem-s-registration-adapter (DK VAT)"]
-    FIL_CTX["Filing Context\nfiling-service (VAT-GENERIC)"]
-    VAL_CTX["Validation Context\nvalidation-service (VAT-GENERIC)"]
-    RULE_CTX["Tax Rule and Assessment Context\nrule-engine (DK VAT)\nassessment-service (VAT-GENERIC)"]
-    COR_CTX["Amendment Context\namendment-service (VAT-GENERIC)"]
-    CLM_CTX["Claim Context\nclaim-orchestrator (VAT-GENERIC)\nsystem-s-connector (DK VAT)"]
-    CUS_CTX["System S Accounting Context\nsystem-s-accounting-adapter (DK VAT)"]
-    AUD_CTX["Audit Context\naudit-evidence (PLATFORM)"]
+    BFF_CTX["Portal BFF Context<br/>portal-bff (VAT-GENERIC)"]
+    REG_CTX["Registration Context<br/>registration-service (VAT-GENERIC)"]
+    OBL_CTX["Obligation Context<br/>obligation-service (VAT-GENERIC)"]
+    EUS_CTX["System S Registration Sync Context<br/>system-s-registration-projection-service (VAT-GENERIC)<br/>system-s-registration-adapter (DK VAT)"]
+    FIL_CTX["Filing Context<br/>filing-service (VAT-GENERIC)"]
+    VAL_CTX["Validation Context<br/>validation-service (VAT-GENERIC)"]
+    RULE_CTX["Tax Rule and Assessment Context<br/>rule-engine (DK VAT)<br/>assessment-service (VAT-GENERIC)"]
+    COR_CTX["Amendment Context<br/>amendment-service (VAT-GENERIC)"]
+    CLM_CTX["Claim Context<br/>claim-orchestrator (VAT-GENERIC)<br/>system-s-connector (DK VAT)"]
+    CUS_CTX["System S Accounting Context<br/>system-s-accounting-adapter (DK VAT)"]
+    AUD_CTX["Audit Context<br/>audit-evidence (PLATFORM)"]
 
     BFF_CTX -->|"API calls"| REG_CTX
     BFF_CTX -->|"API calls"| OBL_CTX
@@ -342,14 +348,14 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph TRANS["Transactional Plane (PLATFORM)"]
-        ODB_T["ACID Relational DB\nFilings, Assessments, Claims, Obligations"]
-        OUTBOX["Outbox Tables\nReliable event publication"]
+        ODB_T["ACID Relational DB<br/>Filings, Assessments, Claims, Obligations"]
+        OUTBOX["Outbox Tables<br/>Reliable event publication"]
     end
 
     subgraph EVENT["Event and Streaming Plane (PLATFORM)"]
         KAFKA["Kafka-compatible Backbone"]
-        SREG["Schema Registry\nAvro or Protobuf, CI compatibility"]
-        STREAM["Stateful Stream Processing\nCompliance signals and risk checks"]
+        SREG["Schema Registry<br/>Avro or Protobuf, CI compatibility"]
+        STREAM["Stateful Stream Processing<br/>Compliance signals and risk checks"]
     end
 
     subgraph ANALYTICAL["Analytical and Compliance Plane (PLATFORM)"]
@@ -359,8 +365,8 @@ flowchart TB
     end
 
     subgraph OBS_PLANE["Observability Plane (PLATFORM)"]
-        OTEL["OpenTelemetry\nTraces, metrics, logs, trace_id"]
-        ALERTS["Alerting\nOverdue, DLQ, failures, portal BFF chains"]
+        OTEL["OpenTelemetry<br/>Traces, metrics, logs, trace_id"]
+        ALERTS["Alerting<br/>Overdue, DLQ, failures, portal BFF chains"]
     end
 
     ODB_T --> OUTBOX
@@ -378,17 +384,17 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     actor User
-    participant BFF as portal-bff [VAT-GENERIC]
-    participant GW as API Gateway [PLATFORM]
-    participant FS as filing-service [VAT-GENERIC]
-    participant VS as validation-service [VAT-GENERIC]
-    participant RE as rule-engine [DK VAT]
-    participant AS as assessment-service [VAT-GENERIC]
-    participant CO as claim-orchestrator [VAT-GENERIC]
-    participant OBX as Outbox [PLATFORM]
-    participant CC as system-s-connector [DK VAT]
+    participant BFF as "portal-bff (VAT-GENERIC)"
+    participant GW as "API Gateway (PLATFORM)"
+    participant FS as "filing-service (VAT-GENERIC)"
+    participant VS as "validation-service (VAT-GENERIC)"
+    participant RE as "rule-engine (DK VAT)"
+    participant AS as "assessment-service (VAT-GENERIC)"
+    participant CO as "claim-orchestrator (VAT-GENERIC)"
+    participant OBX as "Outbox (PLATFORM)"
+    participant CC as "system-s-connector (DK VAT)"
     participant ECS as System S Claims
-    participant AE as audit-evidence [PLATFORM]
+    participant AE as "audit-evidence (PLATFORM)"
 
     User->>BFF: submit filing (portal action)
     BFF->>GW: POST /vat-filings (OpenAPI 3.1, trace_id)
@@ -403,7 +409,7 @@ sequenceDiagram
     RE->>RE: deterministic evaluation vs Rule Catalog
     RE->>AE: RuleEvaluationEvidence
     RE-->>AS: EvaluatedFacts [CloudEvents]
-    AS->>AS: net_vat = output - input + adj Â· derive result_type
+    AS->>AS: net_vat = output - input + adjustments; derive result_type
     AS->>AS: persist assessment_version (append-only)
     AS->>AE: AssessmentEvidence
     AS->>CO: AssessmentCalculated [CloudEvents]
@@ -415,7 +421,7 @@ sequenceDiagram
     ECS-->>CC: 200 OK / claim_ref
     CC->>CO: ClaimDispatched [CloudEvents]
     CO->>AE: DispatchOutcomeEvidence
-    CO-->>FS: state â†’ claim_created
+    CO-->>FS: state to claim_created
     FS-->>GW: 201 {filing_id, trace_id, status}
     GW-->>BFF: 201
     BFF-->>User: filing confirmed
@@ -426,10 +432,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant BFF as portal-bff [VAT-GENERIC]
-    participant FS as filing-service [VAT-GENERIC]
-    participant VS as validation-service [VAT-GENERIC]
-    participant AE as audit-evidence [PLATFORM]
+    participant BFF as "portal-bff (VAT-GENERIC)"
+    participant FS as "filing-service (VAT-GENERIC)"
+    participant VS as "validation-service (VAT-GENERIC)"
+    participant AE as "audit-evidence (PLATFORM)"
 
     User->>BFF: submit filing
     BFF->>FS: POST /vat-filings
@@ -440,19 +446,19 @@ sequenceDiagram
     FS->>FS: status = validation_failed
     FS-->>BFF: 422 {errors[], trace_id}
     BFF-->>User: validation errors (UX-formatted)
-    Note over FS: Pipeline halted â€” no rule evaluation or claim dispatch
+    Note over FS: Pipeline halted; no rule evaluation or claim dispatch
 ```
 
 ### 2.8 Error Path: Dispatch Failure and Retry
 
 ```mermaid
 sequenceDiagram
-    participant CC as system-s-connector [DK VAT]
+    participant CC as "system-s-connector (DK VAT)"
     participant ECS as System S Claims
-    participant Q as Kafka Queue [PLATFORM]
-    participant DLQ as DLQ [PLATFORM]
-    participant CO as claim-orchestrator [VAT-GENERIC]
-    participant AE as audit-evidence [PLATFORM]
+    participant Q as "Kafka Queue (PLATFORM)"
+    participant DLQ as "DLQ (PLATFORM)"
+    participant CO as "claim-orchestrator (VAT-GENERIC)"
+    participant AE as "audit-evidence (PLATFORM)"
 
     CC->>ECS: POST /claims
     ECS-->>CC: 5xx / timeout
@@ -472,12 +478,12 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant BFF as portal-bff [VAT-GENERIC]
-    participant FS as filing-service [VAT-GENERIC]
-    participant CS as amendment-service [VAT-GENERIC]
-    participant AS as assessment-service [VAT-GENERIC]
-    participant CO as claim-orchestrator [VAT-GENERIC]
-    participant AE as audit-evidence [PLATFORM]
+    participant BFF as "portal-bff (VAT-GENERIC)"
+    participant FS as "filing-service (VAT-GENERIC)"
+    participant CS as "amendment-service (VAT-GENERIC)"
+    participant AS as "assessment-service (VAT-GENERIC)"
+    participant CO as "claim-orchestrator (VAT-GENERIC)"
+    participant AE as "audit-evidence (PLATFORM)"
 
     User->>BFF: submit amendment
     BFF->>FS: POST /vat-filings (filing_type=amendment, prior_filing_id)
@@ -488,7 +494,7 @@ sequenceDiagram
     AS->>AE: CorrectionAssessmentEvidence
     CS->>AE: CorrectionLineageEvidence
     alt delta != neutral
-        AS->>CO: ReturnCorrected â†’ adjustment claim [CloudEvents]
+        AS->>CO: ReturnCorrected to adjustment claim [CloudEvents]
         CO->>AE: AdjustmentClaimEvidence
     end
     FS-->>BFF: 201 {filing_id, assessment_version, delta_type, trace_id}
@@ -499,7 +505,7 @@ sequenceDiagram
 
 ```mermaid
 stateDiagram-v2
-    state "Filing State Machine [VAT-GENERIC]" as FSM {
+    state "Filing State Machine (VAT-GENERIC)" as FSM {
         [*] --> received : POST accepted
         received --> validation_failed : blocking error
         received --> validated : all checks pass
@@ -512,7 +518,7 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    state "Claim Dispatch State Machine [VAT-GENERIC]" as CSM {
+    state "Claim Dispatch State Machine (VAT-GENERIC)" as CSM {
         [*] --> queued : outbox record
         queued --> sent : connector dequeues
         sent --> acked : external confirms
@@ -526,7 +532,7 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    state "Preliminary Assessment State Machine [VAT-GENERIC]" as PSM {
+    state "Preliminary Assessment State Machine (VAT-GENERIC)" as PSM {
         [*] --> preliminary_assessment_pending : ObligationOverdue (deadline passed, no filing)
         preliminary_assessment_pending --> preliminary_assessment_issued : PreliminaryAssessmentIssued
         preliminary_assessment_issued --> preliminary_assessment_superseded : PreliminaryAssessmentSupersededByFiledReturn
@@ -540,7 +546,7 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    state "System S Registration Sync State Machine [VAT-GENERIC]" as ESM {
+    state "System S Registration Sync State Machine (VAT-GENERIC)" as ESM {
         [*] --> registration_received : TaxpayerRegistrationSubmitted
         registration_received --> registration_synced : TaxpayerRegistrationSynchronized
         registration_received --> registration_sync_failed : sync failure

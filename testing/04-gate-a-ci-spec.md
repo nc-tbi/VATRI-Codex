@@ -14,7 +14,7 @@ Define the mandatory Gate A CI checks for Sprint 1 and map them to implemented t
 - Gate A is implemented as `npm run test:gate-a` in `build/package.json`.
 - Sprint 1 fixture metadata (`scenario_id`, `risk_tier`, `gate`) is available in shared fixtures.
 - Integration coverage for `S01/S02/S03/S20` and traceability assertions is implemented in one dedicated suite.
-- Current execution state (2026-02-24): Gate A is blocked by the new defect-prevention service-risk pack (`phase1-defect-prevention-004.test.ts`). Baseline GA-TS typecheck blockers remain resolved, but unresolved runtime/contract defects now fail the gate (`GA-RUN-007`).
+- Current execution state (2026-02-24): Gate A is passing again after service-risk remediation. Defect-prevention pack `phase1-defect-prevention-004.test.ts` now passes and workspace typecheck remains green (`GA-RUN-008`).
 
 ## Assumptions (`confirmed` vs `assumed`)
 - `confirmed`: `test` and `typecheck` are baseline checks required for PR quality in build workspace.
@@ -23,13 +23,22 @@ Define the mandatory Gate A CI checks for Sprint 1 and map them to implemented t
 ## Risks and Open Questions
 - Contract lint checks are not yet implemented as a separate command and should be added as Gate A extension.
 - Scenario-metadata reporting is currently in fixture/test labels and should be exported into CI artifacts in a later sprint.
-- New service-level risk tests intentionally fail until code remediation lands for duplicate filing idempotency, claim request enforcement, assessment retrieval contract, audit durability, and Kafka publisher lifecycle.
+- Service-level risk tests are now active and passing for duplicate filing idempotency, claim request enforcement, assessment retrieval contract, audit durability, and Kafka publisher lifecycle.
 
 ## Acceptance Criteria
 - Gate A command exists and can be executed in CI.
 - Gate A fails on unit/integration test failures and type-check failures.
 - Sprint 1 scenario set (`S01/S02/S03/S20`) has executable automated coverage in build test suites.
 - Gate A can only be marked `pass` when both test and workspace typecheck phases pass.
+
+## Gate Decision Rule (Authoritative)
+Gate A is `Pass` only if both are true in the same validation cycle:
+1. `cd build && npm run test:gate-a` passes
+2. workspace typecheck phase passes as part of that gate run
+
+Evidence handling rule:
+- Every rerun must append a new `GA-RUN-*` record in `testing/05-gate-a-defect-remediation-tracker.md`.
+- Do not overwrite or delete historical run evidence when new failures appear.
 
 ## Required CI Command
 ```bash
@@ -54,9 +63,9 @@ npm run test:gate-a
 | Check | Status | Note |
 |---|---|---|
 | `test:gate-a` script exists | Done | Added to `build/package.json` |
-| Domain tests (`npm run test -w @tax-core/domain`) | Fail | `phase1-defect-prevention-004.test.ts`: `4` pass, `5` fail (runtime/contract defects) |
+| Domain tests (`npm run test -w @tax-core/domain`) | Pass | `114/114` tests passing (including `phase1-defect-prevention-004.test.ts` `9/9`) |
 | Workspace typecheck (`npm run typecheck --workspaces --if-present`) | Pass | 0 errors across all 7 workspaces; GA-TS-* defects remain resolved |
-| Gate A overall verdict | **Blocked** | Rerun evidence: `GA-RUN-007` in `05-gate-a-defect-remediation-tracker.md` |
+| Gate A overall verdict | **Pass** | Rerun evidence: `GA-RUN-008` in `05-gate-a-defect-remediation-tracker.md` |
 
 ## Gate A-SVC Extension (Required from Review 004)
 Purpose:

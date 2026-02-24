@@ -232,9 +232,21 @@ Backlog:
 - Failing suite/cases: unchanged from `GA-RUN-005` (`phase1-defect-prevention-004.test.ts`, 5 failing tests).
 - Impact: typecheck blockers remain resolved, but Gate A stays blocked on unresolved service runtime/contract defects.
 
+### Evidence E7 - Post-remediation closure rerun (GA-RUN-008) (2026-02-24)
+- Command: `cd build && npm run test:gate-a`
+- Outcome: **PASS**
+- Sub-result 1: `npm run test -w @tax-core/domain` **PASS** (`114/114`)
+- Sub-result 2: `npm run typecheck --workspaces --if-present` **PASS** (`0 errors, all 7 workspaces`)
+- Impact: Gate A blocker from review 004 is closed in current baseline.
+
 ### Current Gate-A verdict
-- `TB-S1-05`: **Blocked** (regression: service-risk defect-prevention pack 004 failing)
-- Promotion recommendation: **hold** - Gate A blocked by unresolved service runtime/contract defects from review 004.
-- Source of execution evidence: `GA-RUN-007` in `testing/05-gate-a-defect-remediation-tracker.md`; local rerun on 2026-02-24.
+- `TB-S1-05`: **Done**
+- Promotion recommendation: **proceed** - Gate A currently passes with tests and workspace typecheck green.
+- Source of execution evidence: `GA-RUN-008` in `testing/05-gate-a-defect-remediation-tracker.md`; local rerun on 2026-02-24.
+
+Gate decision rule (authoritative):
+- Gate A can be marked `Pass` only if both are true in the same validation cycle:
+  1. `cd build && npm run test:gate-a` passes
+  2. workspace typecheck phase passes as part of that gate run
 
 

@@ -31,3 +31,4 @@ This folder contains architecture outputs derived from the business analysis pac
 - `analysis/06-exemptions-and-deduction-rules-dk.md`
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`
+- `analysis/09-product-scope-and-requirements-alignment.md`

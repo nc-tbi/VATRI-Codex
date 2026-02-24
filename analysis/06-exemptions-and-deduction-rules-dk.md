@@ -1,50 +1,72 @@
 ﻿# 06 - Exemptions, Zero-Rated Treatment, and Input VAT Deduction
 
-## Scope
-This document captures exemption handling for Danish VAT and its direct impact on deduction rights and filing outputs.
+## Task Summary
+Define exemption and deduction-right rules needed for Danish VAT filing and assessment.
 
-## Key Distinction
-- **VAT-exempt supplies**: generally no output VAT charged, and input VAT deduction may be limited or denied for related costs.
-- **Zero-rated/out-of-scope style reporting categories**: require explicit classification and may still affect reporting boxes.
+## Business Objectives
+- Ensure exemption classification and deduction logic are reflected correctly in assessment outcomes.
+- Preserve traceability from line-level classification to return-level declaration values.
 
-## Exemption Categories (High-Level SKAT Guidance)
-SKAT public guidance highlights examples such as:
-- healthcare services
-- social welfare and care services
-- education/teaching
-- financial services (for example lending)
-- insurance
-- cultural activities (for example museums/theatres)
+## Requirements
+### Key Distinction
+- [confirmed] VAT-exempt supplies usually have no output VAT and can limit or deny deduction rights.
+- [assumed] Zero-rated/out-of-scope style categories may require separate classification paths but still influence reporting values.
 
-Implement as explicit category codes mapped to legal references.
+### Exemption Categories (High-Level)
+Examples highlighted in public guidance include healthcare, social welfare, education, financial services, insurance, and cultural activities.
 
-## Deduction Consequences
-- For exempt activity, VAT on related purchases is generally not deductible.
-- For mixed businesses (taxable + exempt), deduction may be partial and requires allocation logic.
-- Tax Core must model deduction rights separately from transaction amount capture.
+### Deduction Consequences
+- Exempt activity: related input VAT generally not deductible.
+- Mixed activity: partial deduction allocation is required.
 
-## Rule Model for Deduction Rights
+### Rule Model for Deduction Rights (Line-Level)
 Each input VAT line should include:
 - `deduction_right_type` (`full`, `partial`, `none`)
 - `deduction_percentage`
 - `deduction_basis_reference`
-- `allocation_method_id` (for mixed activity scenarios)
+- `allocation_method_id`
 
-## Required Validations
-- If supply is classified as exempt, output VAT should generally be zero.
-- If deduction right is `none`, related input VAT cannot be fully deducted.
-- If deduction right is `partial`, allocation basis and percentage are mandatory.
-- Significant period-over-period deduction ratio changes should trigger warning controls.
+### Data-Boundary Model and Traceability
+- Line-level facts store exemption class and deduction-right decisions.
+- Return-level schema stores aggregated deductible input VAT and relevant Rubrik values.
+- Linkage keys:
+  - `filing_id`
+  - `line_fact_id`
+  - `calculation_trace_id`
+  - `rule_version_id`
+- Reconciliation rule: return-level deductible totals must equal sum of approved line-level deductible amounts.
 
-## Reporting Implications
-- Exempt and cross-border flows may affect Rubrik C and related international reporting values.
-- Tax Core should preserve traceability from exemption classification to filed values and final net VAT result.
+### Required Validations
+- Exempt classification should generally imply zero output VAT for that supply line.
+- `deduction_right_type=none` blocks full deduction.
+- `deduction_right_type=partial` requires allocation method and percentage.
+- Large deduction-ratio changes trigger warning controls.
 
-## Implementation Guidance
-- Maintain a central classification dictionary:
-  - product/service code -> VAT treatment -> deduction rule
-- Version classifications by effective date.
-- Keep legal references attached to each classification row for audit.
+## Constraints and Assumptions
+- [confirmed] Mixed-activity scenarios require allocation logic.
+- [assumed] Allocation methodology is configured per legal entity and period.
+
+## Dependencies and Risks
+- Dependency on maintained exemption and deduction classification dictionaries.
+- Risk of incorrect refund outcome if partial-deduction allocation is misconfigured.
+
+## Process / Capability Impact
+- Requires classification engine before deduction aggregation.
+- Requires audit trail linking line decisions to return-level totals.
+
+## Architecture Input Package
+- Line-level deduction model.
+- Return-level aggregation and reconciliation rule.
+- Validation rules for exemption/deduction consistency.
+
+## Structure Mapping (BA Contract 1-7)
+1. Task Summary -> `Task Summary`
+2. Business Objectives -> `Business Objectives`
+3. Requirements -> `Requirements`
+4. Constraints and Assumptions -> `Constraints and Assumptions`
+5. Dependencies and Risks -> `Dependencies and Risks`
+6. Process / Capability Impact -> `Process / Capability Impact`
+7. Architecture Input Package -> `Architecture Input Package`
 
 ## Sources
 - SKAT - What is VAT / exemptions examples: https://skat.dk/borger/moms/hvad-er-moms

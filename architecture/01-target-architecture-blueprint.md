@@ -8,6 +8,8 @@
 - Enforce open-source-only technology choices across runtime, data, integration, and platform tooling.
 - Provide a taxpayer self-service portal for VAT workflows through a dedicated BFF layer.
 - Provide API-first Tax Core ingress so all entry types can be submitted programmatically.
+- Operate as a product-first Tax Core that coexists with incumbent authority and enterprise landscapes.
+- Enforce deterministic legal decisioning; AI capabilities remain assistive and non-binding.
 
 ## 2. Context and Boundaries
 ```mermaid
@@ -26,10 +28,12 @@ In scope:
 - taxpayer self-service portal and portal BFF
 - API-first ingestion for registration, obligation, filing, correction, and status queries
 - obligation, filing, validation, assessment, correction, claim dispatch, audit evidence
+- tax-specific collection/settlement integration boundaries
 
 Out of scope:
 - settlement and debt collection
 - legal dispute adjudication
+- non-tax enterprise domains (for example HR, CRM, general ledger, procurement)
 
 ## 3. Bounded Contexts and Domain Responsibilities
 ```mermaid
@@ -155,6 +159,32 @@ Tax Core API surface (minimum):
   - `GET /claims/{claim_id}`
   - outbound `POST /claims` to external claims system
 
+Canonical filing contract (return-level monetary fields):
+- `output_vat_amount_domestic`
+- `reverse_charge_output_vat_goods_abroad_amount`
+- `reverse_charge_output_vat_services_abroad_amount`
+- `input_vat_deductible_amount_total`
+- `adjustments_amount`
+
+Deterministic staged derivation contract:
+- `stage_1_gross_output_vat_amount = output_vat_amount_domestic + reverse_charge_output_vat_goods_abroad_amount + reverse_charge_output_vat_services_abroad_amount`
+- `stage_2_total_deductible_input_vat_amount = input_vat_deductible_amount_total`
+- `stage_3_pre_adjustment_net_vat_amount = stage_1_gross_output_vat_amount - stage_2_total_deductible_input_vat_amount`
+- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount`
+- `result_type` and `claim_amount` derive only from `stage_4_net_vat_amount`.
+
+Return-level vs line-level data boundary:
+- Return-level store holds canonical filing aggregates and staged derived totals.
+- Line-level fact store holds reverse-charge, exemption, deduction-right, and place-of-supply facts.
+- Required linkage keys:
+  - `filing_id`
+  - `line_fact_id`
+  - `calculation_trace_id`
+  - `rule_version_id`
+  - `source_document_ref`
+- Reproducibility rule:
+  - return-level aggregates and deductible totals must be reproducible from linked line-level facts.
+
 EU-sales obligation lifecycle contract:
 - States:
   - `eu_sales_due`
@@ -235,6 +265,14 @@ DKK normalization and rounding policy ownership:
 - Audit requirements:
   - store pre-round amount, rounded amount, and `rounding_policy_version_id` for replay and legal traceability.
 
+AI boundary contract:
+- Allowed:
+  - assistive triage, anomaly hints, and explanation generation
+- Not allowed:
+  - AI-issued legal assessments, penalties, or legal fact mutation
+- Binding outcomes:
+  - only deterministic rule and assessment services produce legally binding decisions
+
 Interface and contract standards:
 - Synchronous APIs: `OpenAPI 3.1` with versioned contracts and backward-compatibility policy.
 - Asynchronous APIs: `AsyncAPI` + `CloudEvents` envelope for domain events.
@@ -250,6 +288,10 @@ Interface and contract standards:
   - exemptions
   - deduction rights
 - Deterministic replay by historical `rule_version_id`
+- Temporal legal correctness:
+  - evaluation always uses policy/rule versions in force at event time
+- Country-variation governance:
+  - route deviations through explicit governance outcomes (`policy change`, `country extension`, `core change`, `reject`)
 
 ## 7. Security, NFR, and Observability Design
 - RBAC roles: `preparer`, `reviewer_approver`, `operations_support`, `auditor`

@@ -11,6 +11,9 @@ Translate architecture into implementable solution design decisions for service 
 - Keep technology and standards choices explicit and justified for the target solution constraints.
 - Provide taxpayer self-service UX through `Portal UI -> BFF -> Tax Core API`.
 - Ensure all portal actions are backed by public Tax Core API operations.
+- Model filing data with explicit return-level aggregates and linked line-level fact records.
+- Implement staged net-VAT derivation (`stage_1` to `stage_4`) as deterministic persisted calculation steps.
+- Keep AI assistive only; legally binding outcomes must come from deterministic rule/assessment services.
 
 ## Service Decomposition
 - `portal-ui`

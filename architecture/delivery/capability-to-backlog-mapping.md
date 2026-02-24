@@ -72,6 +72,12 @@
 - Feature F11.1: Case-routing for old-period corrections and dispute triggers
 - Feature F11.2: Decision package export for legal/case systems
 
+### Epic E14: Product-First Coexistence and Governance
+- Feature F14.1: Sidecar integration contracts for coexistence with incumbent authority systems
+- Feature F14.2: Country-variation governance workflow (`policy change`, `country extension`, `core change`, `reject`)
+- Feature F14.3: Temporal legal-correctness tests for effective-dated policy evaluation
+- Feature F14.4: AI-boundary controls that block non-deterministic legal decisions
+
 ## Suggested Acceptance Anchors
 - Every feature maps to at least one scenario in `analysis/07-...` or class in `analysis/08-...`.
 - No production rule change without regression fixtures and legal reference.

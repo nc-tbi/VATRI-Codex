@@ -1,103 +1,84 @@
 ﻿# 07 - Filing Scenarios and Claim Outcomes (Denmark VAT)
 
-## Purpose
-Provide scenario-driven examples so architecture and engineering can test filing logic, compliance outcomes, and claim creation consistently.
+## Task Summary
+Provide scenario-driven coverage for Danish VAT filing and assessment outcomes used for architecture and implementation validation.
 
-## Scenario Set A: Core Filing Outcomes
-1. **Standard domestic payable return**
-- output VAT > deductible input VAT
-- expected: `regular` return, payable claim
+## Business Objectives
+- Validate end-to-end behavior from filing input to claim output.
+- Ensure scenario-critical capabilities are reflected in architecture requirements.
 
-2. **Refund return (high input VAT)**
-- deductible input VAT > output VAT
-- expected: refund claim
+## Requirements
+### Scenario Set A: Core Filing Outcomes
+1. Standard domestic payable return
+2. Refund return (high input VAT)
+3. Zero declaration
+4. Correction filing increases liability
+5. Correction filing decreases liability
 
-3. **Zero declaration**
-- VAT-registered business with no reportable activity
-- expected: `zero` return, no payable/refund amount
+### Scenario Set B: Reverse Charge and Cross-Border
+6. EU B2B goods purchase (reverse charge)
+7. EU B2B service purchase (reverse charge)
+8. EU B2B sale without Danish VAT (separate EU-sales obligation handling)
+9. Non-EU import goods (customs/told integration dependency)
+10. Non-EU purchased services
+11. Domestic reverse-charge supply categories
 
-4. **Correction filing increases liability**
-- prior under-reported output VAT
-- expected: correction accepted, additional payable adjustment claim
+### Scenario Set C: Exemptions and Deduction Rights
+12. Fully taxable business with full deduction
+13. Fully exempt activity (no deduction)
+14. Mixed activity (partial deduction)
+15. Zero-rated/export-like reporting path
 
-5. **Correction filing decreases liability**
-- prior over-reported VAT
-- expected: correction accepted, refund adjustment claim
+### Scenario Set D: Obligation and Compliance Assessments
+16. Not VAT registered and below threshold
+17. Not VAT registered but threshold reached
+18. Registered but late filing
+19. No filing submitted by deadline
+20. Filed but contradictory data
+21. Past-period correction (>3 years case)
 
-## Scenario Set B: Reverse Charge and Cross-Border
-6. **EU B2B goods purchase (reverse charge)**
-- expected: reverse-charge VAT handling + Rubrik A values
+### Scenario Set E: Lifecycle and Special Context
+22. Final VAT return on business closure
+23. Transfer/overdragelse instead of full closure
+24. Bankruptcy estate (konkursbo) handling
+25. Special schemes (brugtmoms, OSS, momskompensation)
 
-7. **EU B2B service purchase (reverse charge)**
-- expected: service reverse-charge handling + Rubrik A values
-
-8. **EU B2B sale without Danish VAT**
-- expected: EU sale reporting and separate EU-sales obligation handling
-
-9. **Non-EU import goods**
-- expected: import VAT treatment, customs/told integration dependency
-
-10. **Non-EU purchased services**
-- expected: imported-service VAT treatment by place-of-supply rules
-
-11. **Domestic reverse-charge supply categories**
-- examples include categories referenced in ML § 46 (for example metalskrot, specified electronics, CO2 certificates)
-- expected: buyer-liable VAT behavior + reverse-charge invoice flags
-
-## Scenario Set C: Exemptions and Deduction Rights
-12. **Fully taxable business with full deduction**
-- expected: full input deduction allowed
-
-13. **Fully exempt activity (no deduction)**
-- expected: no deduction for related purchases
-
-14. **Mixed activity (partial deduction)**
-- expected: allocation model applied; deduction % recorded and auditable
-
-15. **Zero-rated/export-like reporting path**
-- expected: no Danish output VAT for qualifying supplies, reporting values maintained
-
-## Scenario Set D: Obligation and Compliance Assessments
-16. **Not VAT registered and below threshold**
-- expected: no periodic VAT filing obligation
-
-17. **Not VAT registered but threshold reached**
-- expected: registration risk flag and onboarding workflow
-
-18. **Registered but late filing**
-- expected: overdue status, forelobig fastsaettelse risk, fee/rent risk flags
-
-19. **No filing submitted by deadline**
-- expected: preliminary assessment event path and later replacement with actual filing
-
-20. **Filed but contradictory data**
-- expected: validation error/warning workflow; filing blocked or flagged
-
-21. **Past-period correction (>3 years case)**
-- expected: routed to special correction path and manual/legal review handling
-
-## Scenario Set E: Lifecycle and Special Context
-22. **Final VAT return on business closure**
-- expected: final-period return logic and asset/private-use checks
-
-23. **Transfer/overdragelse instead of full closure**
-- expected: special final return considerations
-
-24. **Bankruptcy estate (konkursbo) handling**
-- expected: dedicated flow with deduction-right assessment for estate activities
-
-25. **Special schemes (brugtmoms, OSS, momskompensation)**
-- expected: either supported natively or routed to dedicated module/process
-
-## Claim Outcome Rules Across All Scenarios
+### Claim Outcome Rules Across All Scenarios
 - Exactly one period result: `payable`, `refund`, or `zero`.
-- Claim payload must include rule version and calculation trace ID.
-- Assessment/correction events must be linkable to original filing and period obligation.
+- Claim payload includes `rule_version_id` and `calculation_trace_id`.
+- Assessment/correction events link to original filing and obligation.
+
+## Constraints and Assumptions
+- [confirmed] Separate EU-sales obligation handling is required for relevant scenario paths.
+- [confirmed] Non-EU import goods path depends on customs/told facts.
+- [assumed] `Needs module` and `Manual/legal` scenarios in matrix are not fully automated in initial release.
+
+## Dependencies and Risks
+- Dependency on customs/told integration and EU-sales reporting interfaces.
+- Risk of compliance drift if scenario-to-requirement mapping is not maintained.
+
+## Process / Capability Impact
+- Requires scenario fixtures mapped to validation, assessment, and integration tests.
+- Requires explicit routing for `Manual/legal` scenarios.
+
+## Architecture Input Package
+- Scenario catalog for test fixtures.
+- Capability obligations for EU-sales and customs/told dependencies.
+- Outcome and traceability assertions for claim orchestration.
+
+## Structure Mapping (BA Contract 1-7)
+1. Task Summary -> `Task Summary`
+2. Business Objectives -> `Business Objectives`
+3. Requirements -> `Requirements`
+4. Constraints and Assumptions -> `Constraints and Assumptions`
+5. Dependencies and Risks -> `Dependencies and Risks`
+6. Process / Capability Impact -> `Process / Capability Impact`
+7. Architecture Input Package -> `Architecture Input Package`
 
 ## Sources
 - SKAT - File VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
-- SKAT - Correct filed VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-retter-du-din-momsindberetning-eller-betaling
-- SKAT - Forelobig fastsaettelse (late/non-filing): https://skat.dk/erhverv/betaling-og-skattekonto/indberet-til-tiden-og-undgaa-foreloebig-fastsaettelser
+- SKAT - Correct filed VAT (canonical): https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-retter-du-din-momsindberetning-eller-betaling
+- SKAT - Foreloebig fastsaettelse (late/non-filing): https://skat.dk/erhverv/betaling-og-skattekonto/indberet-til-tiden-og-undgaa-foreloebig-fastsaettelser
 - SKAT - Final VAT when closing business: https://skat.dk/erhverv/moms/saadan-indberetter-du-din-virksomheds-sidste-moms
 - SKAT - EU purchase reverse charge: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-handel-med-virksomheder/moms-ved-handel-med-lande-i-eu/moms-ved-koeb-af-varer-og-ydelser-i-eu
 - SKAT - EU sales without VAT: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-handel-med-virksomheder/moms-ved-handel-med-lande-i-eu/moms-ved-salg-af-varer-og-ydelser-i-eu

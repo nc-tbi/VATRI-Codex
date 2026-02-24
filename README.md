@@ -91,7 +91,7 @@ Status snapshot date: **2026-02-24**
 | Phase | Description | Current status |
 |---|---|---|
 | Phase 1 - Foundation | Canonical filing intake, normalization/validation baseline, and audit trace scaffold. | **Completed** (Gate A pass verified via `GA-RUN-008`) |
-| Phase 1A - Service Integration Lane | Service-level API/DB/event integration quality gates for idempotency, contract parity, and audit durability. | **In progress** (risk remediation complete; dedicated `Gate A-SVC` lane rollout still pending) |
+| Phase 1A - Service Integration Lane | Service-level API/DB/event integration quality gates for idempotency, contract parity, and audit durability. | **Completed** (`test:svc-integration` implemented and passing; `TB-S1-SVC-01..08` marked Done) |
 | Phase 2 - Assessment Core | Rule-engine runtime, VAT domain rule packs, and obligation lifecycle engine. | **Planned** |
 | Phase 3 - Claims Integration | Claim orchestration, outbox/queue connector reliability, reconciliation, and operational controls. | **Planned** |
 | Phase 4 - Amendments and Controls | Amendment lineage/versioning, adjustment claims, and compliance dashboards. | **Planned** |

@@ -1,14 +1,63 @@
 ﻿# Solution Design: VAT Filing and Assessment (Tax Core â€” Denmark)
 
-> **Status:** Draft v1.3
+> **Status:** Draft v1.4
 > **Designer:** Solution Designer (DESIGNER.md contract)
-> **Architecture inputs:** `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/03-future-proof-modern-data-stack-and-standards.md`, ADR-001 through ADR-009, `architecture/designer/01-03`
+> **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/03-future-proof-modern-data-stack-and-standards.md`, ADR-001 through ADR-009, `architecture/delivery/capability-to-backlog-mapping.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/01-03`
 > **Analysis inputs:** `analysis/02-vat-form-fields-dk.md`, `analysis/03-vat-flows-obligations.md`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`, `analysis/09-product-scope-and-requirements-alignment.md`
 > **Working folder:** `design/`
 > **Drawings:** `design/drawings/tax-core-vat.drawio`
 > **Module guide:** `design/02-module-interaction-guide.md`
 
 ---
+
+## Scope
+End-to-end solution design for VAT filing and assessment on Tax Core, including the architect's capability-configuration contract and ViDA Step 1-3 operational coverage on the same core service topology.
+
+## Referenced Sources
+- `ROLE_CONTEXT_POLICY.md`
+- `architecture/README.md`
+- `architecture/01-target-architecture-blueprint.md`
+- `architecture/02-architectural-principles.md`
+- `architecture/03-future-proof-modern-data-stack-and-standards.md`
+- `architecture/adr/ADR-001-bounded-contexts-and-events.md`
+- `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
+- `architecture/adr/ADR-003-append-only-audit-evidence.md`
+- `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
+- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
+- `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
+- `architecture/delivery/capability-to-backlog-mapping.md`
+- `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
+- `architecture/designer/01-solution-design-brief.md`
+- `architecture/designer/02-component-design-contracts.md`
+- `architecture/designer/03-nfr-observability-checklist.md`
+- `analysis/02-vat-form-fields-dk.md`
+- `analysis/03-vat-flows-obligations.md`
+- `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
+- `analysis/09-product-scope-and-requirements-alignment.md`
+
+## Decisions and Findings
+- The architecture capability backbone remains stable; jurisdiction behavior and ViDA maturity behavior are activation/configuration overlays.
+- ViDA Step 1-3 contracts are integrated as API/event/state additions on existing bounded contexts, not separate systems.
+- Scenario coverage baseline is updated from `S01-S23` to `S01-S34` per architecture traceability.
+- Annual cadence and Step-3 settlement/payment-plan events are treated as policy-driven extensions.
+
+## Assumptions
+- Confirmed: Architect contract requires capability core + configuration overlay (`architecture/README.md`, `architecture/02-architectural-principles.md`).
+- Confirmed: ViDA Step 1-3 APIs/events and scenario IDs `S26-S34` are architecture-authoritative (`architecture/01-target-architecture-blueprint.md`, traceability matrix).
+- Assumed: Existing bounded contexts host new ViDA contracts without introducing new top-level platform contexts in this release.
+
+## Risks and Open Questions
+- ViDA transport and cadence contract finalization remains open and affects operational sizing.
+- IRM handoff contract semantics for high-risk confirmed filings remain integration-dependent.
+- Settlement trigger policy and payment-plan partner contract details can still shift event schema fields.
+
+## Acceptance Criteria
+- Design explicitly references and implements architect updates for capability/configuration and ViDA Step 1-3.
+- Scenario coverage and tests include `S26-S34`.
+- API/event names align with architecture source terminology.
+- Out-of-scope statements do not conflict with Step-3 settlement scope.
 
 ## 0. Building Block Taxonomy
 
@@ -64,6 +113,8 @@ Tax Core (SOLON TAX) is a **product-first fiscal core** â€” not a platform,
 - Modern data stack (Kafka backbone, OpenAPI/AsyncAPI/CloudEvents, OpenTelemetry, Lakehouse audit plane)
 - Return-level aggregates linked to line-level fact records for reproducibility
 - DKK normalization and deterministic rounding policy
+- ViDA Step 1-3 API/event contracts (`POST /vida/reports/ingest`, prefill and settlement flows)
+- Capability-configuration operating rule for country and maturity-step rollout
 
 ### AI Boundary
 AI capabilities are **assistive only** in this system. Deterministic policy engines (rule-engine-service, assessment-service) are the exclusive source of legally binding VAT decisions.
@@ -71,10 +122,10 @@ AI capabilities are **assistive only** in this system. Deterministic policy engi
 - Not allowed: AI-issued legal assessments, penalties, or mutation of legal facts
 
 ### Scenarios Covered
-S01â€“S23 per `architecture/traceability/scenario-to-architecture-traceability-matrix.md`. S24, S25, C14, C15, C20, C21, C22 require dedicated modules or manual/legal routing â€” out of scope.
+S01-S34 per `architecture/traceability/scenario-to-architecture-traceability-matrix.md`. S24, S25, C14, C15, C20, C21, C22 require dedicated modules or manual/legal routing and remain out of scope for this baseline.
 
 ### Out of Scope
-- Settlement and debt collection
+- Split-payment real-time collection (ViDA Step 4) and external debt-collection orchestration
 - Legal dispute adjudication
 - Taxpayer-facing UI (only BFF design is in scope â€” UI is a separate concern)
 - Special schemes (brugtmoms, OSS/IOSS, momskompensation)
@@ -815,7 +866,19 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 }
 ```
 
-### 4.5 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
+### 4.5 ViDA Step 1-3 API Contracts (configuration-driven)
+
+| ViDA Step | Endpoint | Purpose | Guardrail |
+|---|---|---|---|
+| Step 1 | `POST /vida/reports/ingest` | Receive recurring ViDA eReports for verification/classification | Ingested data is non-binding until verified/classified |
+| Step 1 | `POST /risk/high-risk/review-requests` | Create taxpayer-facing high-risk review request | Explainability payload required (`risk_reason_codes[]`) |
+| Step 1 | `POST /risk/high-risk/{review_id}/confirm` | Taxpayer confirms unchanged filing | Confirmed unchanged high-risk routes to IRM task event |
+| Step 2 | `POST /prefill/prepare` | Build prefill package for open obligation period | Prefill mode controlled by policy (`full_b2b`, `partial_b2c`) |
+| Step 2 | `POST /prefill/{prefill_id}/reclassifications` | Submit source-report reclassifications | `prefill_edit_policy=reclassification_only` |
+| Step 3 | `GET /vat-balance/{taxpayer_id}` | Read ongoing VAT balance projection | Balance is projection/evidence-backed, not legal override |
+| Step 3 | `POST /settlements/requests` | Submit taxpayer-initiated settlement request | Must link to active balance snapshot and policy context |
+
+### 4.6 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
 
 | Event | Layer | Publisher | Consumers | Key Fields |
 |---|---|---|---|---|
@@ -839,6 +902,22 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 | `ClaimCreated` | VAT-GENERIC | claim-orchestrator | audit | `claim_id`, `filing_id`, `idempotency_key` |
 | `ClaimDispatched` | DK VAT | claim-connector | claim-orchestrator, audit | `claim_id`, `claim_ref`, `dispatched_at` |
 | `ClaimDispatchFailed` | DK VAT | claim-connector | claim-orchestrator, audit | `claim_id`, `attempt`, `error`, `dead_letter: bool` |
+| `VidaEReportReceived` | VAT-GENERIC | vida-ingestion-service | vida-verification-classification-service, audit | `vida_report_id`, `taxpayer_id`, `period`, `source_profile` |
+| `HighRiskFlagRaised` | VAT-GENERIC | risk-profile-refresh-service | portal-bff, audit | `taxpayer_id`, `risk_score`, `risk_reason_codes[]` |
+| `TaxpayerReviewRequested` | VAT-GENERIC | risk-profile-refresh-service | portal-bff, audit | `review_id`, `taxpayer_id`, `recommended_action` |
+| `TaxpayerAmendRequested` | VAT-GENERIC | portal-bff | filing-service, audit | `review_id`, `taxpayer_id`, `filing_id` |
+| `TaxpayerConfirmSubmitted` | VAT-GENERIC | portal-bff | risk-profile-refresh-service, audit | `review_id`, `taxpayer_id`, `filing_id` |
+| `HighRiskCaseTaskCreated` | DK VAT | risk-profile-refresh-service | IRM integration, audit | `review_id`, `taxpayer_id`, `task_ref` |
+| `PrefillPrepared` | VAT-GENERIC | prefill-computation-service | portal-bff, filing-service, audit | `prefill_id`, `taxpayer_id`, `prefill_mode` |
+| `PrefillReclassified` | VAT-GENERIC | prefill-computation-service | filing-service, audit | `prefill_id`, `changes[]`, `actor` |
+| `VatBalanceUpdated` | VAT-GENERIC | vat-balance-service | portal-bff, settlement-trigger-service, audit | `taxpayer_id`, `period`, `vat_balance_amount` |
+| `SettlementRequested` | VAT-GENERIC | portal-bff | settlement-trigger-service, audit | `request_id`, `taxpayer_id`, `amount` |
+| `SystemSettlementTriggered` | VAT-GENERIC | settlement-trigger-service | settlement-flow, audit | `trigger_id`, `taxpayer_id`, `policy_id` |
+| `SystemSettlementObligationCreated` | VAT-GENERIC | settlement-trigger-service | obligation-service, audit | `obligation_id`, `taxpayer_id`, `due_date` |
+| `SystemSettlementNoticeIssued` | VAT-GENERIC | settlement-trigger-service | portal-bff, audit | `notice_id`, `taxpayer_id`, `trigger_id` |
+| `PaymentPlanEstablished` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `taxpayer_id`, `instalment_schedule` |
+| `PaymentPlanInstalmentMissed` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `instalment_no`, `missed_at` |
+| `PaymentPlanTerminated` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `terminated_at`, `reason_code` |
 
 ---
 
@@ -928,7 +1007,7 @@ Obligation                      [VAT-GENERIC service + DK VAT cadence data]
 â”œâ”€â”€ obligation_id (PK)
 â”œâ”€â”€ taxpayer_id / cvr_number
 â”œâ”€â”€ period_start / period_end, due_date
-â”œâ”€â”€ cadence                  (monthly | quarterly | half_yearly) [DK VAT data]
+â”œâ”€â”€ cadence                  (monthly | quarterly | half_yearly | annual) [DK VAT data]
 â”œâ”€â”€ return_type_expected
 â””â”€â”€ status                   (due | submitted | overdue)
 
@@ -1101,6 +1180,15 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | S-EUS â€” EU-Sales obligation | DK VAT | eu-sales-obligation-service, connector | `EuSalesObligationCreated`, submission dispatched, evidence written |
 | S-CUS â€” Customs import | DK VAT | customs-told-adapter, filing-service | `CustomsAssessmentImported`, reconciliation, audit evidence |
 | S-ROUND â€” Rounding policy | DK VAT | assessment-service | `claim_amount_pre_round` â‰  `claim_amount`, `rounding_policy_version_id` stored |
+| S26 â€” High-risk amend/confirm loop | VAT-GENERIC | risk-profile-refresh-service, portal-bff, filing-service | `TaxpayerReviewRequested` then `TaxpayerAmendRequested` or `TaxpayerConfirmSubmitted` |
+| S27 â€” Confirm unchanged high-risk to IRM | DK VAT | risk-profile-refresh-service integration | `HighRiskCaseTaskCreated` on confirmed unchanged filing |
+| S28 â€” B2B full prefill (reclassification-only) | VAT-GENERIC | prefill-computation-service, filing-service | Numeric overwrite blocked, reclassification-only edits accepted |
+| S29 â€” B2C partial prefill + sales completion | VAT-GENERIC | prefill-computation-service, portal-bff, filing-service | Purchase-side prefill + taxpayer sales-side completion |
+| S30 â€” B2B VAT balance + settlement request | VAT-GENERIC | vat-balance-service, settlement-trigger-service | `VatBalanceUpdated`, `SettlementRequested` linked to same taxpayer/period |
+| S31 â€” B2C step-3 phase-A lump-sum supplements | VAT-GENERIC | vat-balance-service, filing-service | `b2c_sales_source_mode=lump_sum` honored, balance reproducible |
+| S32 â€” B2C step-3 phase-B SAF-T/POS evidence | VAT-GENERIC | vida-ingestion-service, vat-balance-service | `b2c_sales_source_mode=saft|pos`; ingestion to balance traceability preserved |
+| S33 â€” System-initiated settlement threshold breach | VAT-GENERIC | settlement-trigger-service, obligation-service | `SystemSettlementTriggered`, `SystemSettlementObligationCreated`, `SystemSettlementNoticeIssued` emitted |
+| S34 â€” Payment-plan breach lifecycle | DK VAT | settlement-flow integration | `PaymentPlanEstablished`, `PaymentPlanInstalmentMissed`, `PaymentPlanTerminated` lifecycle integrity |
 
 ### Portal BFF Tests
 - API parity: every portal workflow achievable via Tax Core public APIs
@@ -1135,7 +1223,8 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | Phase 4 | correction-service, lineage query API, compliance dashboard alerts |
 | Phase 4M | Lakehouse ingestion pipeline, audit analytics models |
 | Phase 5 | eu-sales-obligation-service + eu-sales-reporting-connector; customs-told-adapter + reconciliation; line-level fact store + reproducibility API |
-| Phase 6 | Module contracts for S24, S25, C14, C15, C20, C21, C22 |
+| Phase 6 | ViDA Step 1-3 enablement: ingestion/verification, high-risk review loop + IRM handoff, prefill controls, VAT balance + settlement triggers, payment-plan lifecycle events |
+| Phase 7 | Module contracts for S24, S25, C14, C15, C20, C21, C22 |
 
 ### Open Questions
 
@@ -1334,7 +1423,7 @@ Architectural consequence:
 ### 11.12 Gap Closure from Additional Danish VAT 3.0 Context
 
 #### Step 0 Baseline Enhancements
-- Filing cadence configuration must support: `monthly`, `quarterly`, `semi_annual`, `annual`.
+- Filing cadence configuration must support: `monthly`, `quarterly`, `half_yearly`, `annual`.
 - High-risk cases from automated controls must be routable to IRM case-task creation.
 - Statutory time-limit tracking is required per relevant transaction/assessment item for assessment/collection windows.
 - Payment-plan lifecycle support is required at integration boundary level:
@@ -1376,7 +1465,7 @@ Architectural consequence:
 - `PaymentPlanInstalmentMissed`
 - `PaymentPlanTerminated`
 - `SystemSettlementObligationCreated`
-- `SystemSettlementNotificationIssued`
+- `SystemSettlementNoticeIssued`
 
 #### Configuration Additions
 - `vida_access_point_profile` (`corner_5` etc.)

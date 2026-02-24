@@ -1,11 +1,49 @@
 # Module Interaction Guide: Tax Core — VAT Filing and Assessment
 
-> **Status:** Draft v1.1
+> **Status:** Draft v1.2
 > **Designer:** Solution Designer (DESIGNER.md contract)
 > **Companion document:** `design/01-vat-filing-assessment-solution-design.md`
-> **Architecture inputs:** `architecture/designer/02-component-design-contracts.md`, `architecture/designer/03-nfr-observability-checklist.md`, ADR-001 through ADR-009, `analysis/09-product-scope-and-requirements-alignment.md`
+> **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/02-component-design-contracts.md`, `architecture/designer/03-nfr-observability-checklist.md`, ADR-001 through ADR-009, `analysis/09-product-scope-and-requirements-alignment.md`
 
 ---
+
+## Scope
+Module-level responsibilities and interaction contracts for Tax Core VAT capabilities, including architect updates for capability-configuration operation and ViDA Step 1-3 overlays.
+
+## Referenced Sources
+- `ROLE_CONTEXT_POLICY.md`
+- `architecture/README.md`
+- `architecture/01-target-architecture-blueprint.md`
+- `architecture/02-architectural-principles.md`
+- `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
+- `architecture/designer/02-component-design-contracts.md`
+- `architecture/designer/03-nfr-observability-checklist.md`
+- `architecture/adr/ADR-001-bounded-contexts-and-events.md`
+- `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
+- `architecture/adr/ADR-003-append-only-audit-evidence.md`
+- `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
+- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
+- `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+- `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
+
+## Decisions and Findings
+- Capability topology remains stable while country and ViDA behaviors are configuration overlays.
+- ViDA Step 1-3 contracts are integrated as module interactions on the same bounded contexts.
+- The guide is expanded to cover high-risk review loop, prefill controls, and VAT balance/settlement interactions.
+
+## Assumptions
+- Confirmed: ViDA operation contracts and events from architecture are mandatory design inputs.
+- Assumed: ViDA services can be introduced as VAT-GENERIC capabilities without changing platform boundary ownership.
+
+## Risks and Open Questions
+- Risk and settlement integrations depend on external IRM and collection contract stability.
+- ViDA transport profile and ingestion cadence decisions can alter operational characteristics.
+
+## Acceptance Criteria
+- Module responsibilities include the ViDA Step 1-3 contracts in architecture.
+- Cross-cutting governance explicitly enforces capability core + configuration overlay.
+- Open questions reflect unresolved ViDA/settlement integration decisions.
 
 ## Purpose
 
@@ -268,7 +306,7 @@ The system is structured in three layers. Modules at each layer may only interac
 
 ### 3.3 `obligation-service` `[VAT-GENERIC]`
 
-**Responsibility:** Periodic VAT filing obligation management. Creates and manages obligations (`due` → `submitted` → `overdue`). Cadence policy (half-yearly / quarterly / monthly thresholds) is injected as DK VAT configuration data — not hard-coded in the service.
+**Responsibility:** Periodic VAT filing obligation management. Creates and manages obligations (`due` → `submitted` → `overdue`). Cadence policy (half-yearly / quarterly / monthly / annual) is injected as DK VAT configuration data — not hard-coded in the service.
 
 | Attribute | Detail |
 |---|---|
@@ -277,7 +315,7 @@ The system is structured in three layers. Modules at each layer may only interac
 | Inbound APIs | `GET /obligations?cvr=...` (from API Gateway, initiated by portal-bff or direct caller) |
 | Owned entities | Obligation: `obligation_id`, `taxpayer_id`, `period_start`, `period_end`, `due_date`, `cadence`, `return_type_expected`, `status` |
 | Outbound events | `ObligationCreated` [CloudEvents], `ObligationOverdue` [CloudEvents] |
-| DK VAT config | Cadence thresholds and due-date rules (DKK 5M / DKK 50M boundaries, half-yearly default, registration threshold DKK 50k) injected as policy data |
+| DK VAT config | Cadence thresholds and due-date rules (DKK 5M / DKK 50M boundaries, half-yearly default, annual profile support, registration threshold DKK 50k) injected as policy data |
 | Audit evidence | Obligation lifecycle events written to `audit-evidence` |
 
 **Interaction rules:**
@@ -534,6 +572,28 @@ correct(prior_filing_id, corrected_facts)
 - `rule-engine-service` uses the catalog at evaluation time to load the rule expressions for the given `rule_version_id`.
 - New rules enter the catalog through a governed ingestion process: `legal_reference` required, `effective_from` / `effective_to` required, regression suite must pass. Rule activation is data-only — no code deploy.
 - The catalog is read-only at runtime by operational services. Rule catalog writes are an administrative/governance operation.
+
+---
+
+### 3.10 `ViDA Risk, Prefill, and Settlement Capability Set` `[VAT-GENERIC]`
+
+**Responsibility:** Provide ViDA Step 1-3 operational capabilities as configuration-driven overlays on the same core topology. This capability set covers ingestion, risk review loop, prefill controls, VAT balance projection, and settlement triggering without introducing per-step forks.
+
+| Attribute | Detail |
+|---|---|
+| Layer | `[VAT-GENERIC]` |
+| Core APIs (Step 1) | `POST /vida/reports/ingest`, `POST /risk/high-risk/review-requests`, `POST /risk/high-risk/{review_id}/confirm` |
+| Core APIs (Step 2) | `POST /prefill/prepare`, `POST /prefill/{prefill_id}/reclassifications` |
+| Core APIs (Step 3) | `GET /vat-balance/{taxpayer_id}`, `POST /settlements/requests` |
+| Key policies | `vida_step_mode`, `prefill_mode`, `prefill_edit_policy=reclassification_only`, `balance_mode`, `settlement_mode` |
+| Key events | `HighRiskFlagRaised`, `TaxpayerReviewRequested`, `TaxpayerConfirmSubmitted`, `PrefillPrepared`, `PrefillReclassified`, `VatBalanceUpdated`, `SettlementRequested`, `SystemSettlementTriggered`, `SystemSettlementNoticeIssued` |
+| Integration event | `HighRiskCaseTaskCreated` for IRM handoff on confirmed unchanged high-risk submissions |
+
+**Interaction rules:**
+- Step mode and country overlays activate behavior; they do not change core service ownership or bypass bounded contexts.
+- Prefill edits are constrained to reclassification of source reports; direct arbitrary overwrite of derived totals is disallowed.
+- System-initiated settlement uses threshold/time policy data and emits auditable events.
+- Payment-plan lifecycle integration emits `PaymentPlanEstablished`, `PaymentPlanInstalmentMissed`, and `PaymentPlanTerminated` events.
 
 ---
 
@@ -861,6 +921,54 @@ DK VAT overlay components configure generic VAT services through injected config
 
 ---
 
+### 5.10 ViDA Step-1 High-Risk Review Loop
+
+```
+vida-ingestion-service
+  -> POST /vida/reports/ingest
+  -> emit VidaEReportReceived
+  -> vida-verification-classification-service
+      -> emit VidaEReportVerified / VidaEReportClassified
+      -> risk-profile-refresh-service calculates discrepancy/risk
+          -> emit HighRiskFlagRaised + TaxpayerReviewRequested
+
+portal-bff
+  -> taxpayer amends filing (TaxpayerAmendRequested) OR confirms unchanged (TaxpayerConfirmSubmitted)
+  -> on confirmed unchanged high-risk: emit HighRiskCaseTaskCreated to IRM integration
+```
+
+### 5.11 ViDA Step-2 Prefill Reclassification Flow
+
+```
+prefill-computation-service
+  -> POST /prefill/prepare
+  -> emit PrefillPrepared (mode=full_b2b|partial_b2c)
+  -> taxpayer submits POST /prefill/{prefill_id}/reclassifications
+  -> emit PrefillReclassified
+  -> filing-service consumes constrained prefill package for final POST /vat-filings
+```
+
+### 5.12 ViDA Step-3 Balance and Settlement Flow
+
+```
+vat-balance-service
+  -> compute ongoing projection
+  -> emit VatBalanceUpdated
+
+taxpayer path:
+  portal-bff -> POST /settlements/requests -> emit SettlementRequested
+
+system path:
+  settlement-trigger-service evaluates threshold/time policy
+  -> emit SystemSettlementTriggered
+  -> emit SystemSettlementObligationCreated
+  -> emit SystemSettlementNoticeIssued
+  -> payment-plan events as needed:
+      PaymentPlanEstablished / PaymentPlanInstalmentMissed / PaymentPlanTerminated
+```
+
+---
+
 ## 6. Cross-Cutting Concerns
 
 ### 6.1 `trace_id` Propagation
@@ -919,6 +1027,15 @@ When a national or customer-specific deviation is requested, it must be routed t
 
 ---
 
+### 6.7 Capability-Configuration Operating Rule
+
+Architecture contract for all module work:
+- Keep capability services stable across jurisdictions and ViDA maturity steps.
+- Activate behavior via configuration profiles (`jurisdiction_code`, `vida_step_mode`, `prefill_mode`, `balance_mode`, `settlement_mode`) and effective-dated rule/policy data.
+- Disallow per-country or per-step service forks.
+
+---
+
 ## 7. Open Questions Affecting Module Interactions
 
 | # | Question | Affected modules |
@@ -933,3 +1050,8 @@ When a national or customer-specific deviation is requested, it must be routed t
 | OQ-10 | Customs/Told API: push or pull model, contract format, and auth? | `customs-told-adapter` |
 | OQ-11 | `rounding_policy_version_id`: single global policy or per-period per-jurisdiction? | `assessment-service`, `claim-orchestrator` |
 | OQ-12 | Preliminary assessment: is a claim always created on `PreliminaryAssessmentIssued`, or only on specific conditions? | `assessment-service`, `claim-orchestrator` |
+| OQ-13 | ViDA transport profile and cadence per taxpayer segment (including `corner_5`)? | `vida-ingestion-service`, `vida-verification-classification-service` |
+| OQ-14 | Which risk reasons are legally disclosable in taxpayer-facing explanations? | `risk-profile-refresh-service`, `portal-bff` |
+| OQ-15 | Settlement trigger legal thresholds and notification SLA details? | `settlement-trigger-service`, `obligation-service`, `portal-bff` |
+| OQ-16 | IRM handoff contract for `HighRiskCaseTaskCreated` (sync API vs event-only)? | `risk-profile-refresh-service`, IRM integration |
+| OQ-17 | Payment-plan partner integration contract and ownership boundaries? | `settlement-flow`, external collection integration |

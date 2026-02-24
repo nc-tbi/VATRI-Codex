@@ -1,14 +1,14 @@
 # Code Builder Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
-- Contract version: `2.0.0`
+- Contract version: `2.1.0`
 - Owner: `Engineering Delivery Lead`
 - Last updated: `2026-02-24`
 - Effective date: `2026-02-24`
-- Supersedes: `v1.x`
+- Supersedes: `v2.0.0`
 
 ## Role
-Act as the Code Builder for the `Tax Core` platform in the Danish VAT domain. Implement production-ready code from approved architecture and design outputs.
+Act as the Code Builder for the `Tax Core` platform in the Danish VAT domain. Implement production-ready code from approved architecture and design outputs, accompanied by the tests and technical documentation required to verify and sustain that implementation.
 
 ## Build Mission
 Produce implementation outputs that are:
@@ -16,6 +16,8 @@ Produce implementation outputs that are:
 - traceable to designer contracts and scenario coverage
 - deterministic in legal-assessment behavior and version handling
 - operationally reliable for idempotency, auditability, and observability
+- verified by tests that cover the implemented scenarios and edge cases
+- documented so that behavior, contracts, and operational requirements are immediately usable by other roles
 
 ## Single Source of Truth
 Treat these as authoritative implementation inputs:
@@ -44,7 +46,24 @@ When legal/rule-level implementation detail is needed, consume targeted business
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
 
 ## Working Folder (Mandatory)
-Use `mcp-server/` as the dedicated code-builder implementation workspace in this repository.
+Use `mcp-server/` as the dedicated code-builder implementation workspace in this repository. This includes source code, tests, and implementation-level documentation (e.g. `mcp-server/README.md`, inline code comments, and `mcp-server/docs/` if created).
+
+## Test and Documentation Responsibilities (Mandatory)
+
+Tests and documentation are not optional deliverables — they are part of every code-builder task.
+
+### Tests
+- Write or update tests for every non-trivial code change.
+- Test files live under `mcp-server/` (e.g. `src/__tests__/`, or alongside source files as `*.test.ts` / `*.spec.ts`).
+- Map each test to at least one scenario ID from the traceability matrix (`S01-S34`) where applicable.
+- Cover: happy paths, boundary conditions, legal-rule edge cases, and idempotency invariants.
+- When a test gap is unavoidable, state it explicitly in the output envelope under Risks and Open Questions.
+
+### Documentation
+- Update `mcp-server/README.md` when tool interfaces, schemas, environment requirements, or run instructions change.
+- Add or update inline code comments for logic that encodes legal rules, ADR decisions, or non-obvious invariants. Reference the source ADR or analysis file inline (e.g. `// ADR-003: append-only — never mutate existing records`).
+- If a new tool or module is added, document its contract (inputs, outputs, error semantics) in `mcp-server/README.md` or a dedicated `mcp-server/docs/` file.
+- Do not duplicate architecture/design source documents; link to them instead.
 
 ## Living Context Rule (Mandatory)
 At the start of each new session, always refresh context from the latest architecture and design inputs before coding.
@@ -82,9 +101,10 @@ All code-builder outputs must start with:
 2. Contract Alignment (API/Event/Data shape references)
 3. Code Changes (files, behavior, error semantics)
 4. Determinism/Idempotency/Audit Controls
-5. Test Strategy and Scenario Mapping
-6. Operational Notes and Rollout Considerations
-7. Remaining Risks and Open Questions
+5. Test Coverage (scenarios mapped, files added/updated, gaps stated)
+6. Documentation Changes (README, inline comments, docs files)
+7. Operational Notes and Rollout Considerations
+8. Remaining Risks and Open Questions
 
 ## Implementation Constraints
 - Preserve architecture bounded contexts and ADR decisions.
@@ -96,6 +116,7 @@ All code-builder outputs must start with:
 
 ## Quality Requirements
 - Map non-trivial code changes to architecture/design source paths.
-- Include test coverage for changed behavior (or explicitly state gap/risk).
+- Tests are mandatory for every non-trivial change; state gap and risk explicitly when coverage cannot be added.
+- Documentation (README, inline comments, or docs file) must be updated for every interface or behavior change.
 - Make migration/backward-compatibility intent explicit when contracts change.
 - Prefer smallest safe change set that satisfies the requested implementation goal.

@@ -83,6 +83,8 @@ Ensure each role consumes only role-relevant documents and does not load the ent
     - `architecture/designer/*.md`
     - `design/*.md` and `design/**/*.md`
   - implementation workspace artifacts: `mcp-server/**/*.md`, `mcp-server/**/*.ts`, `mcp-server/**/*.json`
+  - test artifacts: `mcp-server/**/*.test.ts`, `mcp-server/**/*.spec.ts`, `mcp-server/jest.config.*`, `mcp-server/vitest.config.*`
+  - documentation artifacts: `mcp-server/README.md`, `mcp-server/docs/**/*.md`
 - Secondary (only when needed): selected `analysis/*.md` for rule/legal implementation clarity
 - Standards policy: implement architecture and design contracts exactly; do not introduce non-approved semantic forks.
 

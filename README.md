@@ -154,8 +154,44 @@ All contracts mandate a living context rule. Role-relevant MCP tools and explici
 
 - Node.js 18+
 - npm
+- Docker Desktop with Docker Compose (for local infra)
 
 ---
+
+## Local run (ready-to-go path)
+
+From repository root:
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/local/bootstrap.ps1
+powershell -ExecutionPolicy Bypass -File scripts/local/start-local.ps1
+```
+
+Single command end-to-end:
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/local/run-local.ps1
+```
+
+Then run the active workspaces:
+
+```bash
+cd mcp-server
+npm run dev
+```
+
+In a second terminal:
+
+```bash
+cd build
+npm test
+npm run typecheck
+```
+
+Helpful docs:
+- `build/README.md`
+- `build/local/README.md`
+- `scripts/local/run-local.ps1`
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
 

@@ -84,6 +84,29 @@ Tax Core covers the complete VAT lifecycle for Danish businesses:
 
 ---
 
+## Development phases
+
+Status snapshot date: **2026-02-24**
+
+| Phase | Description | Current status |
+|---|---|---|
+| Phase 1 - Foundation | Canonical filing intake, normalization/validation baseline, and audit trace scaffold. | **Completed** (Gate A pass verified via `GA-RUN-008`) |
+| Phase 1A - Service Integration Lane | Service-level API/DB/event integration quality gates for idempotency, contract parity, and audit durability. | **In progress** (risk remediation complete; dedicated `Gate A-SVC` lane rollout still pending) |
+| Phase 2 - Assessment Core | Rule-engine runtime, VAT domain rule packs, and obligation lifecycle engine. | **Planned** |
+| Phase 3 - Claims Integration | Claim orchestration, outbox/queue connector reliability, reconciliation, and operational controls. | **Planned** |
+| Phase 4 - Amendments and Controls | Amendment lineage/versioning, adjustment claims, and compliance dashboards. | **Planned** |
+| Phase 4A - Integration Boundaries | Customs/external contracts, failure handling, and contract-level VAT semantic enforcement. | **Planned** |
+| Phase 5 - Advanced Scenarios | Needs-module coverage, manual/legal routing, and coexistence governance. | **Planned** |
+| Phase 6 - ViDA Step 1-3 Enablement | ViDA ingestion/verification, high-risk handling, prefill controls, and settlement lifecycle enablement. | **Planned** |
+
+Primary references:
+- `architecture/delivery/capability-to-backlog-mapping.md`
+- `testing/02-test-execution-backlog.md`
+- `testing/04-gate-a-ci-spec.md`
+- `testing/05-gate-a-defect-remediation-tracker.md`
+
+---
+
 ## MCP Server
 
 The MCP server exposes the following tools to AI agents:
@@ -181,6 +204,18 @@ Single command end-to-end:
 
 ```bash
 powershell -ExecutionPolicy Bypass -File scripts/local/run-local.ps1
+```
+
+Single-click full solution deploy and run (Tax Core services + MCP server):
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/local/deploy-run-all.ps1
+```
+
+Windows launcher (double-click or terminal):
+
+```bash
+.\run-local-all.cmd
 ```
 
 Then run the active workspaces:

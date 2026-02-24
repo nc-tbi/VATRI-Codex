@@ -32,3 +32,9 @@ Use these documents as input for:
 - VAT law and SKAT guidance evolve. Implement rules as date-effective policy versions.
 - Keep legal references traceable in the rule catalog used by engineering.
 - "All possible scenarios" is implemented as a controlled scenario universe with explicit inclusion/exclusion and residual risk tracking.
+
+## Capability and Configuration Position
+- Tax Core capabilities are stable product components.
+- ViDA step behavior and country VAT behavior are configuration overlays.
+- Danish VAT is the first overlay baseline; additional country overlays follow the same governance model.
+- No core service forks for jurisdictional rollout.

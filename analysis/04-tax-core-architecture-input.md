@@ -120,3 +120,20 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 - SKAT - VAT filing guidance: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
 - SKAT - Deadlines/cadence: https://skat.dk/erhverv/moms/frister-indberet-og-betal-moms
 - SKAT - Cross-border reporting: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/indberet-din-handel-med-udlandet
+
+### Capability and Configuration Model (ViDA and Country Overlays)
+- [confirmed] Tax Core must own all required VAT capabilities as reusable core components.
+- [confirmed] ViDA step progression (step 1, step 2, step 3) is configuration over the same core capabilities, not separate solutions.
+- [confirmed] Danish VAT is the first country overlay; other country VAT contexts are subsequent overlays using governed extension points.
+- [confirmed] Country or step adoption must be represented by policy/config artifacts, not service forks.
+- [assumed] Product governance maintains a controlled configuration catalog per jurisdiction and rollout stage.
+
+### ViDA Step 1-3 Operational Requirements Addendum
+- Tax Core shall support ViDA recurring ingestion profiles including `corner_5` access point configuration.
+- Tax Core shall support explainable high-risk decision evidence exposed to taxpayer channels before amend/confirm actions.
+- Tax Core shall support IRM-compatible case-task event emission for confirmed high-risk submissions.
+- Tax Core shall support prefill edit-policy configuration enforcing `reclassification_only` behavior.
+- Tax Core shall support step-3 VAT balance operations with both taxpayer-initiated and system-initiated settlement paths.
+- Tax Core shall support threshold policy configuration for settlement obligations (time-triggered and balance-triggered).
+- Tax Core shall support B2C sales-source transition modes (`lump_sum` -> `SAF-T`/`POS`) as configuration.
+- Tax Core shall expose statutory-time-limit profile links for assessment/collection lifecycle control.

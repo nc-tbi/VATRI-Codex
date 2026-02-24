@@ -27,6 +27,15 @@
 | S23 | Transfer (overdragelse) edge case | Covered | Registration, Obligation, Filing | transfer edge policy | filing + status events | Automated + review |
 | S24 | Bankruptcy estate handling | Needs module | Registration, Assessment, Correction | bankruptcy-specific deduction rules | module-specific events | Module needed |
 | S25 | Special schemes | Needs module | Filing, Assessment, Claim | scheme-specific rule packs | scheme APIs/events | Module needed |
+| S26 | Step-1 high-risk filing with amend/confirm loop | Covered | Filing, Validation, Assessment, Risk, Audit | High-risk discrepancy and explainability policy | `POST /risk/high-risk/review-requests`, `HighRiskFlagRaised`, `TaxpayerReviewRequested`, `TaxpayerAmendRequested`, `TaxpayerConfirmSubmitted` | Automated + taxpayer review loop |
+| S27 | Step-1 confirmed unchanged high-risk filing -> IRM task | Covered | Risk, Audit, Integration | High-risk escalation policy | `TaxpayerConfirmSubmitted`, `HighRiskCaseTaskCreated` | Automated + integration handoff |
+| S28 | Step-2 B2B full prefill via reclassification-only flow | Covered | Prefill, Filing, Validation, Assessment | Prefill full B2B policy | `POST /prefill/prepare`, `POST /prefill/{prefill_id}/reclassifications`, `PrefillPrepared`, `PrefillReclassified` | Automated with constrained taxpayer edits |
+| S29 | Step-2 B2C partial prefill + taxpayer sales completion | Covered | Prefill, Filing, Validation, Assessment | Prefill partial B2C policy | `POST /prefill/prepare`, `POST /vat-filings`, `PrefillPrepared` | Automated + taxpayer completion |
+| S30 | Step-3 B2B VAT balance update + settlement request | Covered | Balance, Assessment, Settlement, Audit | VAT balance and settlement policy | `GET /vat-balance/{taxpayer_id}`, `POST /settlements/requests`, `VatBalanceUpdated`, `SettlementRequested` | Automated + taxpayer initiated settlement |
+| S31 | Step-3 B2C balance update with phase-A lump-sum supplements | Covered | Balance, Filing, Settlement, Audit | B2C phase-A source policy | `VatBalanceUpdated`, `POST /settlements/requests` | Automated + supplements |
+| S32 | Step-3 B2C phase-B evidence source SAF-T/POS | Covered | Balance, Filing, Integration, Audit | B2C phase-B source policy | `VidaEReportReceived`, `VatBalanceUpdated` | Automated with evidence ingestion |
+| S33 | Step-3 system-initiated settlement on threshold breach | Covered | Settlement, Obligation, Audit | Threshold-trigger settlement policy | `SystemSettlementTriggered`, `SystemSettlementObligationCreated`, `SystemSettlementNoticeIssued` | Automated + notification |
+| S34 | Payment-plan breach after unpaid balance | Covered | Settlement, Integration, Audit | Payment-plan breach policy | `PaymentPlanEstablished`, `PaymentPlanInstalmentMissed`, `PaymentPlanTerminated` | Automated + external collection integration |
 | C14 | Bad debt/credit notes | Needs module | Correction, Assessment | bad debt adjustment pack | correction events | Module needed |
 | C15 | Capital goods adjustment | Needs module | Assessment, Correction | long-horizon adjustment pack | assessment events | Module needed |
 | C20 | OSS/IOSS | Needs module | Filing, Assessment, Claim | OSS/IOSS policy pack | scheme APIs | Module needed |
@@ -34,6 +43,6 @@
 | C22 | Audit-triggered reassessment/dispute | Manual/legal | Audit, Correction | dispute workflow rules | case-routing event | Manual/legal |
 
 Notes:
-- `S01-S25` originate from `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`.
+- `S01-S34` originate from `analysis/07-filing-scenarios-and-claim-outcomes-dk.md` (including ViDA ladder additions).
 - `C14`, `C15`, `C20`, `C21`, `C22` are explicit scenario classes from `analysis/08-scenario-universe-coverage-matrix-dk.md` where additional or manual handling is required.
 

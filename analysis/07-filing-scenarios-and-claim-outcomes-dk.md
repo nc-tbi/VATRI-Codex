@@ -83,3 +83,14 @@ Provide scenario-driven coverage for Danish VAT filing and assessment outcomes u
 - SKAT - EU purchase reverse charge: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-handel-med-virksomheder/moms-ved-handel-med-lande-i-eu/moms-ved-koeb-af-varer-og-ydelser-i-eu
 - SKAT - EU sales without VAT: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-handel-med-virksomheder/moms-ved-handel-med-lande-i-eu/moms-ved-salg-af-varer-og-ydelser-i-eu
 - SKAT - Non-EU purchases/import VAT: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-handel-med-virksomheder/moms-ved-handel-med-lande-uden-for-eu/moms-ved-koeb-af-varer-og-ydelser-i-lande-uden-for-eu
+
+### ViDA Ladder Scenario Additions (Step 1-3)
+26. Step-1 high-risk filing -> taxpayer notified with evidence -> amend or confirm path
+27. Step-1 confirm unchanged high-risk filing -> IRM/audit case task created
+28. Step-2 B2B full prefill review via eReport reclassification only
+29. Step-2 B2C partial prefill (purchases) + taxpayer sales-side completion
+30. Step-3 B2B VAT balance update via reclassification + settlement request
+31. Step-3 B2C VAT balance update with phase A lump-sum sales supplements
+32. Step-3 B2C phase B evidence-based sales source (`SAF-T`/`POS`) replacing lump-sum path
+33. Step-3 system-initiated settlement obligation on threshold breach (time or balance)
+34. Payment-plan breach after unpaid balance path (integration signal + collection-state impact)

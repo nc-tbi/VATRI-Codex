@@ -142,6 +142,7 @@ Tax Core API surface (minimum):
   - `POST /obligations/generate`
   - `GET /obligations/{taxpayer_id}`
   - `PATCH /obligations/{obligation_id}/status`
+  - cadence profiles include `monthly`, `quarterly`, `half_yearly`, and `annual` (policy-driven)
 - EU-sales obligations (separate from domestic VAT return):
   - `POST /eu-sales-obligations/generate`
   - `GET /eu-sales-obligations/{taxpayer_id}`
@@ -158,6 +159,23 @@ Tax Core API surface (minimum):
 - Claims:
   - `GET /claims/{claim_id}`
   - outbound `POST /claims` to external claims system
+
+ViDA step operation contracts (configuration-driven on same core capabilities):
+- Step-1 risk and review:
+  - `POST /vida/reports/ingest`
+  - `POST /risk/high-risk/review-requests`
+  - `POST /risk/high-risk/{review_id}/confirm`
+  - event `HighRiskFlagRaised`
+  - event `TaxpayerReviewRequested`
+- Step-2 prefill:
+  - `POST /prefill/prepare`
+  - `POST /prefill/{prefill_id}/reclassifications`
+  - policy `prefill_edit_policy=reclassification_only`
+- Step-3 VAT balance and settlement:
+  - `GET /vat-balance/{taxpayer_id}`
+  - `POST /settlements/requests`
+  - event `SystemSettlementTriggered`
+  - event `SystemSettlementNoticeIssued`
 
 Canonical filing contract (return-level monetary fields):
 - `output_vat_amount_domestic`
@@ -273,6 +291,18 @@ AI boundary contract:
 - Binding outcomes:
   - only deterministic rule and assessment services produce legally binding decisions
 
+ViDA and country overlay configuration dimensions:
+- `jurisdiction_code`
+- `vida_step_mode` (`step_1`, `step_2`, `step_3`)
+- `vida_access_point_profile` (for example `corner_5`)
+- `prefill_mode` (`none`, `partial_b2c`, `full_b2b`)
+- `prefill_edit_policy` (`reclassification_only`)
+- `balance_mode` (`off`, `periodic_projection`, `near_realtime`)
+- `settlement_mode` (`manual_request`, `system_triggered`, `hybrid`)
+- `b2c_sales_source_mode` (`lump_sum`, `saft`, `pos`)
+- `settlement_trigger_policy_id`
+- `statutory_time_limit_profile_id`
+
 Interface and contract standards:
 - Synchronous APIs: `OpenAPI 3.1` with versioned contracts and backward-compatibility policy.
 - Asynchronous APIs: `AsyncAPI` + `CloudEvents` envelope for domain events.
@@ -326,6 +356,7 @@ Open-source-only compliance rule:
 4. Claims Integration: orchestrator, connector, retry/idempotency
 5. Corrections and Controls: versioning, lineage, dashboards, alerts
 6. Advanced Scenarios: modules for `Needs module`, routed `Manual/legal`
+7. ViDA Step 1-3: recurring ingress, prefill/reclassification controls, near-real-time balance and settlement triggers
 
 Future-proofing workstream (cross-phase):
 - F1. Introduce schema registry + contract compatibility checks.
@@ -333,3 +364,29 @@ Future-proofing workstream (cross-phase):
 - F3. Establish lakehouse for audit and compliance analytics with open table format.
 - F4. Implement OpenTelemetry baseline and SLO-driven release gates.
 - F5. Implement GitOps + policy-as-code + supply-chain attestation controls.
+
+## 10. Capability-Configuration Operating Rule
+- Tax Core services define the stable capability backbone.
+- ViDA step progression and country-specific VAT behavior are configuration states of that backbone.
+- Required architecture pattern:
+  - stable bounded contexts and APIs
+  - effective-dated policy/rule packs
+  - jurisdiction and step activation profiles
+- Anti-patterns (disallowed):
+  - per-country service forks
+  - per-step duplicate pipelines
+  - hard-coded jurisdictional semantics in generic core components
+
+## 11. ViDA Step-1/2/3 Addendum
+- Step-1:
+  - recurring ViDA ingest and verification/classification before legal use
+  - high-risk explainability and amend/confirm loop
+  - IRM-compatible case-task event on confirmed unchanged high-risk submissions
+- Step-2:
+  - B2B full prefill where verified coverage exists
+  - B2C partial prefill with taxpayer sales-side completion
+  - reclassification-first interaction model (no direct free-form numeric overwrite)
+- Step-3:
+  - near-real-time VAT balance updates
+  - taxpayer-initiated and system-initiated settlement paths (threshold/time policy)
+  - B2C source transition support (`lump_sum` to `SAF-T`/`POS`)

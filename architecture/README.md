@@ -32,3 +32,11 @@ This folder contains architecture outputs derived from the business analysis pac
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`
 - `analysis/09-product-scope-and-requirements-alignment.md`
+
+## Capability-Configuration Contract
+- Core architecture is capability-complete for VAT filing/assessment lifecycle.
+- ViDA maturity-step behavior is enabled by configuration and policy activation, not component replacement.
+- Country rollout model:
+  - `Country 1 (DK VAT)` via overlay and rule-pack configuration.
+  - `Country N` via additional overlays on unchanged core capabilities.
+- This contract is mandatory for architect and designer outputs.

@@ -25,6 +25,7 @@
 - Feature F5.2: Obligation lifecycle states (`due`, `submitted`, `overdue`)
 - Feature F5.3: EU-sales obligation lifecycle (`eu_sales_due`, `eu_sales_submitted`, `eu_sales_overdue`)
 - Feature F5.4: Preliminary assessment lifecycle (`preliminary_assessment_issued`, `preliminary_assessment_superseded`, `final_assessment_calculated`)
+- Feature F5.5: Annual cadence policy profile (`annual`) for legacy/transition adoption
 
 ## Phase 3: Claims Integration
 ### Epic E6: Claim Orchestration and Connector
@@ -77,6 +78,29 @@
 - Feature F14.2: Country-variation governance workflow (`policy change`, `country extension`, `core change`, `reject`)
 - Feature F14.3: Temporal legal-correctness tests for effective-dated policy evaluation
 - Feature F14.4: AI-boundary controls that block non-deterministic legal decisions
+
+## Phase 6: ViDA Step 1-3 Enablement
+### Epic E15: ViDA Ingestion and Verification
+- Feature F15.1: Recurring ViDA ingest contracts with `corner_5` profile support
+- Feature F15.2: Verification and classification pipeline before legal use
+- Feature F15.3: Risk profile refresh and high-risk explanation payloads
+
+### Epic E16: Step-1 High-Risk Interaction
+- Feature F16.1: Taxpayer amend/confirm review loop contracts
+- Feature F16.2: IRM case-task integration event for confirmed unchanged high-risk submissions
+- Feature F16.3: Explainability controls for taxpayer-facing risk reasons
+
+### Epic E17: Step-2 Prefill Controls
+- Feature F17.1: Prefill preparation service for B2B/B2C policy modes
+- Feature F17.2: Reclassification-only edit policy enforcement (`prefill_edit_policy=reclassification_only`)
+- Feature F17.3: B2C taxpayer sales-side completion contract
+
+### Epic E18: Step-3 VAT Balance and Settlement
+- Feature F18.1: Near-real-time VAT balance projection service
+- Feature F18.2: Taxpayer-initiated settlement request contracts
+- Feature F18.3: System-initiated settlement trigger engine (time/balance thresholds)
+- Feature F18.4: B2C source transition support (`lump_sum` to `SAF-T`/`POS`)
+- Feature F18.5: Payment-plan lifecycle integration events (established, missed instalment, terminated)
 
 ## Suggested Acceptance Anchors
 - Every feature maps to at least one scenario in `analysis/07-...` or class in `analysis/08-...`.

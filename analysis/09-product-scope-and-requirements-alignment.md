@@ -70,3 +70,9 @@ Integrate the newly provided GTM scope and product-requirements clarifications i
 
 ## Sources
 - Internal GTM/Product Scope document provided by user (2026-02-24 session)
+
+### Confirmed Capability-vs-Configuration Position
+- [confirmed] Core capabilities are product assets and remain stable across jurisdictions.
+- [confirmed] ViDA ladder steps are rollout configurations on top of core capabilities.
+- [confirmed] Country adaptation is achieved through overlay configuration and rule packs, not core branching.
+- [assumed] A central configuration governance process exists to prevent semantic drift across country overlays.

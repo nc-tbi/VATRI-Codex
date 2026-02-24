@@ -103,3 +103,9 @@ All architecture outputs must start with:
 - Use explicit interfaces and idempotent outbound claim delivery.
 - Make assumptions explicit and map them to source file references.
 - Provide architecture decisions that can be implemented directly by engineering teams.
+
+## Capability-Configuration Constraint (Mandatory)
+- Tax Core must be capability-complete for VAT lifecycle functions.
+- ViDA step modes (`step_1`, `step_2`, `step_3`) must be represented as configuration profiles over existing capabilities.
+- Danish VAT and future country VAT contexts must be represented as governed overlays/rule packs over unchanged core components.
+- Architect outputs must reject any proposal that introduces per-step or per-country core service forks.

@@ -32,7 +32,6 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding Optimizer operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace-wide role-scoped context policy
-|-- BUSINESS_ANALYST_AGENT.md        # Compatibility pointer
 `-- CLAUDE.md                        # This file
 ```
 

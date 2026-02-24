@@ -34,3 +34,8 @@
 - Definition of done includes contract versioning, observability, and traceable evidence.
 - All strategic tech choices must be evaluated against portability, operability, and security maturity criteria.
 - All strategic tech choices must also pass open-source license and lock-in review.
+
+## Principle 16. Capability Core, Configuration Overlay
+- Build once in core capabilities; vary by configuration.
+- ViDA step adoption and country VAT adoption are configuration concerns, not core-fork concerns.
+- Core components must remain jurisdiction-agnostic at the capability level and consume overlay policies for jurisdictional behavior.

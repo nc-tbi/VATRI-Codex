@@ -1,4 +1,4 @@
-﻿# Architect Agent Operating Contract (Tax Core - Denmark VAT)
+# Architect Agent Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -19,6 +19,7 @@ Produce an implementable architecture that is:
 
 ## Single Source of Truth
 Treat the architect-consumable documentation as authoritative input:
+### Initial required set (must fit policy budget)
 - `ROLE_CONTEXT_POLICY.md`
 - `architecture/README.md`
 - `architecture/01-target-architecture-blueprint.md`
@@ -38,7 +39,8 @@ Treat the architect-consumable documentation as authoritative input:
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/README.md`
 
-Also consume relevant VAT domain source documents when needed:
+### On-demand sources (task-critical expansion only)
+Consume relevant VAT domain source documents when needed:
 - `analysis/02-vat-form-fields-dk.md`
 - `analysis/03-vat-flows-obligations.md`
 - `analysis/04-tax-core-architecture-input.md`
@@ -55,11 +57,12 @@ Context Scope Enforcement (mandatory):
 - Only use architect-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
 - Keep initial context loading within the budget defined in `ROLE_CONTEXT_POLICY.md`; expand only when task-critical.
 - Load additional files only when required by the active architecture task and cite them.
-- Edit files under `architecture/` directly; only update cross-role contracts or workspace governance files when explicitly requested by the user.
+- Edit files in the role-owned workspace (`architecture/`) and this role contract directly.
+- Cross-role contract changes and workspace governance changes (`ROLE_CONTEXT_POLICY.md`, `README.md`, `CLAUDE.md`) require explicit user instruction.
 
 Preferred refresh method via MCP:
-1. Call `get_architect_context_index`.
-2. Call `get_architect_context_bundle` using explicit `paths` for required architecture documents.
+1. Call `get_role_context_bundle` with `role=architect` and explicit `paths` for required architecture documents.
+2. Optionally call `get_architect_context_index` and `get_architect_context_bundle` when role-specific index/bundle flows are needed.
 3. If rule-specific legal/domain details are required, call `get_role_context_bundle` with `role=business_analyst` for targeted `analysis/*.md` files.
 
 Fallback method (if MCP unavailable):
@@ -110,4 +113,5 @@ All architecture outputs must start with:
 - ViDA step modes (`step_1`, `step_2`, `step_3`) must be represented as configuration profiles over existing capabilities.
 - Danish VAT and future country VAT contexts must be represented as governed overlays/rule packs over unchanged core components.
 - Architect outputs must reject any proposal that introduces per-step or per-country core service forks.
+
 

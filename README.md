@@ -1,4 +1,4 @@
-﻿# VATRI Codex
+# VATRI Codex
 
 Knowledge base and AI tooling layer for **Tax Core** - a Danish VAT filing and assessment platform developed as part of the Netcompany VATRI initiative.
 
@@ -40,6 +40,8 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |   `-- traceability/                # Scenario-to-architecture traceability matrix
 |
 |-- design/                          # Solution design outputs
+|-- build/                           # Self-service portal implementation workspace
+|-- testing/                         # Test strategy and quality-governance outputs
 |-- critical-review/                 # Critical reviewer findings and advice artifacts
 |   `-- advice/                      # Role-targeted remediation instructions from reviews
 |-- optimization/                    # Coding optimizer findings and optimization plans
@@ -48,12 +50,16 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |-- mcp-server/                      # MCP server (TypeScript / Node.js)
 |   `-- src/index.ts                 # All tools defined here
 |
-|-- architect.md                     # Architect operating contract
+|-- ARCHITECT.md                     # Architect operating contract
 |-- business-analyst.md              # Business analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
 |-- CRITICAL_REVIEWER.md             # Critical reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding optimizer operating contract
 |-- CODE_BUILDER.md                  # Code builder operating contract
+|-- FRONTEND_DEVELOPER.md            # Front-end developer operating contract
+|-- DEVOPS.md                        # DevOps operating contract
+|-- TEST_MANAGER.md                  # Test manager operating contract
+|-- TESTER.md                        # Tester operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace role context policy
 `-- CLAUDE.md                        # Project guide
 ```
@@ -74,7 +80,7 @@ Tax Core covers the complete VAT lifecycle for Danish businesses:
 | Amendments | Prior-vs-new lineage, versioned reassessment |
 | Audit | Immutable evidence trail from input to claim dispatch |
 
-**Out of scope:** taxpayer-facing UI, settlement processing, litigation, ERP integrations.
+**Out of scope:** settlement processing, litigation, ERP integrations.
 
 ---
 
@@ -120,12 +126,16 @@ Copy `mcp-server/mcp.config.example.json` to `mcp-server/mcp.config.json` and re
 
 Role-based contracts define how AI agents must operate in this repository:
 
-- **[architect.md](architect.md)** - Solution Architect role.
+- **[ARCHITECT.md](ARCHITECT.md)** - Solution Architect role.
 - **[business-analyst.md](business-analyst.md)** - Business Analyst role.
 - **[DESIGNER.md](DESIGNER.md)** - Solution Designer role.
 - **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** - Critical Reviewer role.
 - **[CODING_OPTIMIZER.md](CODING_OPTIMIZER.md)** - Coding Optimizer role.
 - **[CODE_BUILDER.md](CODE_BUILDER.md)** - Code Builder role.
+- **[FRONTEND_DEVELOPER.md](FRONTEND_DEVELOPER.md)** - Front-End Developer role.
+- **[DEVOPS.md](DEVOPS.md)** - DevOps role.
+- **[TEST_MANAGER.md](TEST_MANAGER.md)** - Test Manager role.
+- **[TESTER.md](TESTER.md)** - Tester role.
 - **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** - Workspace-wide role context and governance policy.
 
 Critical Reviewer output convention:
@@ -194,4 +204,8 @@ Helpful docs:
 - `scripts/local/run-local.ps1`
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
+
+
+
+
 

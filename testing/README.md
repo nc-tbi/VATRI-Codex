@@ -1,0 +1,19 @@
+# Testing Workspace
+
+This folder is the dedicated workspace for `Test Manager` and `Tester` outputs.
+
+Typical artifacts:
+- solution-level test strategy
+- test type definitions and coverage matrices
+- scenario traceability mappings
+- release quality gates and test evidence requirements
+
+Current artifacts:
+- `testing/01-solution-testing-strategy.md`
+- `testing/02-test-execution-backlog.md`
+- `testing/03-sprint-1-detailed-test-cases.md`
+- `testing/04-gate-a-ci-spec.md`
+- `testing/05-gate-a-defect-remediation-tracker.md`
+
+Primary role contract:
+- `TEST_MANAGER.md`

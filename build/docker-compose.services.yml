@@ -1,0 +1,210 @@
+# docker-compose.services.yml — Full Tax Core stack
+# Includes: infra (PostgreSQL 16, Redpanda, Kafka UI, Apicurio) + all 6 services
+# Build context for all services is the monorepo root (this directory).
+# Usage:
+#   docker compose -f docker-compose.services.yml up --build
+#   docker compose -f docker-compose.services.yml down -v
+
+x-common-env: &common-env
+  DATABASE_URL: postgres://taxcore:taxcore@postgres:5432/taxcore_local
+  KAFKA_BROKERS: redpanda:9092
+  LOG_LEVEL: info
+  SERVICE_PORT: "3000"
+
+x-service-depends: &service-depends
+  postgres:
+    condition: service_healthy
+  redpanda:
+    condition: service_healthy
+
+services:
+  # ── Infrastructure ────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16
+    container_name: taxcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: taxcore
+      POSTGRES_PASSWORD: taxcore
+      POSTGRES_DB: taxcore_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - taxcore_postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taxcore -d taxcore_local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.16
+    container_name: taxcore-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --check=false
+      - --node-id
+      - "0"
+      - --kafka-addr
+      - "PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092"
+      - --advertise-kafka-addr
+      - "PLAINTEXT://redpanda:9092,OUTSIDE://localhost:19092"
+      - --pandaproxy-addr
+      - "0.0.0.0:8082"
+      - --advertise-pandaproxy-addr
+      - "redpanda:8082"
+    ports:
+      - "19092:19092"
+      - "9644:9644"
+    volumes:
+      - taxcore_redpanda_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: taxcore-kafka-ui
+    restart: unless-stopped
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: taxcore-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: redpanda:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    ports:
+      - "8085:8080"
+
+  apicurio-registry:
+    image: apicurio/apicurio-registry-mem:2.6.2.Final
+    container_name: taxcore-apicurio
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  # ── Tax Core Services ─────────────────────────────────────────────────────
+
+  filing-service:
+    build:
+      context: .
+      dockerfile: services/filing-service/Dockerfile
+    container_name: taxcore-filing
+    restart: unless-stopped
+    depends_on: *service-depends
+    environment:
+      <<: *common-env
+    ports:
+      - "3001:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  validation-service:
+    build:
+      context: .
+      dockerfile: services/validation-service/Dockerfile
+    container_name: taxcore-validation
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      SERVICE_PORT: "3000"
+    ports:
+      - "3002:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  rule-engine-service:
+    build:
+      context: .
+      dockerfile: services/rule-engine-service/Dockerfile
+    container_name: taxcore-rule-engine
+    restart: unless-stopped
+    environment:
+      LOG_LEVEL: info
+      SERVICE_PORT: "3000"
+    ports:
+      - "3003:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  assessment-service:
+    build:
+      context: .
+      dockerfile: services/assessment-service/Dockerfile
+    container_name: taxcore-assessment
+    restart: unless-stopped
+    depends_on: *service-depends
+    environment:
+      <<: *common-env
+    ports:
+      - "3004:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  amendment-service:
+    build:
+      context: .
+      dockerfile: services/amendment-service/Dockerfile
+    container_name: taxcore-amendment
+    restart: unless-stopped
+    depends_on: *service-depends
+    environment:
+      <<: *common-env
+    ports:
+      - "3005:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  claim-orchestrator:
+    build:
+      context: .
+      dockerfile: services/claim-orchestrator/Dockerfile
+    container_name: taxcore-claim
+    restart: unless-stopped
+    depends_on: *service-depends
+    environment:
+      <<: *common-env
+    ports:
+      - "3006:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  taxcore_postgres_data:
+  taxcore_redpanda_data:

@@ -1,0 +1,28 @@
+{
+  "name": "@tax-core/domain",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tax Core domain logic — shared across all services",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2",
+    "vitest": "^2.1.0"
+  }
+}

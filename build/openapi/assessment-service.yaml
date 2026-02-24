@@ -1,0 +1,161 @@
+openapi: "3.1.0"
+info:
+  title: Assessment Service API
+  version: "1.0.0"
+  description: |
+    Tax Core assessment service — staged net-VAT derivation (S1-S4, ADR-006).
+    Bounded context: Tax Rule & Assessment.
+    Publishes to tax-core.filing.assessed.
+
+servers:
+  - url: http://localhost:3004
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /assessments:
+    post:
+      operationId: computeAssessment
+      summary: Compute a staged VAT assessment
+      description: |
+        Runs staged derivation (S1-S4) for a canonical filing.
+        Stage 1: gross output VAT | Stage 2: deductible input VAT |
+        Stage 3: pre-adjustment net | Stage 4: final net VAT + adjustments.
+      tags: [Assessments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentRequest"
+      responses:
+        "201":
+          description: Assessment computed and persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /assessments/{assessment_id}:
+    get:
+      operationId: getAssessment
+      summary: Retrieve an assessment by ID
+      tags: [Assessments]
+      parameters:
+        - name: assessment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Assessment record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    AssessmentRequest:
+      type: object
+      required: [filing, rule_version_id]
+      properties:
+        filing:
+          type: object
+          description: Canonical filing (CanonicalFiling shape)
+        rule_version_id:
+          type: string
+
+    StagedAssessment:
+      type: object
+      required:
+        - filing_id
+        - trace_id
+        - rule_version_id
+        - assessed_at
+        - stage1_gross_output_vat
+        - stage2_total_deductible_input_vat
+        - stage3_pre_adjustment_net_vat
+        - stage4_net_vat
+        - result_type
+        - claim_amount
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        assessed_at:
+          type: string
+          format: date-time
+        stage1_gross_output_vat:
+          type: number
+        stage2_total_deductible_input_vat:
+          type: number
+        stage3_pre_adjustment_net_vat:
+          type: number
+        stage4_net_vat:
+          type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+
+    AssessmentResponse:
+      type: object
+      required: [trace_id, assessment]
+      properties:
+        trace_id:
+          type: string
+        assessment:
+          $ref: "#/components/schemas/StagedAssessment"
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string

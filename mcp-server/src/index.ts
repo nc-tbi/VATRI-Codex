@@ -32,7 +32,9 @@ const architectureRoot = path.join(workspaceRoot, "architecture");
 const designRoot = path.join(workspaceRoot, "design");
 const criticalReviewRoot = path.join(workspaceRoot, "critical-review");
 const optimizationRoot = path.join(workspaceRoot, "optimization");
+const testingRoot = path.join(workspaceRoot, "testing");
 const mcpServerRoot = path.join(workspaceRoot, "mcp-server");
+const buildRoot = path.join(workspaceRoot, "build");
 
 const roleSchema = z.enum([
   "architect",
@@ -40,7 +42,10 @@ const roleSchema = z.enum([
   "designer",
   "critical_reviewer",
   "coding_optimizer",
-  "code_builder"
+  "code_builder",
+  "frontend_developer",
+  "test_manager",
+  "tester"
 ]);
 
 async function listMarkdownFiles(rootDir: string): Promise<string[]> {
@@ -101,7 +106,10 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     "DESIGNER.md",
     "CRITICAL_REVIEWER.md",
     "CODING_OPTIMIZER.md",
-    "CODE_BUILDER.md"
+    "CODE_BUILDER.md",
+    "FRONTEND_DEVELOPER.md",
+    "TEST_MANAGER.md",
+    "TESTER.md"
   ];
 
   const roleSpecificRoots: Record<z.infer<typeof roleSchema>, string[]> = {
@@ -110,7 +118,10 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     designer: [architectureRoot, designRoot],
     critical_reviewer: [analysisRoot, architectureRoot, designRoot, criticalReviewRoot],
     coding_optimizer: [optimizationRoot, criticalReviewRoot],
-    code_builder: [architectureRoot, designRoot, mcpServerRoot]
+    code_builder: [architectureRoot, designRoot, mcpServerRoot],
+    frontend_developer: [architectureRoot, designRoot, buildRoot, testingRoot],
+    test_manager: [architectureRoot, designRoot, testingRoot],
+    tester: [testingRoot, architectureRoot, designRoot, mcpServerRoot]
   };
 
   const roots = roleSpecificRoots[role];
@@ -122,7 +133,10 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     designer: ["DESIGNER.md", "ROLE_CONTEXT_POLICY.md"],
     critical_reviewer: [...contractFiles, "ROLE_CONTEXT_POLICY.md", "README.md", "mcp-server/README.md"],
     coding_optimizer: [...contractFiles, ...commonGovernance],
-    code_builder: ["CODE_BUILDER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "mcp-server/README.md"]
+    code_builder: ["CODE_BUILDER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "mcp-server/README.md"],
+    frontend_developer: ["FRONTEND_DEVELOPER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "DESIGNER.md", "CODE_BUILDER.md", "TEST_MANAGER.md", "TESTER.md", "mcp-server/README.md"],
+    test_manager: ["TEST_MANAGER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "mcp-server/README.md"],
+    tester: ["TESTER.md", "TEST_MANAGER.md", "CODE_BUILDER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "mcp-server/README.md"]
   };
 
   const governanceFiles = await Promise.all(

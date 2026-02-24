@@ -1,0 +1,20 @@
+{
+  "name": "tax-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tax Core Phase 1 — monorepo (domain package + microservices)",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "test": "npm run test -w @tax-core/domain",
+    "test:watch": "npm run test:watch -w @tax-core/domain",
+    "test:gate-a": "npm run test && npm run typecheck",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev": "docker compose -f docker-compose.services.yml up --build",
+    "infra:up": "docker compose -f local/docker-compose.local.yml up -d",
+    "infra:down": "docker compose -f local/docker-compose.local.yml down"
+  }
+}

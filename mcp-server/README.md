@@ -52,6 +52,21 @@ npm start
 2. Call `get_architect_context_bundle` with `includeContent=true`.
 3. Perform architecture design using the returned document set as current source of truth.
 
+## Suggested next-session startup sequence for Test Manager mode
+1. Call `get_role_context_index` with `role=test_manager`.
+2. Call `get_role_context_bundle` with `role=test_manager`, `includeContent=true`, and explicit `paths`.
+3. Produce test strategy and coverage outputs from the returned role-scoped sources.
+
+## Suggested next-session startup sequence for Front-End Developer mode
+1. Call `get_role_context_index` with `role=frontend_developer`.
+2. Call `get_role_context_bundle` with `role=frontend_developer`, `includeContent=true`, and explicit `paths`.
+3. Implement self-service portal UI behavior aligned to architecture/design contracts and testing strategy.
+
+## Suggested next-session startup sequence for Tester mode
+1. Call `get_role_context_index` with `role=tester`.
+2. Call `get_role_context_bundle` with `role=tester`, `includeContent=true`, and explicit `paths`.
+3. Execute strategy-aligned tests and produce evidence-oriented execution reports.
+
 ## Tool notes
 - `get_business_analyst_context_bundle` inputs:
   - `includeContent` (default: `true`)

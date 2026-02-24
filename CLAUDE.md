@@ -1,4 +1,4 @@
-﻿# CLAUDE.md - VATRI Codex
+# CLAUDE.md - VATRI Codex
 
 > Living document. Update this file whenever stable patterns, conventions, roles, or architecture decisions change.
 
@@ -23,15 +23,21 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- analysis/                        # Authoritative business/domain analysis
 |-- architecture/                    # Architecture outputs (blueprint, principles, ADRs, delivery, traceability)
 |-- design/                          # Designer working folder and solution design outputs
+|-- build/                           # Front-end developer workspace (self-service portal)
+|-- testing/                         # Test manager strategy and quality-governance outputs
 |-- optimization/                    # Coding optimizer findings and advice artifacts
 |-- mcp-server/                      # MCP server (TypeScript/Node.js)
 |   |-- src/index.ts                 # MCP tools and runtime context loading
-|-- architect.md                     # Architect operating contract
+|-- ARCHITECT.md                     # Architect operating contract
 |-- business-analyst.md              # Business Analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
 |-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding Optimizer operating contract
 |-- CODE_BUILDER.md                  # Code Builder operating contract
+|-- FRONTEND_DEVELOPER.md            # Front-End Developer operating contract
+|-- DEVOPS.md                        # DevOps operating contract
+|-- TEST_MANAGER.md                  # Test Manager operating contract
+|-- TESTER.md                        # Tester operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace-wide role-scoped context policy
 `-- CLAUDE.md                        # This file
 ```
@@ -44,12 +50,16 @@ Always read the relevant role contract before domain work.
 
 | File | Role | Primary source scope |
 |---|---|---|
-| `architect.md` | Solution Architect | `architecture/**/*.md` |
+| `ARCHITECT.md` | Solution Architect | `architecture/**/*.md` |
 | `business-analyst.md` | Business Analyst | `analysis/*.md` |
 | `DESIGNER.md` | Solution Designer | `architecture/**` + `design/**` |
 | `CRITICAL_REVIEWER.md` | Critical Reviewer | Review targets in `analysis/**`, `architecture/**`, `design/**` + governing role contracts |
 | `CODING_OPTIMIZER.md` | Coding Optimizer | Role contracts, workspace governance docs, and targeted delivery artifacts for optimization |
 | `CODE_BUILDER.md` | Code Builder | `architecture/**` + `design/**` + implementation workspace artifacts |
+| `FRONTEND_DEVELOPER.md` | Front-End Developer | `architecture/**` + `design/**` + `build/**` + targeted testing artifacts |
+| `DEVOPS.md` | DevOps | `architecture/**` + `design/**` + `testing/**` + `build/**` deployment and runtime artifacts |
+| `TEST_MANAGER.md` | Test Manager | `architecture/**` + `design/**` + `testing/**` + targeted implementation evidence |
+| `TESTER.md` | Tester | `testing/**` + targeted implementation test artifacts + strategy/gate evidence |
 | `ROLE_CONTEXT_POLICY.md` | Workspace policy | Role-scoped loading rules |
 
 ### Role-Scoped Context Rule (Mandatory)
@@ -67,6 +77,10 @@ Role standards policy:
 - Critical Reviewer role performs evidence-first quality checks and does not expand review scope unless requested.
 - Coding Optimizer role improves role/process/token efficiency while preserving compliance and quality guardrails.
 - Code Builder role implements approved architecture/design contracts with deterministic and auditable behavior.
+- Front-End Developer role implements the self-service portal UX and front-end behavior, complementing Code Builder backend ownership.
+- DevOps role owns deployment, environment resourcing, and CI/CD gate enforcement for solution promotion readiness.
+- Test Manager role defines risk-based test strategy and complete test-type coverage with scenario traceability.
+- Tester role executes strategy-aligned tests, documents evidence, and feeds defects/readiness signals back to delivery roles.
 
 ---
 
@@ -141,7 +155,10 @@ This repository is:
 - A documentation + MCP tooling workspace for VATRI Tax Core
 
 This repository is not:
-- A taxpayer-facing UI
 - A production settlement/debt collection backend
 - A litigation/case-management system
+
+
+
+
 

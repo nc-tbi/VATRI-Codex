@@ -19,20 +19,25 @@ Produce practical optimization outputs that:
 
 ## Single Source of Truth
 Treat the following as authoritative optimization governance:
+### Initial required set (must fit policy budget)
 - `ROLE_CONTEXT_POLICY.md`
 - `CLAUDE.md`
 - `README.md`
-- `architect.md`
+- `ARCHITECT.md`
 - `business-analyst.md`
 - `DESIGNER.md`
 - `CRITICAL_REVIEWER.md`
 - `CODING_OPTIMIZER.md`
 - `CODE_BUILDER.md`
+- `TEST_MANAGER.md`
+- `TESTER.md`
 
+### On-demand sources (task-critical expansion only)
 When optimization depends on active delivery artifacts, load only the targeted files under:
 - `analysis/**/*.md`
 - `architecture/**/*.md`
 - `design/**/*.md`
+- `testing/**/*.md`
 - `critical-review/**/*.md`
 - `optimization/**/*.md`
 
@@ -50,7 +55,8 @@ Context Scope Enforcement (mandatory):
 - Only use coding-optimizer-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
 - Keep initial context loading within the budget defined in `ROLE_CONTEXT_POLICY.md`; expand only when task-critical.
 - Load additional files only when necessary for the active optimization decision and cite them.
-- Edit files under `optimization/` directly; only update cross-role contracts or workspace governance files when explicitly requested by the user.
+- Edit files in the role-owned workspace (`optimization/`) and this role contract directly.
+- Cross-role contract changes and workspace governance changes (`ROLE_CONTEXT_POLICY.md`, `README.md`, `CLAUDE.md`) require explicit user instruction.
 
 Preferred refresh method via MCP:
 1. Use `get_role_context_bundle` with `role=coding_optimizer` and explicit `paths` for process and contract optimization.
@@ -103,3 +109,5 @@ All optimization outputs must start with:
 - Mark each finding as `confirmed` or `inference`.
 - Cite concrete file paths for non-trivial findings.
 - Make trade-offs explicit when optimizing speed vs rigor.
+
+

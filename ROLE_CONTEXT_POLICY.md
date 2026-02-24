@@ -28,6 +28,10 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Critical Reviewer: `critical-review/`
 - Coding Optimizer: `optimization/`
 - Code Builder: `mcp-server/`
+- Front-End Developer: `build/`
+- DevOps: `build/`
+- Test Manager: `testing/`
+- Tester: `testing/`
 
 ## Approved Source Sets
 
@@ -55,24 +59,24 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 
 ### Critical Reviewer
 - Primary:
-  - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md`
+  - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, `design/**/*.md`, and `testing/**/*.md`
   - `critical-review/*.md` and `critical-review/**/*.md`
-  - role contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`
+  - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
   - workspace policy: `ROLE_CONTEXT_POLICY.md`
 - Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims
 - Standards policy: perform evidence-first quality checks; do not expand scope beyond requested review targets.
 
 ### Coding Optimizer
 - Primary:
-  - role/governance contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
+  - role/governance contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
   - optimization artifacts: `optimization/*.md` and `optimization/**/*.md`
   - review artifacts when relevant: `critical-review/*.md` and `critical-review/**/*.md`
-- Secondary (only when needed): selected `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md` to validate optimization opportunities against real workflow outputs
+- Secondary (only when needed): selected `analysis/**/*.md`, `architecture/**/*.md`, `design/**/*.md`, and `testing/**/*.md` to validate optimization opportunities against real workflow outputs
 - Standards policy: optimize for quality-preserving efficiency; do not reduce compliance, traceability, determinism, or security guardrails.
 
 ### Code Builder
 - Primary:
-  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
   - implementation-driving architecture/design sources:
     - `architecture/01-target-architecture-blueprint.md`
     - `architecture/02-architectural-principles.md`
@@ -85,8 +89,71 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - implementation workspace artifacts: `mcp-server/**/*.md`, `mcp-server/**/*.ts`, `mcp-server/**/*.json`
   - test artifacts: `mcp-server/**/*.test.ts`, `mcp-server/**/*.spec.ts`, `mcp-server/jest.config.*`, `mcp-server/vitest.config.*`
   - documentation artifacts: `mcp-server/README.md`, `mcp-server/docs/**/*.md`
+  - testing governance artifacts: `testing/*.md` and `testing/**/*.md`
 - Secondary (only when needed): selected `analysis/*.md` for rule/legal implementation clarity
 - Standards policy: implement architecture and design contracts exactly; do not introduce non-approved semantic forks.
+
+### Front-End Developer
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
+  - implementation-driving architecture/design sources:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/03-future-proof-modern-data-stack-and-standards.md`
+    - `architecture/adr/*.md`
+    - `architecture/delivery/*.md`
+    - `architecture/traceability/*.md`
+    - `architecture/designer/*.md`
+    - `design/*.md` and `design/**/*.md`
+  - implementation workspace artifacts: `build/**/*`
+  - testing governance artifacts: `testing/*.md` and `testing/**/*.md`
+- Secondary (only when needed): selected `analysis/*.md` for UI/legal wording and validation semantics
+- Standards policy: implement self-service portal UX on approved API/event contracts; do not embed legally binding tax decision logic in UI.
+
+### DevOps
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
+  - deployment and runtime architecture inputs:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/03-future-proof-modern-data-stack-and-standards.md`
+    - `architecture/adr/*.md`
+    - `architecture/delivery/*.md`
+    - `architecture/designer/03-nfr-observability-checklist.md`
+    - `design/*.md` and `design/**/*.md`
+  - test-gate and release-governance inputs: `testing/*.md` and `testing/**/*.md`
+  - deployment workspace artifacts: `build/**/*.md`, `build/**/*.yml`, `build/**/*.yaml`, `build/**/*.json`, `build/scripts/**/*.ps1`, `build/local/**/*.yml`
+- Secondary (only when needed): selected `analysis/*.md` for scenario cadence and operational-load assumptions
+- Standards policy: manage deployment and environment resourcing with deterministic, auditable CI/CD and release-gate enforcement aligned to approved architecture/design/testing scope.
+### Test Manager
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
+  - testing strategy inputs:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/03-future-proof-modern-data-stack-and-standards.md`
+    - `architecture/adr/*.md`
+    - `architecture/delivery/*.md`
+    - `architecture/traceability/*.md`
+    - `architecture/designer/03-nfr-observability-checklist.md`
+    - `design/*.md` and `design/**/*.md`
+  - test-manager workspace artifacts: `testing/*.md` and `testing/**/*.md`
+  - implementation verification evidence when needed: `mcp-server/**/*.md`, `mcp-server/**/*.test.ts`, `mcp-server/**/*.spec.ts`, `build/src/**/*.test.ts`, `build/src/**/*.spec.ts`
+- Secondary (only when needed): selected `analysis/*.md` for rule/legal test intent and scenario semantics
+- Standards policy: define complete test-type coverage and risk-based release gates without changing approved architecture/design semantics.
+
+### Tester
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `TESTER.md`, `TEST_MANAGER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`
+  - execution governance artifacts: `testing/*.md` and `testing/**/*.md`
+  - implementation test evidence artifacts:
+    - `mcp-server/**/*.test.ts`, `mcp-server/**/*.spec.ts`, `mcp-server/**/*.md`
+    - `build/src/**/*.test.ts`, `build/src/**/*.spec.ts`, `build/**/*.md`
+  - scenario and contract context as needed:
+    - `architecture/traceability/*.md`
+    - `design/*.md` and `design/**/*.md`
+- Secondary (only when needed): selected `analysis/*.md` for legal/rule interpretation during test execution verdicting
+- Standards policy: execute strategy-defined tests objectively; do not redefine approved scope without Test Manager governance update.
 
 ## MCP Usage Guidance
 - Architect:
@@ -103,6 +170,31 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - Use `get_role_context_bundle` with `role=coding_optimizer` and explicit `paths` when possible
 - Code Builder:
   - Use `get_role_context_bundle` with `role=code_builder` and explicit `paths` when possible
+- Test Manager:
+  - Use `get_role_context_bundle` with `role=test_manager` and explicit `paths` when possible
+- Front-End Developer:
+  - Use `get_role_context_bundle` with `role=frontend_developer` and explicit `paths` when possible
+- DevOps:
+  - Use `get_role_context_bundle` with `role=frontend_developer` for `build/**` deployment assets and targeted `paths`
+  - Use `get_role_context_bundle` with `role=architect` and `role=test_manager` for architecture/NFR and release-gate constraints
+- Tester:
+  - Use `get_role_context_bundle` with `role=tester` and explicit `paths` when possible
 
 ## Enforcement Intent
 This is a living policy. Update it whenever role scope, folder ownership, source-of-truth boundaries, or MCP tool capabilities change.
+
+## Cross-Role Governance Ownership Protocol
+- The Coding Optimizer is the coordinating owner for cross-role governance remediation packages.
+- Required coordination artifacts:
+  - findings under `optimization/*.md`
+  - actionable instruction packages under `optimization/advice/*.md`
+- Changes to cross-role contracts and workspace governance files require explicit user instruction before execution.
+- Governance checkpoints:
+  - checkpoint 1: findings accepted and prioritized
+  - checkpoint 2: remediation patch set prepared
+  - checkpoint 3: post-change validation and synchronization report against `README.md` and `CLAUDE.md`
+
+
+
+
+

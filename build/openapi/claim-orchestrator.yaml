@@ -1,0 +1,214 @@
+openapi: "3.1.0"
+info:
+  title: Claim Orchestrator API
+  version: "1.0.0"
+  description: |
+    Tax Core claim orchestrator — idempotent claim dispatch with outbox pattern (ADR-004, ADR-006).
+    Bounded context: Claim. Idempotency key: {taxpayer_id}:{period_end}:{rule_version_id}.
+    Max 3 retries before dead_letter. Publishes to tax-core.claim.created.
+
+servers:
+  - url: http://localhost:3006
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /claims:
+    post:
+      operationId: createClaim
+      summary: Create or retrieve a claim intent
+      description: |
+        Creates a claim intent for a refund assessment. Idempotent — if a claim already
+        exists for the same taxpayer/period/version, returns the existing record.
+        Status lifecycle: queued → sent → acked | failed → dead_letter (after 3 failures).
+      tags: [Claims]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClaimRequest"
+      responses:
+        "201":
+          description: Claim intent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimResponse"
+        "200":
+          description: Existing claim returned (idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimResponse"
+        "409":
+          description: Idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /claims/{claim_id}:
+    get:
+      operationId: getClaim
+      summary: Retrieve a claim by ID
+      tags: [Claims]
+      parameters:
+        - name: claim_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Claim record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClaimResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    ClaimRequest:
+      type: object
+      required: [taxpayer_id, filing_id, assessment]
+      properties:
+        taxpayer_id:
+          type: string
+        filing_id:
+          type: string
+          format: uuid
+        assessment:
+          type: object
+          required: [filing_id, rule_version_id, result_type, claim_amount, stage4_net_vat]
+          properties:
+            filing_id:
+              type: string
+            rule_version_id:
+              type: string
+            result_type:
+              type: string
+              enum: [payable, refund, zero]
+            claim_amount:
+              type: number
+            stage4_net_vat:
+              type: number
+            tax_period_end:
+              type: string
+              format: date
+            assessment_version:
+              type: integer
+
+    ClaimIntent:
+      type: object
+      required:
+        - claim_id
+        - idempotency_key
+        - taxpayer_id
+        - tax_period_end
+        - assessment_version
+        - filing_id
+        - result_type
+        - claim_amount
+        - rule_version_id
+        - calculation_trace_id
+        - status
+        - retry_count
+        - created_at
+      properties:
+        claim_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          description: "{taxpayer_id}:{period_end}:{rule_version_id}"
+        taxpayer_id:
+          type: string
+        tax_period_end:
+          type: string
+          format: date
+        assessment_version:
+          type: integer
+        filing_id:
+          type: string
+          format: uuid
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+        rule_version_id:
+          type: string
+        calculation_trace_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, sent, acked, failed, dead_letter]
+        retry_count:
+          type: integer
+          minimum: 0
+        created_at:
+          type: string
+          format: date-time
+        last_attempted_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    ClaimResponse:
+      type: object
+      required: [trace_id, claim]
+      properties:
+        trace_id:
+          type: string
+        idempotent:
+          type: boolean
+          description: True when an existing claim was returned
+        claim:
+          $ref: "#/components/schemas/ClaimIntent"
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string

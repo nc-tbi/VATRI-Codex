@@ -1,0 +1,266 @@
+openapi: "3.1.0"
+info:
+  title: Filing Service API
+  version: "1.0.0"
+  description: |
+    Tax Core filing service — receives and orchestrates canonical VAT filings (ADR-006).
+    Bounded context: Filing. Publishes to tax-core.filing.received, tax-core.filing.assessed,
+    tax-core.claim.created.
+
+servers:
+  - url: http://localhost:3001
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /vat-filings:
+    post:
+      operationId: submitFiling
+      summary: Submit a canonical VAT filing
+      description: |
+        Accepts a canonical filing, runs validation → rule evaluation → staged assessment
+        → claim creation in a single orchestrated flow (S01–S19).
+      tags: [Filings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CanonicalFilingRequest"
+      responses:
+        "201":
+          description: Filing accepted and fully processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilingResponse"
+        "409":
+          description: Filing state conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vat-filings/{filing_id}:
+    get:
+      operationId: getFiling
+      summary: Retrieve a filing by ID
+      tags: [Filings]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Filing record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredFilingResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: filing-service
+
+    CanonicalFilingRequest:
+      type: object
+      required:
+        - filing_id
+        - taxpayer_id
+        - cvr_number
+        - tax_period_start
+        - tax_period_end
+        - filing_type
+        - submission_timestamp
+        - contact_reference
+        - source_channel
+        - rule_version_id
+        - assessment_version
+        - output_vat_amount_domestic
+        - reverse_charge_output_vat_goods_abroad_amount
+        - reverse_charge_output_vat_services_abroad_amount
+        - input_vat_deductible_amount_total
+        - adjustments_amount
+        - rubrik_a_goods_eu_purchase_value
+        - rubrik_a_services_eu_purchase_value
+        - rubrik_b_goods_eu_sale_value
+        - rubrik_b_services_eu_sale_value
+        - rubrik_c_other_vat_exempt_supplies_value
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+          pattern: "^[0-9]{8}$"
+          description: 8-digit Danish CVR number
+        tax_period_start:
+          type: string
+          format: date
+        tax_period_end:
+          type: string
+          format: date
+        filing_type:
+          type: string
+          enum: [regular, zero, amendment]
+        submission_timestamp:
+          type: string
+          format: date-time
+        contact_reference:
+          type: string
+        source_channel:
+          type: string
+          enum: [portal, api, import]
+        rule_version_id:
+          type: string
+        assessment_version:
+          type: integer
+          minimum: 1
+        prior_filing_id:
+          type: string
+          format: uuid
+          nullable: true
+        output_vat_amount_domestic:
+          type: number
+        reverse_charge_output_vat_goods_abroad_amount:
+          type: number
+        reverse_charge_output_vat_services_abroad_amount:
+          type: number
+        input_vat_deductible_amount_total:
+          type: number
+        adjustments_amount:
+          type: number
+        rubrik_a_goods_eu_purchase_value:
+          type: number
+          minimum: 0
+        rubrik_a_services_eu_purchase_value:
+          type: number
+          minimum: 0
+        rubrik_b_goods_eu_sale_value:
+          type: number
+          minimum: 0
+        rubrik_b_services_eu_sale_value:
+          type: number
+          minimum: 0
+        rubrik_c_other_vat_exempt_supplies_value:
+          type: number
+          minimum: 0
+
+    StagedAssessment:
+      type: object
+      required:
+        - filing_id
+        - trace_id
+        - rule_version_id
+        - assessed_at
+        - stage1_gross_output_vat
+        - stage2_total_deductible_input_vat
+        - stage3_pre_adjustment_net_vat
+        - stage4_net_vat
+        - result_type
+        - claim_amount
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        assessed_at:
+          type: string
+          format: date-time
+        stage1_gross_output_vat:
+          type: number
+        stage2_total_deductible_input_vat:
+          type: number
+        stage3_pre_adjustment_net_vat:
+          type: number
+        stage4_net_vat:
+          type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+
+    FilingResponse:
+      type: object
+      required: [filing_id, state, trace_id]
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [received, validated, assessed, claim_created]
+        trace_id:
+          type: string
+        assessment:
+          $ref: "#/components/schemas/StagedAssessment"
+        claim_intent:
+          type: object
+
+    StoredFilingResponse:
+      type: object
+      properties:
+        filing_id:
+          type: string
+        trace_id:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string

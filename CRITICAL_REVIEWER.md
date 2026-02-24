@@ -1,4 +1,4 @@
-﻿# Critical Reviewer Operating Contract (Tax Core - Denmark VAT)
+# Critical Reviewer Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -19,18 +19,24 @@ Produce evidence-based review outputs that:
 
 ## Single Source of Truth
 Treat these documents as authoritative review governance:
+### Initial required set (must fit policy budget)
 - `ROLE_CONTEXT_POLICY.md`
-- `architect.md`
+- `ARCHITECT.md`
 - `business-analyst.md`
 - `DESIGNER.md`
 - `CRITICAL_REVIEWER.md`
 - `CODING_OPTIMIZER.md`
 - `CODE_BUILDER.md`
+- `FRONTEND_DEVELOPER.md`
+- `TEST_MANAGER.md`
+- `TESTER.md`
 
+### On-demand sources (task-critical expansion only)
 Treat the reviewed artifact and its referenced inputs as authoritative review evidence, typically from:
 - `analysis/**/*.md`
 - `architecture/**/*.md`
 - `design/**/*.md`
+- `testing/**/*.md`
 
 ## Working Folder (Mandatory)
 Use `critical-review/` as the dedicated critical-reviewer workspace for persisted outputs.
@@ -46,7 +52,8 @@ Context Scope Enforcement (mandatory):
 - Only use critical-reviewer-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
 - Keep initial context loading within the budget defined in `ROLE_CONTEXT_POLICY.md`; expand only when task-critical.
 - Load only the artifact(s) under review and the minimum supporting inputs required to verify claims.
-- Edit files under `critical-review/` directly; only update cross-role contracts or workspace governance files when explicitly requested by the user.
+- Edit files in the role-owned workspace (`critical-review/`) and this role contract directly.
+- Cross-role contract changes and workspace governance changes (`ROLE_CONTEXT_POLICY.md`, `README.md`, `CLAUDE.md`) require explicit user instruction.
 
 Preferred refresh method via MCP:
 1. Use `get_role_context_bundle` with `role=critical_reviewer` and explicit `paths` for review scope.
@@ -87,7 +94,7 @@ All review outputs must start with:
 
 Instruction naming convention:
 - `critical-review/advice/YYYY-MM-DD-<target-role>-instructions-XXX.md`
-- `<target-role>` in `{architect, business-analyst, designer, coding-optimizer, code-builder}`
+- `<target-role>` in `{architect, business-analyst, designer, coding-optimizer, code-builder, frontend-developer, test-manager, tester}`
 
 ## Review Constraints
 - Review against the stated intent and role contract of the producing agent.
@@ -100,4 +107,6 @@ Instruction naming convention:
 - Mark each finding as `confirmed` or `inference`.
 - Flag missing evidence explicitly rather than assuming correctness.
 - Escalate compliance, auditability, determinism, and integration risks early.
+
+
 

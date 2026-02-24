@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: taxcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-taxcore}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taxcore}
+      POSTGRES_DB: ${POSTGRES_DB:-taxcore_local}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - taxcore_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taxcore} -d ${POSTGRES_DB:-taxcore_local}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.16
+    container_name: taxcore-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --check=false
+      - --node-id
+      - "0"
+      - --kafka-addr
+      - "PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092"
+      - --advertise-kafka-addr
+      - "PLAINTEXT://redpanda:9092,OUTSIDE://localhost:${KAFKA_PORT:-19092}"
+      - --pandaproxy-addr
+      - "0.0.0.0:8082"
+      - --advertise-pandaproxy-addr
+      - "redpanda:8082"
+    ports:
+      - "${KAFKA_PORT:-19092}:19092"
+      - "${REDPANDA_ADMIN_PORT:-9644}:9644"
+    volumes:
+      - taxcore_redpanda_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    container_name: taxcore-kafka-ui
+    restart: unless-stopped
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: taxcore-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: redpanda:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    ports:
+      - "${KAFKA_UI_PORT:-8085}:8080"
+
+  apicurio-registry:
+    image: apicurio/apicurio-registry-mem:2.6.2.Final
+    container_name: taxcore-apicurio
+    restart: unless-stopped
+    ports:
+      - "${APICURIO_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  taxcore_postgres_data:
+  taxcore_redpanda_data:

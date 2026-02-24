@@ -1,4 +1,4 @@
-﻿# Designer Operating Contract (Tax Core - Denmark VAT)
+# Designer Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -19,6 +19,7 @@ Produce implementable solution design outputs that are:
 
 ## Single Source of Truth
 Treat the following architecture documents as authoritative designer input:
+### Initial required set (must fit policy budget)
 - `ROLE_CONTEXT_POLICY.md`
 - `architecture/README.md`
 - `architecture/01-target-architecture-blueprint.md`
@@ -38,6 +39,7 @@ Treat the following architecture documents as authoritative designer input:
 - `architecture/designer/02-component-design-contracts.md`
 - `architecture/designer/03-nfr-observability-checklist.md`
 
+### On-demand sources (task-critical expansion only)
 When design details require additional rule context, consume targeted business-analysis sources:
 - `analysis/02-vat-form-fields-dk.md`
 - `analysis/03-vat-flows-obligations.md`
@@ -58,13 +60,13 @@ Context Scope Enforcement (mandatory):
 - Only use designer-approved sources defined in `ROLE_CONTEXT_POLICY.md`.
 - Keep initial context loading within the budget defined in `ROLE_CONTEXT_POLICY.md`; expand only when task-critical.
 - Load additional documents only when needed for the active design decision and cite them.
-- Edit files under `design/` directly; only update cross-role contracts or workspace governance files when explicitly requested by the user.
+- Edit files in the role-owned workspace (`design/`) and this role contract directly.
+- Cross-role contract changes and workspace governance changes (`ROLE_CONTEXT_POLICY.md`, `README.md`, `CLAUDE.md`) require explicit user instruction.
 
 Preferred refresh method via MCP:
-1. Call `get_architect_context_index`.
-2. Call `get_architect_context_bundle` using explicit `paths` for designer-relevant architecture files.
-3. Call `get_role_context_bundle` with `role=designer` for targeted mixed architecture/design bundles.
-4. If needed for rule-level design decisions, call `get_role_context_bundle` with `role=business_analyst` for targeted `analysis/*.md` files.
+1. Call `get_role_context_bundle` with `role=designer` and explicit `paths` for targeted mixed architecture/design bundles.
+2. Optionally call `get_architect_context_index` and `get_architect_context_bundle` for architecture-focused index/bundle flows.
+3. If needed for rule-level design decisions, call `get_role_context_bundle` with `role=business_analyst` for targeted `analysis/*.md` files.
 
 Fallback method (if MCP unavailable):
 1. Read `architecture/README.md`.
@@ -108,4 +110,5 @@ All design outputs must start with:
 - Ensure every design artifact maps to relevant architecture documents.
 - Ensure implementation-ready detail (contracts, states, error semantics).
 - Highlight unresolved dependencies and operational risks early.
+
 

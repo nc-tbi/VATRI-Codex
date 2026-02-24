@@ -1,0 +1,31 @@
+name: Gate A
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  gate-a:
+    name: gate-a
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Gate A checks
+        run: npm run test:gate-a

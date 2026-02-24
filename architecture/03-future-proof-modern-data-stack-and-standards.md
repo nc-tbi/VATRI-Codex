@@ -1,4 +1,4 @@
-# 03 - Future-Proof Architecture: Modern Data Stack and Engineering Standards
+﻿# 03 - Future-Proof Architecture: Modern Data Stack and Engineering Standards
 
 ## Purpose
 Define a future-proof target architecture profile for Tax Core that remains compliant, portable, and evolvable while adopting modern industry standards.
@@ -13,7 +13,7 @@ Define a future-proof target architecture profile for Tax Core that remains comp
 ## 2. Target Modern Data Stack
 
 ### Transactional Plane (System of Decision)
-- ACID relational database for filings, obligations, assessments, corrections, claim states.
+- ACID relational database for filings, obligations, assessments, amendments, claim states.
 - Strict schema migration discipline with backward-compatible rollout sequencing.
 - Outbox tables for reliable event publication.
 
@@ -97,3 +97,4 @@ Open-source-only rule:
 - Replacing stable core components solely for trend alignment.
 - Introducing tech that degrades determinism or audit traceability.
 - Introducing proprietary lock-in components that violate the open-source-only policy.
+

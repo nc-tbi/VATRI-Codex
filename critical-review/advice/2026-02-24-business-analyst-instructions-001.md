@@ -1,4 +1,4 @@
-# Business Analyst Update Instructions - 2026-02-24 - 001
+﻿# Business Analyst Update Instructions - 2026-02-24 - 001
 
 ## Purpose
 Apply targeted updates to the analysis package based on:
@@ -41,13 +41,13 @@ Primary files to update:
   5. Dependencies and Risks
   6. Process / Capability Impact
   7. Architecture Input Package
-- If keeping current document headings, add an explicit “Structure Mapping” section that maps existing headings to the required 1-7 structure.
+- If keeping current document headings, add an explicit â€œStructure Mappingâ€ section that maps existing headings to the required 1-7 structure.
 
 5. Add explicit `confirmed` vs `assumed` labeling for critical statements.
 - Apply labels to legal baselines, thresholds, cross-border obligations, and manual/legal routing decisions.
 
 6. Normalize references and terminology.
-- Standardize correction-path links and terminology across documents for consistency.
+- Standardize amendment-path links and terminology across documents for consistency.
 - Keep one canonical spelling/transliteration for Danish terms in ASCII when needed.
 
 ## Acceptance Criteria
@@ -61,3 +61,4 @@ Primary files to update:
 ## Re-Review Handoff
 After updates are complete, request critical re-review against:
 - `critical-review/2026-02-24-business-analyst-review-findings-001.md`
+

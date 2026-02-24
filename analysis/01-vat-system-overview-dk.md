@@ -4,7 +4,7 @@
 Provide a complete business analysis baseline for a `Tax Core` platform that handles Danish VAT and ends with claim creation for an external system.
 
 ## Business Objectives
-- Support VAT lifecycle: registration, periodic filing, correction, and resulting tax position.
+- Support VAT lifecycle: registration, periodic filing, amendment, and resulting tax position.
 - Determine period result consistently (`payable`, `refund`, `zero`) and create external claim payloads.
 - Support domestic, EU, and non-EU transaction reporting paths.
 
@@ -26,10 +26,10 @@ For each filing period, `Tax Core` must compute exactly one outcome:
 - Filing context (capture/validate declared fields)
 - Calculation context (derive net VAT and outcome)
 - Claim context (map outcome to external claim payload)
-- Compliance context (auditability, corrections, versioned rules)
+- Compliance context (auditability, amendments, versioned rules)
 
 ## Key Concepts to Model Explicitly
-- Filing types: `regular`, `zero`, `correction`
+- Filing types: `regular`, `zero`, `amendment`
 - Reporting partitions: domestic VAT amounts and international value boxes
 - Reverse charge treatment (imported services/goods and certain domestic cases)
 - Exemptions and their deduction effects
@@ -44,3 +44,4 @@ For each filing period, `Tax Core` must compute exactly one outcome:
 - SKAT - Register for VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-registrerer-du-din-virksomhed-for-moms
 - SKAT - File VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
 - SKAT - Correct filed VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/ret-tidligere-indberettet-moms
+

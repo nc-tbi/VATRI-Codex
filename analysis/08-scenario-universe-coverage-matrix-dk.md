@@ -13,8 +13,8 @@ Define a bounded but comprehensive scenario universe for Danish VAT filing and a
 2. Cadence assignment (monthly/quarterly/half-yearly): `Covered`
 3. Regular return (payable/refund/zero): `Covered`
 4. Late/non-filing and preliminary assessment path: `Covered`
-5. Correction filing (normal): `Covered`
-6. Correction filing for old periods (e.g., >3 years): `Manual/legal`
+5. Amendment filing (normal): `Covered`
+6. Amendment filing for old periods (e.g., >3 years): `Manual/legal`
 7. Domestic taxable supplies (standard 25% baseline): `Covered`
 8. EU B2B purchase reverse charge: `Covered`
 9. EU B2B sale without Danish VAT + separate EU-sales reporting: `Covered`
@@ -48,3 +48,4 @@ The analysis now accounts for all major scenario classes needed for a production
 - SKAT - OSS for private EU sales: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/moms-ved-salg-til-private/salg-til-private-i-eu
 - SKAT - Momskompensation: https://skat.dk/erhverv/moms/andre-momsemner/momskompensation-saadan-soeger-du
 - Den Juridiske Vejledning - Omvendt betalingspligt incl. indenlandske leverancer: https://info.skat.dk/data.aspx?oid=2068790
+

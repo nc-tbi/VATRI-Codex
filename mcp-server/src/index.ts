@@ -9,7 +9,13 @@ const server = new McpServer({
   version: "0.1.0"
 });
 
-const filingTypeSchema = z.enum(["regular", "zero", "correction"]);
+const filingTypeInputSchema = z.enum(["regular", "zero", "amendment", "correction"]);
+
+type FilingType = "regular" | "zero" | "amendment";
+
+function normalizeFilingType(filingType: z.infer<typeof filingTypeInputSchema>): FilingType {
+  return filingType === "correction" ? "amendment" : filingType;
+}
 
 function parseIsoDate(value: string): Date | null {
   const date = new Date(value);
@@ -494,7 +500,7 @@ server.tool(
     cvrNumber: z.string().min(1),
     taxPeriodStart: z.string().min(1),
     taxPeriodEnd: z.string().min(1),
-    filingType: filingTypeSchema,
+    filingType: filingTypeInputSchema,
     hadTaxableActivity: z.boolean().optional(),
     outputVatAmount: z.number().default(0),
     inputVatDeductibleAmount: z.number().default(0),
@@ -588,7 +594,9 @@ server.tool(
 
     const anyDeclaredAmounts = !isZero(monetaryTotal) || !isZero(internationalValueTotal);
 
-    if (filingType === "zero") {
+    const normalizedFilingType = normalizeFilingType(filingType);
+
+    if (normalizedFilingType === "zero") {
       if (anyDeclaredAmounts) {
         errors.push("Zero filing cannot contain VAT or international declaration amounts.");
       }
@@ -598,7 +606,7 @@ server.tool(
       }
     }
 
-    if ((filingType === "regular" || filingType === "correction") && hadTaxableActivity === false && anyDeclaredAmounts) {
+    if ((normalizedFilingType === "regular" || normalizedFilingType === "amendment") && hadTaxableActivity === false && anyDeclaredAmounts) {
       warnings.push("Amounts were provided while hadTaxableActivity=false.");
     }
 
@@ -778,3 +786,4 @@ main().catch((error) => {
   console.error("MCP server failed to start:", error);
   process.exit(1);
 });
+

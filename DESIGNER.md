@@ -1,4 +1,4 @@
-# Designer Operating Contract (Tax Core - Denmark VAT)
+﻿# Designer Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -28,7 +28,7 @@ Treat the following architecture documents as authoritative designer input:
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
-- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-005-versioned-amendments.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
@@ -98,7 +98,7 @@ All design outputs must start with:
 ## Design Constraints
 - Preserve architecture bounded contexts and ADR decisions.
 - Preserve deterministic behavior for VAT calculations and rule execution.
-- Preserve immutable filing/correction history and audit traceability.
+- Preserve immutable filing/amendment history and audit traceability.
 - Preserve idempotent claim dispatch semantics.
 - Separate deterministic automation from `Manual/legal` routed paths.
 - Keep technology and standard selection open at design time unless an explicit architecture decision for the target scope requires a specific choice.
@@ -108,3 +108,4 @@ All design outputs must start with:
 - Ensure every design artifact maps to relevant architecture documents.
 - Ensure implementation-ready detail (contracts, states, error semantics).
 - Highlight unresolved dependencies and operational risks early.
+

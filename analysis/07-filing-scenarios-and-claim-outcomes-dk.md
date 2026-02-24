@@ -12,8 +12,8 @@ Provide scenario-driven coverage for Danish VAT filing and assessment outcomes u
 1. Standard domestic payable return
 2. Refund return (high input VAT)
 3. Zero declaration
-4. Correction filing increases liability
-5. Correction filing decreases liability
+4. Amendment filing increases liability
+5. Amendment filing decreases liability
 
 ### Scenario Set B: Reverse Charge and Cross-Border
 6. EU B2B goods purchase (reverse charge)
@@ -35,7 +35,7 @@ Provide scenario-driven coverage for Danish VAT filing and assessment outcomes u
 18. Registered but late filing
 19. No filing submitted by deadline
 20. Filed but contradictory data
-21. Past-period correction (>3 years case)
+21. Past-period amendment (>3 years case)
 
 ### Scenario Set E: Lifecycle and Special Context
 22. Final VAT return on business closure
@@ -46,7 +46,7 @@ Provide scenario-driven coverage for Danish VAT filing and assessment outcomes u
 ### Claim Outcome Rules Across All Scenarios
 - Exactly one period result: `payable`, `refund`, or `zero`.
 - Claim payload includes `rule_version_id` and `calculation_trace_id`.
-- Assessment/correction events link to original filing and obligation.
+- Assessment/amendment events link to original filing and obligation.
 
 ## Constraints and Assumptions
 - [confirmed] Separate EU-sales obligation handling is required for relevant scenario paths.
@@ -94,3 +94,4 @@ Provide scenario-driven coverage for Danish VAT filing and assessment outcomes u
 32. Step-3 B2C phase B evidence-based sales source (`SAF-T`/`POS`) replacing lump-sum path
 33. Step-3 system-initiated settlement obligation on threshold breach (time or balance)
 34. Payment-plan breach after unpaid balance path (integration signal + collection-state impact)
+

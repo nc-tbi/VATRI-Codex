@@ -5,7 +5,7 @@ As of **February 24, 2026**, this folder contains architecture-oriented business
 ## Documents
 - `analysis/01-vat-system-overview-dk.md`: scope, VAT operating model, tax outcomes.
 - `analysis/02-vat-form-fields-dk.md`: detailed filing data model, staged derived logic, and data-boundary traceability.
-- `analysis/03-vat-flows-obligations.md`: registration, filing obligations, cadence, deadlines, correction flow.
+- `analysis/03-vat-flows-obligations.md`: registration, filing obligations, cadence, deadlines, amendment flow.
 - `analysis/04-tax-core-architecture-input.md`: implementable architecture requirements and domain boundaries (including EU-sales obligations, customs/told dependency, and product-first boundaries).
 - `analysis/05-reverse-charge-and-cross-border-dk.md`: reverse-charge and cross-border VAT handling model.
 - `analysis/06-exemptions-and-deduction-rules-dk.md`: exemptions, zero-rated treatment, and deduction impact.
@@ -25,7 +25,7 @@ Use these documents as input for:
 ## Quality Conventions Applied
 - BA structure alignment is explicit in updated docs via `Structure Mapping (BA Contract 1-7)`.
 - Critical statements in updated docs are labeled `confirmed` or `assumed`.
-- Correction terminology and source links are normalized to a canonical correction path reference.
+- Amendment terminology and source links are normalized to a canonical amendment path reference.
 - ASCII transliteration is normalized (for example `Foreloebig fastsaettelse`).
 
 ## Notes
@@ -38,3 +38,4 @@ Use these documents as input for:
 - ViDA step behavior and country VAT behavior are configuration overlays.
 - Danish VAT is the first overlay baseline; additional country overlays follow the same governance model.
 - No core service forks for jurisdictional rollout.
+

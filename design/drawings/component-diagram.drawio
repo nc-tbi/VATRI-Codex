@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2026-02-24T12:10:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
+﻿<mxfile host="app.diagrams.net" modified="2026-02-24T12:10:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
   <diagram id="comp01" name="Component Diagram">
     <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -16,7 +16,7 @@
         <mxCell id="14" value="Rule Evaluation Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="2"><mxGeometry x="910" y="60" width="190" height="70" as="geometry"/></mxCell>
         <mxCell id="15" value="Assessment Calculator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="2"><mxGeometry x="1130" y="60" width="170" height="70" as="geometry"/></mxCell>
 
-        <mxCell id="16" value="Correction Processor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="2"><mxGeometry x="250" y="180" width="190" height="70" as="geometry"/></mxCell>
+        <mxCell id="16" value="Amendment Processor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="2"><mxGeometry x="250" y="180" width="190" height="70" as="geometry"/></mxCell>
         <mxCell id="17" value="Claim Intent Builder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="2"><mxGeometry x="470" y="180" width="190" height="70" as="geometry"/></mxCell>
         <mxCell id="18" value="Outbox Publisher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="2"><mxGeometry x="690" y="180" width="190" height="70" as="geometry"/></mxCell>
         <mxCell id="19" value="Audit Evidence Writer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="2"><mxGeometry x="910" y="180" width="190" height="70" as="geometry"/></mxCell>
@@ -53,3 +53,4 @@
     </mxGraphModel>
   </diagram>
 </mxfile>
+

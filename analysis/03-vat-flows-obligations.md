@@ -54,10 +54,10 @@ For each due return, track:
 - `status` (`due`, `submitted`, `overdue`)
 - `risk_flags` (late fee risk, estimated assessment risk)
 
-## Correction Flow
+## Amendment Flow
 - User identifies prior filing error.
-- User submits correction in relevant SKAT correction path.
-- Tax Core must preserve prior version, apply correction logic, and regenerate outcome.
+- User submits amendment in relevant SKAT amendment path.
+- Tax Core must preserve prior version, apply amendment logic, and regenerate outcome.
 - If net outcome changes, create new adjustment claim event to downstream system.
 
 ## Sources
@@ -79,6 +79,7 @@ For each due return, track:
 - [assumed] IRM task routing is implemented via integration events (not direct shared-state coupling).
 - [assumed] Payment-plan lifecycle remains externalized but exposed as integration status within Tax Core views.
 - [assumed] B2C phase-B sales evidence source will be SAF-T or POS; bank transaction feeds are excluded.
+
 
 
 

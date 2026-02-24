@@ -1,9 +1,9 @@
-# 02 - Component Design Contracts
+﻿# 02 - Component Design Contracts
 
 # Portal BFF Contract
 Input:
 - authenticated user context
-- portal commands (register, view obligations, submit filing, submit correction, view status)
+- portal commands (register, view obligations, submit filing, submit amendment, view status)
 
 Output:
 - normalized API calls to Tax Core API gateway
@@ -59,10 +59,10 @@ Implementation standards:
 - rule/event/API contracts must be schema-versioned and compatibility-checked in CI
 - runtime dependencies and platform choices must be documented with rationale and risk trade-offs
 
-## Correction Service Contract
+## Amendment Service Contract
 Input:
 - prior `filing_id` or period key
-- corrected filing facts
+- amended filing facts
 
 Output:
 - new `assessment_version`
@@ -82,7 +82,7 @@ Integration standards:
 - synchronous and asynchronous contract standards must be explicitly documented and versioned
 
 API coverage rule:
-- Registrations, obligations, filings, corrections, and status retrieval must be available through Tax Core APIs.
+- Registrations, obligations, filings, amendments, and status retrieval must be available through Tax Core APIs.
 
 ## Audit Contract
 Every service writes evidence entries containing:
@@ -92,3 +92,4 @@ Every service writes evidence entries containing:
 - input summary hash
 - decision/output summary
 - references (`filing_id`, `assessment_version`, `claim_id`)
+

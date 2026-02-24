@@ -1,4 +1,4 @@
-# 03 - NFR and Observability Checklist
+﻿# 03 - NFR and Observability Checklist
 
 ## Performance
 - [ ] Validation + assessment p95 under 2s at baseline load
@@ -18,7 +18,7 @@
 ## Auditability
 - [ ] Immutable filing snapshots retained
 - [ ] Rule references persisted for every assessment
-- [ ] Correction lineage query returns full chain
+- [ ] Amendment lineage query returns full chain
 - [ ] Dispatch attempts and outcomes retained
 
 ## Operability
@@ -40,3 +40,4 @@
 - [ ] Analytical workloads isolated from transactional service databases
 - [ ] Technology choices include documented rationale, portability impact, and operational risk
 - [ ] API parity tests confirm portal workflows are fully supported via public Tax Core APIs
+

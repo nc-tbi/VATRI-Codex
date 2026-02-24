@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2" pages="10">
+﻿<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2" pages="10">
   <diagram name="01 System Context" id="d01">
     <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -53,7 +53,7 @@
         <mxCell id="16" value="assessment-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11">
           <mxGeometry x="20" y="300" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="17" value="correction-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11">
+        <mxCell id="17" value="amendment-service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11">
           <mxGeometry x="20" y="365" width="160" height="50" as="geometry" />
         </mxCell>
         <mxCell id="18" value="claim-orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="11">
@@ -63,7 +63,7 @@
         <mxCell id="19" value="DK VAT Overlay [DK VAT]" style="swimlane;fontStyle=1;align=center;startSize=25;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="9">
           <mxGeometry x="640" y="50" width="200" height="380" as="geometry" />
         </mxCell>
-        <mxCell id="20" value="rule-engine-service&#xa;(ML §§ rules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="19">
+        <mxCell id="20" value="rule-engine-service&#xa;(ML Â§Â§ rules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="19">
           <mxGeometry x="20" y="40" width="160" height="60" as="geometry" />
         </mxCell>
         <mxCell id="21" value="Rule Catalog&#xa;(DK VAT rules)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="19">
@@ -173,7 +173,7 @@
         <mxCell id="2" parent="1" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK VAT Overlay [DK VAT]" vertex="1">
           <mxGeometry height="230" width="1570" x="40" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="3" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="rule-engine-service&#xa;ML §§ rule packs" vertex="1">
+        <mxCell id="3" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="rule-engine-service&#xa;ML Â§Â§ rule packs" vertex="1">
           <mxGeometry height="70" width="200" x="30" y="50" as="geometry" />
         </mxCell>
         <mxCell id="4" parent="2" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" value="Rule Catalog&#xa;effective-dated DK rules" vertex="1">
@@ -182,13 +182,13 @@
         <mxCell id="5" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="claim-connector&#xa;SKAT adapter" vertex="1">
           <mxGeometry height="70" width="200" x="470" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="6" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK VAT Filing Schema&#xa;CVR · Rubrik A/B/C&#xa;salgsmoms / købsmoms" vertex="1">
+        <mxCell id="6" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK VAT Filing Schema&#xa;CVR Â· Rubrik A/B/C&#xa;salgsmoms / kÃ¸bsmoms" vertex="1">
           <mxGeometry height="90" width="200" x="700" y="40" as="geometry" />
         </mxCell>
         <mxCell id="7" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK Cadence Policy&#xa;50k threshold&#xa;half-yearly / quarterly / monthly" vertex="1">
           <mxGeometry height="90" width="200" x="930" y="40" as="geometry" />
         </mxCell>
-        <mxCell id="8" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK Validation Rules&#xa;Rubrik cross-field checks&#xa;CVR format · zero-filing" vertex="1">
+        <mxCell id="8" parent="2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" value="DK Validation Rules&#xa;Rubrik cross-field checks&#xa;CVR format Â· zero-filing" vertex="1">
           <mxGeometry height="90" width="200" x="1160" y="40" as="geometry" />
         </mxCell>
         <mxCell id="10" parent="1" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" value="Generic VAT Platform [VAT-GENERIC]" vertex="1">
@@ -212,7 +212,7 @@
         <mxCell id="16" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="assessment-service" vertex="1">
           <mxGeometry height="60" width="150" x="930" y="50" as="geometry" />
         </mxCell>
-        <mxCell id="17" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="correction-service" vertex="1">
+        <mxCell id="17" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="amendment-service" vertex="1">
           <mxGeometry height="60" width="150" x="1110" y="50" as="geometry" />
         </mxCell>
         <mxCell id="18" parent="10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="claim-orchestrator" vertex="1">
@@ -311,7 +311,7 @@
         <mxCell id="7" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="870" y="340" width="200" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="8" value="correction-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+        <mxCell id="8" value="amendment-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="870" y="440" width="200" height="60" as="geometry" />
         </mxCell>
         <mxCell id="9" value="filing-service (GET)&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
@@ -338,7 +338,7 @@
         <mxCell id="24" value="POST /vat-filings" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="7" parent="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="25" value="POST /vat-filings (correction)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="8" parent="1">
+        <mxCell id="25" value="POST /vat-filings (amendment)" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="8" parent="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="26" value="GET /vat-filings/{id}" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" source="4" target="9" parent="1">
@@ -370,7 +370,7 @@
         <mxCell id="7" value="Tax Rule and Assessment Context&#xa;rule-engine-service [DK VAT]&#xa;assessment-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1">
           <mxGeometry x="680" y="480" width="280" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="8" value="Correction Context&#xa;correction-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+        <mxCell id="8" value="Amendment Context&#xa;amendment-service [VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="200" y="640" width="280" height="70" as="geometry" />
         </mxCell>
         <mxCell id="9" value="Claim Context&#xa;claim-orchestrator [VAT-GENERIC]&#xa;claim-connector [DK VAT]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1">
@@ -429,10 +429,10 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="2" value="Transactional Plane [PLATFORM] — System of Decision" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+        <mxCell id="2" value="Transactional Plane [PLATFORM] â€” System of Decision" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
           <mxGeometry x="40" y="40" width="1570" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="3" value="ACID Relational DB&#xa;Filings · Assessments · Claims&#xa;Obligations · Registrations" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+        <mxCell id="3" value="ACID Relational DB&#xa;Filings Â· Assessments Â· Claims&#xa;Obligations Â· Registrations" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;whiteSpace=wrap;html=1;" vertex="1" parent="2">
           <mxGeometry x="40" y="45" width="250" height="100" as="geometry" />
         </mxCell>
         <mxCell id="4" value="Outbox Tables&#xa;Reliable event publication&#xa;Transactional outbox pattern" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="2">
@@ -441,7 +441,7 @@
         <mxCell id="5" value="Schema Migration Discipline&#xa;Backward-compatible rollout&#xa;No destructive in-place changes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="2">
           <mxGeometry x="630" y="55" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="10" value="Event and Streaming Plane [PLATFORM] — System of Integration" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+        <mxCell id="10" value="Event and Streaming Plane [PLATFORM] â€” System of Integration" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="40" y="260" width="1570" height="170" as="geometry" />
         </mxCell>
         <mxCell id="11" value="Kafka-compatible Broker&#xa;Domain event backbone&#xa;All async inter-service comms" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;html=1;" vertex="1" parent="10">
@@ -450,16 +450,16 @@
         <mxCell id="12" value="Schema Registry&#xa;Avro / Protobuf schemas&#xa;CI/CD compatibility gates" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;html=1;" vertex="1" parent="10">
           <mxGeometry x="330" y="45" width="250" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="13" value="Stateful Stream Processing&#xa;Compliance and risk signals&#xa;Quality checks · ObligationOverdue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10">
+        <mxCell id="13" value="Stateful Stream Processing&#xa;Compliance and risk signals&#xa;Quality checks Â· ObligationOverdue" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10">
           <mxGeometry x="630" y="55" width="250" height="80" as="geometry" />
         </mxCell>
         <mxCell id="14" value="CloudEvents Envelope&#xa;Standard event format&#xa;All domain events use CloudEvents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="10">
           <mxGeometry x="930" y="55" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="20" value="Analytical and Compliance Plane [PLATFORM] — System of Record" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1">
+        <mxCell id="20" value="Analytical and Compliance Plane [PLATFORM] â€” System of Record" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="1">
           <mxGeometry x="40" y="480" width="1570" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="21" value="Lakehouse&#xa;Apache Iceberg open table format&#xa;Object storage · Immutable" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="20">
+        <mxCell id="21" value="Lakehouse&#xa;Apache Iceberg open table format&#xa;Object storage Â· Immutable" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;html=1;" vertex="1" parent="20">
           <mxGeometry x="40" y="45" width="250" height="100" as="geometry" />
         </mxCell>
         <mxCell id="22" value="ELT Transformations&#xa;Semantic models&#xa;Regulatory and operational reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20">
@@ -468,19 +468,19 @@
         <mxCell id="23" value="Federated Query Layer&#xa;Audit and compliance workloads&#xa;Isolated from transactional DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20">
           <mxGeometry x="630" y="55" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="24" value="End-to-end lineage metadata&#xa;Source filing fields → reporting&#xa;Freshness and completeness checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20">
+        <mxCell id="24" value="End-to-end lineage metadata&#xa;Source filing fields â†’ reporting&#xa;Freshness and completeness checks" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;" vertex="1" parent="20">
           <mxGeometry x="930" y="55" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="30" value="Observability Plane [PLATFORM] — System of Insight" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
+        <mxCell id="30" value="Observability Plane [PLATFORM] â€” System of Insight" style="swimlane;fontStyle=1;align=center;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1">
           <mxGeometry x="40" y="700" width="1570" height="170" as="geometry" />
         </mxCell>
-        <mxCell id="31" value="OpenTelemetry&#xa;Traces · Metrics · Logs&#xa;trace_id end-to-end incl. portal BFF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
+        <mxCell id="31" value="OpenTelemetry&#xa;Traces Â· Metrics Â· Logs&#xa;trace_id end-to-end incl. portal BFF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
           <mxGeometry x="40" y="45" width="280" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="32" value="Alerting&#xa;Overdue spikes · DLQ growth&#xa;Failure bursts · BFF error rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
+        <mxCell id="32" value="Alerting&#xa;Overdue spikes Â· DLQ growth&#xa;Failure bursts Â· BFF error rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
           <mxGeometry x="360" y="55" width="250" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="33" value="Per-service metrics&#xa;bff_requests · filings_received&#xa;dispatch_success_rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
+        <mxCell id="33" value="Per-service metrics&#xa;bff_requests Â· filings_received&#xa;dispatch_success_rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="30">
           <mxGeometry x="650" y="55" width="280" height="80" as="geometry" />
         </mxCell>
         <!-- Flow arrows between planes -->
@@ -568,7 +568,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s4" value="4. normalize · FilingSnapshot → audit-evidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s4" value="4. normalize Â· FilingSnapshot â†’ audit-evidence" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="580" y="255" width="380" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s4a" value="FilingSnapshot" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p4" target="p12" parent="1">
@@ -623,7 +623,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s9" value="9. deterministic eval vs Rule Catalog (ML §§)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s9" value="9. deterministic eval vs Rule Catalog (ML Â§Â§)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="960" y="480" width="360" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s9a" value="RuleEvaluationEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p6" target="p12" parent="1">
@@ -645,7 +645,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s11" value="11. net_vat = output-input+adj · derive result_type · append assessment_version" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s11" value="11. net_vat = output-input+adj Â· derive result_type Â· append assessment_version" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="1150" y="575" width="480" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s11a" value="AssessmentEvidence" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p7" target="p12" parent="1">
@@ -768,7 +768,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram name="07 Error — Validation Block" id="d07">
+  <diagram name="07 Error â€” Validation Block" id="d07">
     <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -860,7 +860,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s9" value="9. validation errors (UX-formatted) · trace_id for support" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s9" value="9. validation errors (UX-formatted) Â· trace_id for support" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="40" y="490" width="400" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s9a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1">
@@ -871,13 +871,13 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="note1" value="Pipeline halted — no rule evaluation, no assessment, no claim dispatch" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="note1" value="Pipeline halted â€” no rule evaluation, no assessment, no claim dispatch" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="450" y="575" width="450" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram name="08 Error — Dispatch Failure" id="d08">
+  <diagram name="08 Error â€” Dispatch Failure" id="d08">
     <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -991,13 +991,13 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="note1" value="ALERT: DLQ growth · Operator playbook: inspect DLQ, restore SKAT connectivity, reprocess messages" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="note1" value="ALERT: DLQ growth Â· Operator playbook: inspect DLQ, restore SKAT connectivity, reprocess messages" style="text;html=1;strokeColor=#FF0000;fillColor=#fff2cc;align=center;fontStyle=2;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="700" y="600" width="540" height="50" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram name="09 Correction Flow" id="d09">
+  <diagram name="09 Amendment Flow" id="d09">
     <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
@@ -1011,7 +1011,7 @@
         <mxCell id="p3" value="filing-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="430" y="40" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="p4" value="correction-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
+        <mxCell id="p4" value="amendment-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="640" y="40" width="140" height="50" as="geometry" />
         </mxCell>
         <mxCell id="p5" value="assessment-service&#xa;[VAT-GENERIC]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1">
@@ -1023,7 +1023,7 @@
         <mxCell id="p7" value="audit-evidence&#xa;[PLATFORM]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1">
           <mxGeometry x="1270" y="40" width="140" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="s1" value="1. submit correction" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s1" value="1. submit amendment" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#f5f5f5;strokeColor=#666666;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="30" y="130" width="290" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s1a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p1" target="p2" parent="1">
@@ -1034,7 +1034,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s2" value="2. POST /vat-filings (filing_type=correction, prior_filing_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s2" value="2. POST /vat-filings (filing_type=amendment, prior_filing_id)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="220" y="175" width="410" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s2a" value="" style="edgeStyle=elbowEdgeStyle;html=1;" edge="1" source="p2" target="p3" parent="1">
@@ -1059,7 +1059,7 @@
         <mxCell id="s4" value="4. load prior assessment (immutable read)" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="640" y="265" width="360" height="35" as="geometry" />
         </mxCell>
-        <mxCell id="s5" value="5. DK VAT age gate [DK VAT config]: &gt;3 years → manual/legal routing" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s5" value="5. DK VAT age gate [DK VAT config]: &gt;3 years â†’ manual/legal routing" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#ffe6cc;strokeColor=#d6b656;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="640" y="310" width="440" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s6" value="6. compute delta: increase / decrease / neutral [VAT-GENERIC]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
@@ -1101,7 +1101,7 @@
         <mxCell id="altbox" value="alt: delta != neutral" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;fontStyle=3;overflow=hidden;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="640" y="540" width="200" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="s10" value="10. ReturnCorrected → adjustment claim [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
+        <mxCell id="s10" value="10. ReturnCorrected â†’ adjustment claim [CloudEvents]" style="text;html=1;align=left;verticalAlign=middle;spacingLeft=5;fillColor=#d5e8d4;strokeColor=#82b366;whiteSpace=wrap;" vertex="1" parent="1">
           <mxGeometry x="850" y="580" width="410" height="35" as="geometry" />
         </mxCell>
         <mxCell id="s10a" value="" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p5" target="p6" parent="1">
@@ -1134,7 +1134,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="s12b" value="correction confirmed" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1">
+        <mxCell id="s12b" value="amendment confirmed" style="edgeStyle=elbowEdgeStyle;html=1;dashed=1;" edge="1" source="p2" target="p1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="290" y="730" />
@@ -1261,3 +1261,4 @@
     </mxGraphModel>
   </diagram>
 </mxfile>
+

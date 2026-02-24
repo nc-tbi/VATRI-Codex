@@ -1,4 +1,4 @@
-# VATRI Codex
+﻿# VATRI Codex
 
 Knowledge base and AI tooling layer for **Tax Core** - a Danish VAT filing and assessment platform developed as part of the Netcompany VATRI initiative.
 
@@ -9,7 +9,7 @@ Knowledge base and AI tooling layer for **Tax Core** - a Danish VAT filing and a
 VATRI Codex serves two connected purposes:
 
 **1. Authoritative documentation**  
-Structured Markdown documents covering the full Danish VAT domain: registration, filing obligations, assessment rules, claim generation, corrections, exemptions, cross-border handling, and architecture decisions. These are the single source of truth for all domain and design work.
+Structured Markdown documents covering the full Danish VAT domain: registration, filing obligations, assessment rules, claim generation, amendments, exemptions, cross-border handling, and architecture decisions. These are the single source of truth for all domain and design work.
 
 **2. MCP Server**  
 A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mcp`) that gives AI agents runtime access to the documentation and exposes domain tools for VAT validation, obligation evaluation, and claim stub generation. Documents are loaded at call time - agents always see the latest content.
@@ -66,11 +66,11 @@ Tax Core covers the complete VAT lifecycle for Danish businesses:
 | Concern | Description |
 |---|---|
 | Registration | VAT threshold assessment, registration obligation |
-| Filing | Regular, zero, and correction filings |
+| Filing | Regular, zero, and amendment filings |
 | Validation | CVR, field-level, and cross-field validation against SKAT rules |
 | Assessment | Net VAT calculation, deduction rights, reverse charge, exemptions |
 | Claim generation | Deterministic payable / refund / zero outcome per period |
-| Corrections | Prior-vs-new lineage, versioned reassessment |
+| Amendments | Prior-vs-new lineage, versioned reassessment |
 | Audit | Immutable evidence trail from input to claim dispatch |
 
 **Out of scope:** taxpayer-facing UI, settlement processing, litigation, ERP integrations.
@@ -142,7 +142,7 @@ All contracts mandate a living context rule. Role-relevant MCP tools and explici
 
 - **Deterministic** - identical inputs under the same rule version produce identical outputs.
 - **Traceable** - every assessment traces from filing input through rule evaluation to claim payload.
-- **Immutable filings** - corrections create new versions; prior filings are never overwritten.
+- **Immutable filings** - amendments create new versions; prior filings are never overwritten.
 - **Date-effective rules** - VAT law changes are captured as versioned policy entries, not code changes.
 - **Living documentation** - all Markdown documents are authoritative and loaded at runtime by the MCP server.
 
@@ -156,3 +156,4 @@ All contracts mandate a living context rule. Role-relevant MCP tools and explici
 ---
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
+

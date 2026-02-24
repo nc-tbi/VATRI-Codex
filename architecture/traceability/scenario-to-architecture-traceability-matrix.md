@@ -5,8 +5,8 @@
 | S01 | Standard domestic payable return | Covered | Filing, Validation, Tax Rule/Assessment, Claim | Domestic VAT baseline | `POST /vat-filings`, `VatAssessmentCalculated`, `ClaimCreated` | Automated |
 | S02 | Refund return | Covered | Filing, Validation, Tax Rule/Assessment, Claim | Deduction and net VAT | same as S01 | Automated |
 | S03 | Zero declaration | Covered | Obligation, Filing, Validation, Assessment, Claim | Zero-filing checks | `POST /vat-filings` | Automated |
-| S04 | Correction increases liability | Covered | Correction, Assessment, Claim, Audit | Correction delta | `VatReturnCorrected`, `ClaimCreated` | Automated |
-| S05 | Correction decreases liability | Covered | Correction, Assessment, Claim, Audit | Correction delta | `VatReturnCorrected`, `ClaimCreated` | Automated |
+| S04 | Amendment increases liability | Covered | Amendment, Assessment, Claim, Audit | Amendment delta | `VatReturnCorrected`, `ClaimCreated` | Automated |
+| S05 | Amendment decreases liability | Covered | Amendment, Assessment, Claim, Audit | Amendment delta | `VatReturnCorrected`, `ClaimCreated` | Automated |
 | S06 | EU B2B goods purchase reverse charge | Covered | Validation, Tax Rule/Assessment | Reverse charge EU goods | `VatReturnValidated`, `VatAssessmentCalculated` | Automated |
 | S07 | EU B2B service purchase reverse charge | Covered | Validation, Tax Rule/Assessment | Reverse charge services | same as S06 | Automated |
 | S08 | EU B2B sale without DK VAT | Covered | Obligation, Filing, Validation, Assessment, Audit | Cross-border sales and reporting boxes | `POST /eu-sales-obligations/generate`, `GET /eu-sales-obligations/{taxpayer_id}`, `POST /eu-sales-obligations/{obligation_id}/submissions`, `EuSalesObligationCreated`, `EuSalesObligationSubmitted` | Automated with separate EU-sales obligation lifecycle |
@@ -22,10 +22,10 @@
 | S18 | Registered late filing | Covered | Obligation, Audit | Due-date compliance policy | `FilingObligationCreated` | Automated + risk |
 | S19 | No filing by deadline | Covered | Obligation, Assessment, Audit | Preliminary assessment trigger and supersession | `PreliminaryAssessmentTriggered`, `PreliminaryAssessmentIssued`, `PreliminaryAssessmentSupersededByFiledReturn`, `FinalAssessmentCalculatedFromFiledReturn` | Automated + risk with immutable preliminary-to-final linkage |
 | S20 | Filed contradictory data | Covered | Validation, Audit | Cross-field consistency | `VatReturnValidated` with errors/warnings | Block/flag |
-| S21 | Past-period correction (>3 years) | Manual/legal | Correction, Audit | special-age correction policy | `VatReturnCorrected` route event | Manual/legal |
+| S21 | Past-period amendment (>3 years) | Manual/legal | Amendment, Audit | special-age amendment policy | `VatReturnCorrected` route event | Manual/legal |
 | S22 | Final return on closure | Covered | Registration, Obligation, Filing, Assessment | closure/final-period rules | filing + registration APIs | Automated + review |
 | S23 | Transfer (overdragelse) edge case | Covered | Registration, Obligation, Filing | transfer edge policy | filing + status events | Automated + review |
-| S24 | Bankruptcy estate handling | Needs module | Registration, Assessment, Correction | bankruptcy-specific deduction rules | module-specific events | Module needed |
+| S24 | Bankruptcy estate handling | Needs module | Registration, Assessment, Amendment | bankruptcy-specific deduction rules | module-specific events | Module needed |
 | S25 | Special schemes | Needs module | Filing, Assessment, Claim | scheme-specific rule packs | scheme APIs/events | Module needed |
 | S26 | Step-1 high-risk filing with amend/confirm loop | Covered | Filing, Validation, Assessment, Risk, Audit | High-risk discrepancy and explainability policy | `POST /risk/high-risk/review-requests`, `HighRiskFlagRaised`, `TaxpayerReviewRequested`, `TaxpayerAmendRequested`, `TaxpayerConfirmSubmitted` | Automated + taxpayer review loop |
 | S27 | Step-1 confirmed unchanged high-risk filing -> IRM task | Covered | Risk, Audit, Integration | High-risk escalation policy | `TaxpayerConfirmSubmitted`, `HighRiskCaseTaskCreated` | Automated + integration handoff |
@@ -36,13 +36,14 @@
 | S32 | Step-3 B2C phase-B evidence source SAF-T/POS | Covered | Balance, Filing, Integration, Audit | B2C phase-B source policy | `VidaEReportReceived`, `VatBalanceUpdated` | Automated with evidence ingestion |
 | S33 | Step-3 system-initiated settlement on threshold breach | Covered | Settlement, Obligation, Audit | Threshold-trigger settlement policy | `SystemSettlementTriggered`, `SystemSettlementObligationCreated`, `SystemSettlementNoticeIssued` | Automated + notification |
 | S34 | Payment-plan breach after unpaid balance | Covered | Settlement, Integration, Audit | Payment-plan breach policy | `PaymentPlanEstablished`, `PaymentPlanInstalmentMissed`, `PaymentPlanTerminated` | Automated + external collection integration |
-| C14 | Bad debt/credit notes | Needs module | Correction, Assessment | bad debt adjustment pack | correction events | Module needed |
-| C15 | Capital goods adjustment | Needs module | Assessment, Correction | long-horizon adjustment pack | assessment events | Module needed |
+| C14 | Bad debt/credit notes | Needs module | Amendment, Assessment | bad debt adjustment pack | amendment events | Module needed |
+| C15 | Capital goods adjustment | Needs module | Assessment, Amendment | long-horizon adjustment pack | assessment events | Module needed |
 | C20 | OSS/IOSS | Needs module | Filing, Assessment, Claim | OSS/IOSS policy pack | scheme APIs | Module needed |
 | C21 | Momskompensation | Needs module | Filing, Assessment | compensation policy pack | scheme APIs | Module needed |
-| C22 | Audit-triggered reassessment/dispute | Manual/legal | Audit, Correction | dispute workflow rules | case-routing event | Manual/legal |
+| C22 | Audit-triggered reassessment/dispute | Manual/legal | Audit, Amendment | dispute workflow rules | case-routing event | Manual/legal |
 
 Notes:
 - `S01-S34` originate from `analysis/07-filing-scenarios-and-claim-outcomes-dk.md` (including ViDA ladder additions).
 - `C14`, `C15`, `C20`, `C21`, `C22` are explicit scenario classes from `analysis/08-scenario-universe-coverage-matrix-dk.md` where additional or manual handling is required.
+
 

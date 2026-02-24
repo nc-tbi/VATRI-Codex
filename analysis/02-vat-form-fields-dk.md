@@ -18,7 +18,7 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 - `cvr_number`
 - `tax_period_start`
 - `tax_period_end`
-- `filing_type` (`regular`, `zero`, `correction`)
+- `filing_type` (`regular`, `zero`, `amendment`)
 - `submission_timestamp`
 - `contact_reference`
 - `source_channel` (portal/API/import)
@@ -63,15 +63,15 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 
 3. Filing-type consistency:
 - `zero` filing cannot include positive VAT/value amounts.
-- `regular`/`correction` filings may include zero totals but must flag anomalies.
+- `regular`/`amendment` filings may include zero totals but must flag anomalies.
 
 4. Cross-field checks:
 - Reverse-charge output VAT with zero Rubrik A values triggers warning.
 - Rubrik B values with zero domestic output VAT triggers classification warning.
 
-5. Correction handling:
-- `correction` filing must reference prior filing or period baseline.
-- Preserve both original and corrected versions for audit.
+5. Amendment handling:
+- `amendment` filing must reference prior filing or period baseline.
+- Preserve both original and amended versions for audit.
 
 ### Return-Level vs Line-Level Data Boundary
 - Return-level store: canonical filing aggregate fields above.
@@ -100,7 +100,7 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 ## Architecture Input Package
 - Canonical return schema with staged formula.
 - Explicit data-boundary and linkage-key model.
-- Validation and correction constraints suitable for rule-engine implementation.
+- Validation and amendment constraints suitable for rule-engine implementation.
 
 ## Structure Mapping (BA Contract 1-7)
 1. Task Summary -> `Task Summary`
@@ -116,3 +116,4 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 - SKAT - Cross-border reporting boxes: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/indberet-din-handel-med-udlandet
 - SKAT - File VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
 - SKAT - Correct filed VAT (canonical): https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-retter-du-din-momsindberetning-eller-betaling
+

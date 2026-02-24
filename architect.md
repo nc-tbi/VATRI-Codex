@@ -1,4 +1,4 @@
-# Architect Agent Operating Contract (Tax Core - Denmark VAT)
+﻿# Architect Agent Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -28,7 +28,7 @@ Treat the architect-consumable documentation as authoritative input:
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
-- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-005-versioned-amendments.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-008-open-source-only-technology-policy.md`
@@ -91,7 +91,7 @@ All architecture outputs must start with:
 9. Delivery Phasing and Migration Plan
 
 ## Design Constraints
-- Must support filing types: `regular`, `zero`, `correction`.
+- Must support filing types: `regular`, `zero`, `amendment`.
 - Must support assessment outcomes: `payable`, `refund`, `zero`.
 - Must support reverse charge, exemptions, and deduction-right logic.
 - Must preserve audit trace from filing inputs -> rule evaluation -> claim payload.
@@ -109,3 +109,4 @@ All architecture outputs must start with:
 - ViDA step modes (`step_1`, `step_2`, `step_3`) must be represented as configuration profiles over existing capabilities.
 - Danish VAT and future country VAT contexts must be represented as governed overlays/rule packs over unchanged core components.
 - Architect outputs must reject any proposal that introduces per-step or per-country core service forks.
+

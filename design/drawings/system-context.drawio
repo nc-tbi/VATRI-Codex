@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2026-02-24T12:00:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
+﻿<mxfile host="app.diagrams.net" modified="2026-02-24T12:00:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
   <diagram id="sysctx01" name="System Context">
     <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
       <root>
@@ -21,7 +21,7 @@
         <mxCell id="6" value="Portal BFF and API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
           <mxGeometry x="20" y="50" width="230" height="70" as="geometry"/>
         </mxCell>
-        <mxCell id="7" value="Core VAT Services&#xa;Registration, Obligation, Filing, Assessment, Correction, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
+        <mxCell id="7" value="Core VAT Services&#xa;Registration, Obligation, Filing, Assessment, Amendment, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
           <mxGeometry x="20" y="150" width="360" height="110" as="geometry"/>
         </mxCell>
         <mxCell id="8" value="DK VAT Overlay&#xa;Rule Engine, Claim Connector, EU Reporting Connector, Customs Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="5">
@@ -69,3 +69,4 @@
     </mxGraphModel>
   </diagram>
 </mxfile>
+

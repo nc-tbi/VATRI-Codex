@@ -14,7 +14,7 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 - Generate filing obligations by cadence and period.
 - Handle separate EU-sales obligation processing (distinct from VAT return obligations).
 - Validate filing payloads against effective-dated field and rule catalogs.
-- Calculate VAT result with support for adjustments and correction runs.
+- Calculate VAT result with support for adjustments and amendment runs.
 - Apply reverse-charge, exemption, and deduction-right logic.
 - Produce deterministic claim payloads for external dispatch.
 - Integrate non-EU import-goods customs/told dependency for assessment completeness.
@@ -51,7 +51,7 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 - `Filing Intake & Validation Service`
 - `VAT Rule Engine`
 - `Calculation Service`
-- `Correction Service`
+- `Amendment Service`
 - `Claim Orchestrator`
 - `External Claim Connector`
 - `Customs/Told Integration Adapter`
@@ -112,7 +112,7 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 2. Build obligation engine with separate EU-sales stream.
 3. Build reverse-charge/exemption rule modules and temporal versioning.
 4. Build customs/told integration adapter and reconciliation controls.
-5. Build correction/versioning and claim orchestration.
+5. Build amendment/versioning and claim orchestration.
 6. Add conformance tests and audit replay demonstrations.
 
 ## Sources
@@ -137,3 +137,4 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 - Tax Core shall support threshold policy configuration for settlement obligations (time-triggered and balance-triggered).
 - Tax Core shall support B2C sales-source transition modes (`lump_sum` -> `SAF-T`/`POS`) as configuration.
 - Tax Core shall expose statutory-time-limit profile links for assessment/collection lifecycle control.
+

@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2026-02-23T12:00:00.000Z" agent="Codex" version="24.7.17" type="device">
+﻿<mxfile host="app.diagrams.net" modified="2026-02-23T12:00:00.000Z" agent="Codex" version="24.7.17" type="device">
   <diagram id="sys-context" name="01 System Context">
     <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
       <root>
@@ -46,7 +46,7 @@
         <mxCell id="b3" value="Filing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="560" y="200" width="220" height="50" as="geometry" /></mxCell>
         <mxCell id="b4" value="Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="560" y="280" width="220" height="50" as="geometry" /></mxCell>
         <mxCell id="b5" value="Tax Rule and Assessment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="520" y="360" width="300" height="60" as="geometry" /></mxCell>
-        <mxCell id="b6" value="Correction" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="320" y="470" width="220" height="50" as="geometry" /></mxCell>
+        <mxCell id="b6" value="Amendment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="320" y="470" width="220" height="50" as="geometry" /></mxCell>
         <mxCell id="b7" value="Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="760" y="470" width="220" height="50" as="geometry" /></mxCell>
         <mxCell id="b8" value="Audit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1"><mxGeometry x="560" y="570" width="220" height="50" as="geometry" /></mxCell>
 
@@ -77,7 +77,7 @@
         <mxCell id="c3" value="Validation Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="540" y="220" width="180" height="50" as="geometry" /></mxCell>
         <mxCell id="c4" value="VAT Rule Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="780" y="220" width="180" height="50" as="geometry" /></mxCell>
         <mxCell id="c5" value="Assessment Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1020" y="220" width="180" height="50" as="geometry" /></mxCell>
-        <mxCell id="c6" value="Correction Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1020" y="320" width="180" height="50" as="geometry" /></mxCell>
+        <mxCell id="c6" value="Amendment Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1020" y="320" width="180" height="50" as="geometry" /></mxCell>
         <mxCell id="c7" value="Claim Orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1260" y="220" width="200" height="50" as="geometry" /></mxCell>
         <mxCell id="c8" value="External Claim Connector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1260" y="320" width="200" height="50" as="geometry" /></mxCell>
 
@@ -108,3 +108,4 @@
     </mxGraphModel>
   </diagram>
 </mxfile>
+

@@ -1,4 +1,4 @@
-# 01 - Solution Design Brief
+﻿# 01 - Solution Design Brief
 
 ## Objective
 Translate architecture into implementable solution design decisions for service teams.
@@ -25,14 +25,14 @@ Translate architecture into implementable solution design decisions for service 
 - `validation-service`
 - `rule-engine-service`
 - `assessment-service`
-- `correction-service`
+- `amendment-service`
 - `claim-orchestrator`
 - `claim-connector`
 - shared `audit-evidence` writer/query API
 
 ## Design Priorities
 1. Deterministic rule evaluation and replay
-2. Correction version lineage
+2. Amendment version lineage
 3. Idempotent external dispatch
 4. Operational observability from day one
 5. Clear trade-off documentation for selected technologies and standards
@@ -42,3 +42,4 @@ Translate architecture into implementable solution design decisions for service 
 - End-to-end flow for `regular` filing through claim creation
 - Rule version resolution and persisted evidence
 - Basic dashboard metrics and alert hooks
+

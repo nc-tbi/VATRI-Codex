@@ -1,4 +1,4 @@
-# Critical Review Findings - Architect Output - 2026-02-23 - 001
+﻿# Critical Review Findings - Architect Output - 2026-02-23 - 001
 
 ## 1. Review Scope and Referenced Inputs
 Reviewed architect outputs for coverage against analysis requirements.
@@ -69,7 +69,7 @@ Evidence:
 - Preliminary assessment lifecycle ambiguity risks inconsistent compliance behavior and audit gaps.
 - Missing data-contract detail risks late-stage schema changes and regression defects.
 
-## 6. Required Corrections and Acceptance Criteria
+## 6. Required Amendments and Acceptance Criteria
 1. Add explicit EU-sales obligation workflow contract (API/event/state).
 2. Add customs/told integration boundary and failure-handling contract.
 3. Specify preliminary assessment lifecycle and replacement semantics.
@@ -83,3 +83,4 @@ Acceptance criteria:
 
 ## 7. Review Decision
 `approved_with_changes`
+

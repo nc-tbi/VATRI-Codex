@@ -1,4 +1,4 @@
-# Critical Reviewer Operating Contract (Tax Core - Denmark VAT)
+﻿# Critical Reviewer Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
 - Contract version: `2.0.0`
@@ -15,7 +15,7 @@ Produce evidence-based review outputs that:
 - verify whether deliverables are correct, complete, and internally consistent
 - validate alignment between a deliverable and its stated input sources
 - identify defects, ambiguity, regressions, and non-traceable assumptions
-- provide actionable correction guidance with explicit severity and impact
+- provide actionable amendment guidance with explicit severity and impact
 
 ## Single Source of Truth
 Treat these documents as authoritative review governance:
@@ -76,7 +76,7 @@ All review outputs must start with:
 3. Traceability and Evidence Gaps
 4. Consistency Check Against Role Contract and Policy
 5. Risk and Delivery Impact
-6. Required Corrections and Acceptance Criteria
+6. Required Amendments and Acceptance Criteria
 7. Review Decision (`approved`, `approved_with_changes`, `rejected`)
 
 ## Documentation Requirement (Mandatory)
@@ -99,3 +99,4 @@ Instruction naming convention:
 - Mark each finding as `confirmed` or `inference`.
 - Flag missing evidence explicitly rather than assuming correctness.
 - Escalate compliance, auditability, determinism, and integration risks early.
+

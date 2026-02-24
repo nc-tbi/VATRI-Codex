@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2026-02-24T12:15:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
+﻿<mxfile host="app.diagrams.net" modified="2026-02-24T12:15:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
   <diagram id="deploy01" name="Deployment Diagram">
     <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1200" math="0" shadow="0">
       <root>
@@ -21,7 +21,7 @@
           <mxGeometry x="700" y="40" width="720" height="520" as="geometry"/>
         </mxCell>
         <mxCell id="9" value="Namespace: ingress and bff&#xa;Portal BFF, API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#6c8ebf;" vertex="1" parent="8"><mxGeometry x="20" y="50" width="210" height="120" as="geometry"/></mxCell>
-        <mxCell id="10" value="Namespace: core services&#xa;Registration, Obligation, Filing, Validation, Assessment, Correction, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#6c8ebf;" vertex="1" parent="8"><mxGeometry x="250" y="50" width="280" height="120" as="geometry"/></mxCell>
+        <mxCell id="10" value="Namespace: core services&#xa;Registration, Obligation, Filing, Validation, Assessment, Amendment, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#cce5ff;strokeColor=#6c8ebf;" vertex="1" parent="8"><mxGeometry x="250" y="50" width="280" height="120" as="geometry"/></mxCell>
         <mxCell id="11" value="Namespace: dk overlay&#xa;Rule Engine, Claim Connector, EU Connector, Customs Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="8"><mxGeometry x="550" y="50" width="150" height="120" as="geometry"/></mxCell>
         <mxCell id="12" value="Observability Agent&#xa;OpenTelemetry Collector" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="8"><mxGeometry x="20" y="220" width="210" height="90" as="geometry"/></mxCell>
         <mxCell id="13" value="Outbox Relay Worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="8"><mxGeometry x="250" y="220" width="170" height="90" as="geometry"/></mxCell>
@@ -59,3 +59,4 @@
     </mxGraphModel>
   </diagram>
 </mxfile>
+

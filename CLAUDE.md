@@ -1,4 +1,4 @@
-# CLAUDE.md - VATRI Codex
+﻿# CLAUDE.md - VATRI Codex
 
 > Living document. Update this file whenever stable patterns, conventions, roles, or architecture decisions change.
 
@@ -12,7 +12,7 @@ The project has two main concerns:
 1. **Documentation** - authoritative Markdown documents covering Danish VAT law, business analysis, architecture, and design.
 2. **MCP Server** - a Model Context Protocol server that gives AI agents runtime access to role-specific context and domain tools.
 
-The platform scope supports the VAT lifecycle: registration, periodic filing, assessment, correction, and claim handoff to an external claims system.
+The platform scope supports the VAT lifecycle: registration, periodic filing, assessment, amendment, and claim handoff to an external claims system.
 
 ---
 
@@ -104,9 +104,9 @@ npm run dev
 
 ## Key Domain Concepts
 
-- Filing types: `regular`, `zero`, `correction`
+- Filing types: `regular`, `zero`, `amendment`
 - Assessment outcomes: `payable`, `refund`, `zero`
-- Bounded contexts: Registration -> Obligation -> Filing -> Validation -> Tax Rule & Assessment -> Correction -> Claim -> Audit
+- Bounded contexts: Registration -> Obligation -> Filing -> Validation -> Tax Rule & Assessment -> Amendment -> Claim -> Audit
 - Idempotency key: `taxpayer_id + period_end + assessment_version`
 - CVR number: 8-digit Danish business registration number
 
@@ -141,3 +141,4 @@ This repository is not:
 - A taxpayer-facing UI
 - A production settlement/debt collection backend
 - A litigation/case-management system
+

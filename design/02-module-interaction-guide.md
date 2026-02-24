@@ -1,4 +1,4 @@
-# Module Interaction Guide: Tax Core — VAT Filing and Assessment
+﻿# Module Interaction Guide: Tax Core â€” VAT Filing and Assessment
 
 > **Status:** Draft v1.2
 > **Designer:** Solution Designer (DESIGNER.md contract)
@@ -22,7 +22,7 @@ Module-level responsibilities and interaction contracts for Tax Core VAT capabil
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
-- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-005-versioned-amendments.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
@@ -56,22 +56,22 @@ This guide describes every module in the Tax Core VAT Filing and Assessment desi
 The system is structured in three layers. Modules at each layer may only interact downward or across the same layer; they never reach upward.
 
 ```
-┌──────────────────────────────────────────────────────────────────────┐
-│  DK VAT Overlay [DK VAT]                                             │
-│  rule-engine-service  ·  Rule Catalog  ·  claim-connector            │
-│  eu-sales-reporting-connector  ·  customs-told-adapter               │
-│  DK Filing Schema  ·  DK Cadence Policy                              │
-├──────────────────────────────────────────────────────────────────────┤
-│  Generic VAT Platform [VAT-GENERIC]                                  │
-│  portal-bff  ·  registration-service  ·  obligation-service          │
-│  eu-sales-obligation-service  ·  filing-service                      │
-│  validation-service  ·  assessment-service  ·  correction-service    │
-│  claim-orchestrator  ·  Rule Catalog mechanism                       │
-├──────────────────────────────────────────────────────────────────────┤
-│  Platform Infrastructure [PLATFORM]                                  │
-│  API Gateway  ·  audit-evidence  ·  Kafka + DLQ  ·  Schema Registry  │
-│  Outbox  ·  Operational DB  ·  Audit Store  ·  OpenTelemetry         │
-└──────────────────────────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  DK VAT Overlay [DK VAT]                                             â”‚
+â”‚  rule-engine-service  Â·  Rule Catalog  Â·  claim-connector            â”‚
+â”‚  eu-sales-reporting-connector  Â·  customs-told-adapter               â”‚
+â”‚  DK Filing Schema  Â·  DK Cadence Policy                              â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Generic VAT Platform [VAT-GENERIC]                                  â”‚
+â”‚  portal-bff  Â·  registration-service  Â·  obligation-service          â”‚
+â”‚  eu-sales-obligation-service  Â·  filing-service                      â”‚
+â”‚  validation-service  Â·  assessment-service  Â·  amendment-service    â”‚
+â”‚  claim-orchestrator  Â·  Rule Catalog mechanism                       â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Platform Infrastructure [PLATFORM]                                  â”‚
+â”‚  API Gateway  Â·  audit-evidence  Â·  Kafka + DLQ  Â·  Schema Registry  â”‚
+â”‚  Outbox  Â·  Operational DB  Â·  Audit Store  Â·  OpenTelemetry         â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -86,9 +86,9 @@ The system is structured in three layers. Modules at each layer may only interac
 |---|---|
 | Layer | `[PLATFORM]` |
 | Protocol | OpenAPI 3.1 (HTTPS) |
-| Owned state | None — stateless router |
+| Owned state | None â€” stateless router |
 | Inbound from | `portal-bff`, ERP/external callers |
-| Routes to | `registration-service`, `obligation-service`, `filing-service`, `correction-service` |
+| Routes to | `registration-service`, `obligation-service`, `filing-service`, `amendment-service` |
 | Cross-cutting | Injects `trace_id` (OpenTelemetry); enforces RBAC role claims per endpoint |
 
 **Interaction rules:**
@@ -106,9 +106,9 @@ The system is structured in three layers. Modules at each layer may only interac
 |---|---|
 | Layer | `[PLATFORM]` |
 | Interfaces | Write API (internal): `POST /audit-evidence`; Query API: `GET /audit-evidence?trace_id=...` |
-| Owned state | None at runtime — delegates immediately to Kafka topic → Audit Store (Lakehouse) |
+| Owned state | None at runtime â€” delegates immediately to Kafka topic â†’ Audit Store (Lakehouse) |
 | Inbound from | Every VAT-GENERIC and DK VAT service (see per-service sections below) |
-| Outbound to | Kafka → Audit Store (Apache Iceberg) |
+| Outbound to | Kafka â†’ Audit Store (Apache Iceberg) |
 | Schema | `trace_id`, `event_type`, `service_identity`, `actor`, `timestamp`, `input_summary_hash`, `decision_or_output_summary`, domain references (`filing_id`, `assessment_version`, `claim_id`) |
 
 **Evidence types and source services:**
@@ -119,15 +119,15 @@ The system is structured in three layers. Modules at each layer may only interac
 | `ValidationEvidence` | validation-service |
 | `RuleEvaluationEvidence` | rule-engine-service |
 | `AssessmentEvidence` | assessment-service |
-| `CorrectionAssessmentEvidence` | assessment-service (correction path) |
-| `CorrectionLineageEvidence` | correction-service |
+| `CorrectionAssessmentEvidence` | assessment-service (amendment path) |
+| `CorrectionLineageEvidence` | amendment-service |
 | `ClaimIntentEvidence` | claim-orchestrator |
 | `DispatchAttemptFailed` | claim-connector |
 | `DispatchOutcomeEvidence` | claim-orchestrator (on ack from connector) |
-| `AdjustmentClaimEvidence` | claim-orchestrator (on correction path) |
+| `AdjustmentClaimEvidence` | claim-orchestrator (on amendment path) |
 
 **Interaction rules:**
-- `audit-evidence` is a write-path dependency for all VAT-GENERIC and DK VAT services. A failure to write evidence must not block the primary business transaction — evidence writes are asynchronous fire-and-forward to Kafka.
+- `audit-evidence` is a write-path dependency for all VAT-GENERIC and DK VAT services. A failure to write evidence must not block the primary business transaction â€” evidence writes are asynchronous fire-and-forward to Kafka.
 - PII must not appear in structured log fields. Evidence payload may contain necessary identifiers (`taxpayer_id`, `filing_id`, `trace_id`) but not free-text PII fields.
 - The query API is used by the `auditor` role and by compliance/reporting workloads only. It is not called by operational services.
 
@@ -148,7 +148,7 @@ The system is structured in three layers. Modules at each layer may only interac
 
 **Interaction rules:**
 - All inter-service async communication flows through Kafka. Services do not call each other directly after the synchronous filing intake chain.
-- Schema compatibility is enforced by Schema Registry at producer-publish time and CI gate — breaking schema changes are rejected before deployment.
+- Schema compatibility is enforced by Schema Registry at producer-publish time and CI gate â€” breaking schema changes are rejected before deployment.
 - Every topic has a schema-registered CloudEvents envelope. Payload is Avro or Protobuf.
 - DLQ growth triggers an alert; the operator playbook defines manual reprocessing steps.
 
@@ -161,7 +161,7 @@ The system is structured in three layers. Modules at each layer may only interac
 | Attribute | Detail |
 |---|---|
 | Layer | `[PLATFORM]` |
-| Technology | Open-source registry (Apicurio or Confluent OSS — OQ-07) |
+| Technology | Open-source registry (Apicurio or Confluent OSS â€” OQ-07) |
 | Enforces | Backward-compatible schema evolution for all published events |
 | Integrated with | Kafka producers (schema lookup at publish), CI pipeline (compatibility gate before deploy) |
 
@@ -178,13 +178,13 @@ The system is structured in three layers. Modules at each layer may only interac
 | Attribute | Detail |
 |---|---|
 | Layer | `[PLATFORM]` |
-| Owned state | Outbox table in Operational DB (transient — records deleted after confirmed Kafka publish) |
+| Owned state | Outbox table in Operational DB (transient â€” records deleted after confirmed Kafka publish) |
 | Written by | `claim-orchestrator` (transactional write alongside claim intent) |
 | Published to | Kafka topic consumed by `claim-connector` |
 
 **Interaction rules:**
 - The outbox write and the claim intent write are always in the same ACID transaction. If the transaction rolls back, no outbox record exists, and no event is published.
-- The relay publisher is idempotent — re-publishing a record already in Kafka causes no side effect (Kafka deduplication or consumer idempotency key checks).
+- The relay publisher is idempotent â€” re-publishing a record already in Kafka causes no side effect (Kafka deduplication or consumer idempotency key checks).
 
 ---
 
@@ -195,13 +195,13 @@ The system is structured in three layers. Modules at each layer may only interac
 | Attribute | Detail |
 |---|---|
 | Layer | `[PLATFORM]` |
-| Owned by (writes) | `filing-service`, `assessment-service`, `correction-service`, `claim-orchestrator`, `obligation-service`, `registration-service` |
-| Read by | All above services + `correction-service` (loads prior assessment) |
+| Owned by (writes) | `filing-service`, `assessment-service`, `amendment-service`, `claim-orchestrator`, `obligation-service`, `registration-service` |
+| Read by | All above services + `amendment-service` (loads prior assessment) |
 | Schema discipline | Strict backward-compatible migration sequencing; no in-place destructive schema changes |
 
 **Interaction rules:**
 - Each VAT-GENERIC service owns its own schema namespace. Services do not read each other's tables directly; they communicate via events or synchronous APIs.
-- Assessment records are append-only — no UPDATE or DELETE on assessment rows. Corrections produce new rows with a `prior_assessment_id` pointer.
+- Assessment records are append-only â€” no UPDATE or DELETE on assessment rows. Amendments produce new rows with a `prior_assessment_id` pointer.
 - Filing snapshots are immutable once written (first write only).
 
 ---
@@ -219,8 +219,8 @@ The system is structured in three layers. Modules at each layer may only interac
 | Isolation | Completely isolated from operational service databases. Analytical workloads never touch the Operational DB |
 
 **Interaction rules:**
-- No service writes directly to the Audit Store. All writes go through `audit-evidence` → Kafka → Lakehouse ingestion pipeline.
-- Audit Store data is never mutated. It is append-only by design (Iceberg merge-on-read is not used for corrections — corrections produce new evidence records).
+- No service writes directly to the Audit Store. All writes go through `audit-evidence` â†’ Kafka â†’ Lakehouse ingestion pipeline.
+- Audit Store data is never mutated. It is append-only by design (Iceberg merge-on-read is not used for amendments â€” amendments produce new evidence records).
 
 ---
 
@@ -231,8 +231,8 @@ The system is structured in three layers. Modules at each layer may only interac
 | Attribute | Detail |
 |---|---|
 | Layer | `[PLATFORM]` |
-| Key field | `trace_id` — propagated from portal-bff (or API Gateway for direct API callers) through all downstream services to claim dispatch |
-| Exporters | All services: portal-bff, filing-service, validation-service, rule-engine-service, assessment-service, correction-service, claim-orchestrator, claim-connector |
+| Key field | `trace_id` â€” propagated from portal-bff (or API Gateway for direct API callers) through all downstream services to claim dispatch |
+| Exporters | All services: portal-bff, filing-service, validation-service, rule-engine-service, assessment-service, amendment-service, claim-orchestrator, claim-connector |
 | Alerting | Configured for: duration > thresholds, DLQ growth, failure burst, BFF error rate, overdue obligation spikes |
 
 **Interaction rules:**
@@ -251,9 +251,9 @@ The system is structured in three layers. Modules at each layer may only interac
 | Attribute | Detail |
 |---|---|
 | Layer | `[VAT-GENERIC]` |
-| Inbound | Authenticated portal user actions (register, view obligations, submit filing, submit correction, view status) |
-| Outbound | OpenAPI 3.1 calls to API Gateway → downstream Tax Core services |
-| Owned state | None — stateless for tax domain state |
+| Inbound | Authenticated portal user actions (register, view obligations, submit filing, submit amendment, view status) |
+| Outbound | OpenAPI 3.1 calls to API Gateway â†’ downstream Tax Core services |
+| Owned state | None â€” stateless for tax domain state |
 | `trace_id` | Injected at the portal entry point; propagated through all Tax Core calls |
 
 **API surface:**
@@ -263,7 +263,7 @@ The system is structured in three layers. Modules at each layer may only interac
 | Register taxpayer | `POST /registrations` | Translates portal payload to registration contract |
 | View obligations | `GET /obligations?cvr=...` | Filters and composes for UX display |
 | Submit filing | `POST /vat-filings` | Adds `source_channel=portal` |
-| Submit correction | `POST /vat-filings` (filing_type=correction) | Ensures `prior_filing_id` is present |
+| Submit amendment | `POST /vat-filings` (filing_type=amendment) | Ensures `prior_filing_id` is present |
 | View filing status | `GET /vat-filings/{id}` | Direct pass-through with UX response shaping |
 
 **Interaction rules:**
@@ -273,7 +273,7 @@ The system is structured in three layers. Modules at each layer may only interac
 - BFF error handling must translate Tax Core 422 error envelopes (with `trace_id` and `errors[]`) into UX-appropriate messages. The `trace_id` must be surfaced to the user for support reference.
 
 **Depends on:**
-- `API Gateway` [PLATFORM] — all downstream calls
+- `API Gateway` [PLATFORM] â€” all downstream calls
 
 ---
 
@@ -297,16 +297,16 @@ The system is structured in three layers. Modules at each layer may only interac
 - The `taxpayer_id` / `cvr_number` in registration records is the authoritative identifier used by all downstream services.
 
 **Depends on:**
-- `Operational DB` [PLATFORM] — registration record persistence
-- `Kafka backbone` [PLATFORM] — event publication
-- `audit-evidence` [PLATFORM] — registration evidence
-- `OpenTelemetry` [PLATFORM] — `trace_id` propagation
+- `Operational DB` [PLATFORM] â€” registration record persistence
+- `Kafka backbone` [PLATFORM] â€” event publication
+- `audit-evidence` [PLATFORM] â€” registration evidence
+- `OpenTelemetry` [PLATFORM] â€” `trace_id` propagation
 
 ---
 
 ### 3.3 `obligation-service` `[VAT-GENERIC]`
 
-**Responsibility:** Periodic VAT filing obligation management. Creates and manages obligations (`due` → `submitted` → `overdue`). Cadence policy (half-yearly / quarterly / monthly / annual) is injected as DK VAT configuration data — not hard-coded in the service.
+**Responsibility:** Periodic VAT filing obligation management. Creates and manages obligations (`due` â†’ `submitted` â†’ `overdue`). Cadence policy (half-yearly / quarterly / monthly / annual) is injected as DK VAT configuration data â€” not hard-coded in the service.
 
 | Attribute | Detail |
 |---|---|
@@ -321,28 +321,28 @@ The system is structured in three layers. Modules at each layer may only interac
 **Interaction rules:**
 - On consuming `RegistrationStatusChanged` (status = active), obligation-service generates the first obligation for the upcoming period using the cadence rule for the taxpayer.
 - `filing-service` consumes `ObligationCreated` to understand which filings are expected. It does not call obligation-service directly at filing intake.
-- `ObligationOverdue` is emitted when an obligation's `due_date` passes without a corresponding `ReturnSubmitted` event — this drives risk/compliance signals downstream (stream processing).
-- Cadence policy data is DK VAT specific. When adding a second jurisdiction, only the policy data changes — the service logic is unchanged.
+- `ObligationOverdue` is emitted when an obligation's `due_date` passes without a corresponding `ReturnSubmitted` event â€” this drives risk/compliance signals downstream (stream processing).
+- Cadence policy data is DK VAT specific. When adding a second jurisdiction, only the policy data changes â€” the service logic is unchanged.
 
 **Depends on:**
 - `Operational DB` [PLATFORM]
 - `Kafka backbone` [PLATFORM]
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- DK VAT Cadence Policy [DK VAT configuration] — injected at startup/configuration time
+- DK VAT Cadence Policy [DK VAT configuration] â€” injected at startup/configuration time
 
 ---
 
 ### 3.4 `eu-sales-obligation-service` `[VAT-GENERIC]`
 
-**Responsibility:** EU-sales obligation lifecycle management. Creates, tracks, and submits EU-sales reporting obligations (`eu_sales_due` → `eu_sales_submitted` / `eu_sales_overdue`). Delegates actual reporting submission to the DK VAT `eu-sales-reporting-connector`. This service is jurisdiction-agnostic; the submission adapter is DK-specific.
+**Responsibility:** EU-sales obligation lifecycle management. Creates, tracks, and submits EU-sales reporting obligations (`eu_sales_due` â†’ `eu_sales_submitted` / `eu_sales_overdue`). Delegates actual reporting submission to the DK VAT `eu-sales-reporting-connector`. This service is jurisdiction-agnostic; the submission adapter is DK-specific.
 
 | Attribute | Detail |
 |---|---|
 | Layer | `[VAT-GENERIC]` |
 | Inbound APIs | `POST /eu-sales-obligations/generate`, `GET /eu-sales-obligations/{taxpayer_id}`, `POST /eu-sales-obligations/{obligation_id}/submissions` |
 | Owned entities | EuSalesObligation: `obligation_id`, `taxpayer_id`, `period_start`, `period_end`, `due_date`, `status` |
-| States | `eu_sales_due` → `eu_sales_submitted` / `eu_sales_overdue` |
+| States | `eu_sales_due` â†’ `eu_sales_submitted` / `eu_sales_overdue` |
 | Outbound events | `EuSalesObligationCreated`, `EuSalesObligationSubmitted`, `EuSalesObligationOverdue` [CloudEvents] |
 | Delegates | Submission dispatch to `eu-sales-reporting-connector` [DK VAT] |
 | Audit evidence | Obligation lifecycle events written to `audit-evidence` |
@@ -350,33 +350,33 @@ The system is structured in three layers. Modules at each layer may only interac
 **Interaction rules:**
 - EU-sales obligations are independent of domestic VAT obligations. They share the `taxpayer_id` / `cvr_number` identifier but have separate obligation records and state machines.
 - `EuSalesObligationOverdue` feeds compliance signals downstream (stream processing) in the same way `ObligationOverdue` does for domestic obligations.
-- The service does not know the format of the external EU reporting system — that is isolated in `eu-sales-reporting-connector`.
+- The service does not know the format of the external EU reporting system â€” that is isolated in `eu-sales-reporting-connector`.
 
 **Depends on:**
-- `API Gateway` [PLATFORM] — inbound routing
-- `Operational DB` [PLATFORM] — obligation record persistence
-- `Kafka backbone` [PLATFORM] — event publication
+- `API Gateway` [PLATFORM] â€” inbound routing
+- `Operational DB` [PLATFORM] â€” obligation record persistence
+- `Kafka backbone` [PLATFORM] â€” event publication
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `eu-sales-reporting-connector` [DK VAT] — submission adapter
+- `eu-sales-reporting-connector` [DK VAT] â€” submission adapter
 
 ---
 
 ### 3.5 `filing-service` `[VAT-GENERIC]`
 
-**Responsibility:** Canonical intake of VAT returns. Normalizes source payload to the canonical filing schema. Owns the filing state machine. Orchestrates the downstream processing pipeline (validation → rule evaluation → assessment → claim). Returns the authoritative synchronous response.
+**Responsibility:** Canonical intake of VAT returns. Normalizes source payload to the canonical filing schema. Owns the filing state machine. Orchestrates the downstream processing pipeline (validation â†’ rule evaluation â†’ assessment â†’ claim). Returns the authoritative synchronous response.
 
 | Attribute | Detail |
 |---|---|
 | Layer | `[VAT-GENERIC]` |
 | Inbound APIs | `POST /vat-filings`, `GET /vat-filings/{id}` (from API Gateway) |
-| Inbound events | `FilingObligationCreated` (informational — for period binding); `CustomsAssessmentImported` (injects customs/import VAT facts into filing context) |
+| Inbound events | `FilingObligationCreated` (informational â€” for period binding); `CustomsAssessmentImported` (injects customs/import VAT facts into filing context) |
 | Owned entities | Filing (immutable snapshot on first write); filing state |
-| State machine | `received` → `validation_failed` / `validated` → `assessed` → `claim_created` |
+| State machine | `received` â†’ `validation_failed` / `validated` â†’ `assessed` â†’ `claim_created` |
 | Outbound (synchronous) | Calls `validation-service` with `(filing_id, trace_id)` |
 | Outbound events | `ReturnSubmitted` [CloudEvents] |
 | Outbound API (synchronous) | After validation passes: calls `rule-engine-service` with `(facts, rule_version_id)` |
-| DK VAT schema | DK VAT canonical filing schema applied as overlay (CVR, Rubrik A/B/C, salgsmoms/købsmoms etc.) [DK VAT config] |
+| DK VAT schema | DK VAT canonical filing schema applied as overlay (CVR, Rubrik A/B/C, salgsmoms/kÃ¸bsmoms etc.) [DK VAT config] |
 | Audit evidence | `FilingSnapshot` written immediately on intake |
 
 **Key interactions in order:**
@@ -384,16 +384,16 @@ The system is structured in three layers. Modules at each layer may only interac
 ```
 POST /vat-filings
   1. Normalize payload to canonical schema (DK VAT overlay applied)
-  2. Persist immutable FilingSnapshot → audit-evidence
+  2. Persist immutable FilingSnapshot â†’ audit-evidence
   3. Call validation-service.validate(filing_id, trace_id) [synchronous]
-     ↓ ReturnValidated (passed) → proceed
-     ↓ ReturnValidated (blocked) → status=validation_failed, return 422
+     â†“ ReturnValidated (passed) â†’ proceed
+     â†“ ReturnValidated (blocked) â†’ status=validation_failed, return 422
   4. Resolve rule_version_id from Rule Catalog by tax_period_end
   5. Call rule-engine-service.evaluate(facts, rule_version_id) [synchronous]
-     → EvaluatedFacts returned
-  6. Emit EvaluatedFacts → assessment-service (via CloudEvents on Kafka)
+     â†’ EvaluatedFacts returned
+  6. Emit EvaluatedFacts â†’ assessment-service (via CloudEvents on Kafka)
   7. Await AssessmentCalculated event
-  8. Update state → assessed → claim_created
+  8. Update state â†’ assessed â†’ claim_created
   9. Return 201 {filing_id, trace_id, status, result_type, net_vat_amount, ...}
 ```
 
@@ -404,15 +404,15 @@ POST /vat-filings
 - The DK VAT canonical schema is a configuration artifact applied at normalization time. No DK-specific logic lives in filing-service itself.
 
 **Depends on:**
-- `API Gateway` [PLATFORM] — inbound routing
-- `Operational DB` [PLATFORM] — filing persistence
+- `API Gateway` [PLATFORM] â€” inbound routing
+- `Operational DB` [PLATFORM] â€” filing persistence
 - `audit-evidence` [PLATFORM]
 - `Kafka backbone` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `validation-service` [VAT-GENERIC] — synchronous call
-- `rule-engine-service` [DK VAT] — synchronous call
-- `Rule Catalog mechanism` [VAT-GENERIC] — rule version resolution
-- DK VAT Filing Schema [DK VAT config] — normalization
+- `validation-service` [VAT-GENERIC] â€” synchronous call
+- `rule-engine-service` [DK VAT] â€” synchronous call
+- `Rule Catalog mechanism` [VAT-GENERIC] â€” rule version resolution
+- DK VAT Filing Schema [DK VAT config] â€” normalization
 
 ---
 
@@ -427,21 +427,21 @@ POST /vat-filings
 | Logic (generic) | Schema conformance, period integrity, numeric amount constraints, type consistency |
 | Logic (DK overlay) | Rubrik A/B/C cross-field consistency, CVR format (8-digit), zero-filing constraint [DK VAT config] |
 | Severity types | `blocking_error` (halts pipeline) / `warning` (flags and continues) |
-| Outbound events | `ReturnValidated` [CloudEvents] — payload: `{filing_id, passed: bool, errors[], warnings[]}` |
+| Outbound events | `ReturnValidated` [CloudEvents] â€” payload: `{filing_id, passed: bool, errors[], warnings[]}` |
 | Audit evidence | `ValidationEvidence` written to `audit-evidence` on every evaluation |
 
 **Interaction rules:**
-- `validation-service` is called synchronously by `filing-service`. The response drives the pipeline branch: pass → proceed to rule evaluation; block → filing-service returns 422.
+- `validation-service` is called synchronously by `filing-service`. The response drives the pipeline branch: pass â†’ proceed to rule evaluation; block â†’ filing-service returns 422.
 - After responding synchronously, validation-service also emits `ReturnValidated` on Kafka for any async consumers (e.g., compliance signals, audit).
-- DK VAT-specific validation rules are injected as configuration. The validation service itself has no knowledge of ML §§ or DK law — it evaluates rules expressed as field-level constraints.
+- DK VAT-specific validation rules are injected as configuration. The validation service itself has no knowledge of ML Â§Â§ or DK law â€” it evaluates rules expressed as field-level constraints.
 - A `warning` does not halt the pipeline. The assessment proceeds, and warnings are included in the response envelope.
 
 **Depends on:**
-- `filing-service` [VAT-GENERIC] — caller
+- `filing-service` [VAT-GENERIC] â€” caller
 - `Kafka backbone` [PLATFORM]
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- DK VAT validation rules [DK VAT config] — injected as catalog
+- DK VAT validation rules [DK VAT config] â€” injected as catalog
 
 ---
 
@@ -453,52 +453,52 @@ POST /vat-filings
 |---|---|
 | Layer | `[VAT-GENERIC]` |
 | Inbound events | `EvaluatedFacts` (from rule-engine-service via filing-service orchestration); `PreliminaryAssessmentTriggered` (from obligation-service when deadline passes) |
-| Staged derivation | stage_1 (gross output VAT) → stage_2 (total deductible input VAT) → stage_3 (pre-adjustment net) → stage_4 (final net VAT) |
+| Staged derivation | stage_1 (gross output VAT) â†’ stage_2 (total deductible input VAT) â†’ stage_3 (pre-adjustment net) â†’ stage_4 (final net VAT) |
 | Result type | `payable` (stage_4 > 0), `refund` (stage_4 < 0), `zero` (stage_4 = 0) |
-| Owned entities | Assessment (append-only): `assessment_id`, `assessment_type` (regular/preliminary/correction), `assessment_version`, `filing_id`, `prior_assessment_id`, `supersedes_assessment_id`, stage_1–4 amounts, `result_type`, `claim_amount_pre_round`, `claim_amount`, `rounding_policy_version_id`, `rule_version_id`, `calculation_trace_id`, `delta_type` |
+| Owned entities | Assessment (append-only): `assessment_id`, `assessment_type` (regular/preliminary/amendment), `assessment_version`, `filing_id`, `prior_assessment_id`, `supersedes_assessment_id`, stage_1â€“4 amounts, `result_type`, `claim_amount_pre_round`, `claim_amount`, `rounding_policy_version_id`, `rule_version_id`, `calculation_trace_id`, `delta_type` |
 | Preliminary lifecycle | On `PreliminaryAssessmentTriggered`: issue estimate, emit `PreliminaryAssessmentIssued`. On filed return: emit `PreliminaryAssessmentSupersededByFiledReturn`, then `FinalAssessmentCalculatedFromFiledReturn` |
 | Outbound events | `VatAssessmentCalculated`, `PreliminaryAssessmentIssued`, `PreliminaryAssessmentSupersededByFiledReturn`, `FinalAssessmentCalculatedFromFiledReturn` [CloudEvents] |
 | Audit evidence | `AssessmentEvidence`, `PreliminaryAssessmentEvidence` to `audit-evidence` |
 
 **Interaction rules:**
-- Assessment records are always appended — never updated in place (ADR-005).
+- Assessment records are always appended â€” never updated in place (ADR-005).
 - Preliminary assessments are immutable records. When superseded, a new final assessment is created that references the preliminary via `supersedes_assessment_id`. The audit store keeps bidirectional linkage.
-- On the correction path, `correction-service` calls assessment-service to create a new `assessment_version` with a `prior_assessment_id` pointer.
+- On the amendment path, `amendment-service` calls assessment-service to create a new `assessment_version` with a `prior_assessment_id` pointer.
 - `VatAssessmentCalculated` (and `FinalAssessmentCalculatedFromFiledReturn`) are the triggers for `claim-orchestrator` to create a claim intent.
 - assessment-service applies `rounding_policy_version_id` at claim amount finalization; stores both pre-round and rounded amounts.
 - assessment-service does not contain Danish tax law. The formula and result typing are jurisdiction-agnostic.
 
 **Depends on:**
-- `rule-engine-service` [DK VAT] — upstream, via `EvaluatedFacts`
-- `Operational DB` [PLATFORM] — append-only assessment persistence
+- `rule-engine-service` [DK VAT] â€” upstream, via `EvaluatedFacts`
+- `Operational DB` [PLATFORM] â€” append-only assessment persistence
 - `Kafka backbone` [PLATFORM]
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `correction-service` [VAT-GENERIC] — calls assessment-service on correction path
+- `amendment-service` [VAT-GENERIC] â€” calls assessment-service on amendment path
 
 ---
 
-### 3.7 `correction-service` `[VAT-GENERIC]`
+### 3.7 `amendment-service` `[VAT-GENERIC]`
 
-**Responsibility:** Manages VAT correction versioning, delta computation, immutable correction lineage. Never mutates prior records. (ADR-005)
+**Responsibility:** Manages VAT amendment versioning, delta computation, immutable amendment lineage. Never mutates prior records. (ADR-005)
 
 | Attribute | Detail |
 |---|---|
 | Layer | `[VAT-GENERIC]` |
-| Inbound | Synchronous call from `filing-service` on `filing_type=correction`: `correct(prior_filing_id, corrected_facts)` |
+| Inbound | Synchronous call from `filing-service` on `filing_type=amendment`: `correct(prior_filing_id, corrected_facts)` |
 | Loads | Prior assessment from `Operational DB` (read-only for prior record) |
 | Computes | Delta: `increase` / `decrease` / `neutral` [VAT-GENERIC logic] |
 | Calls | `assessment-service` to create new assessment version with lineage pointer |
 | Outbound events | `ReturnCorrected` / `VatReturnCorrected` [CloudEvents] |
 | Audit evidence | `CorrectionLineageEvidence` to `audit-evidence` |
-| DK overlay | Corrections > 3 years old → manual/legal routing [DK VAT config] |
+| DK overlay | Amendments > 3 years old â†’ manual/legal routing [DK VAT config] |
 
-**Correction processing flow:**
+**Amendment processing flow:**
 
 ```
 correct(prior_filing_id, corrected_facts)
   1. Load prior assessment (immutable read)
-  2. Apply DK VAT age gate [DK VAT config]: >3 years → route to manual/legal
+  2. Apply DK VAT age gate [DK VAT config]: >3 years â†’ route to manual/legal
   3. Compute delta (increase / decrease / neutral)
   4. Call assessment-service: createCorrectionVersion(corrected_facts, delta_type, prior_assessment_id)
   5. Emit ReturnCorrected [CloudEvents]
@@ -506,19 +506,19 @@ correct(prior_filing_id, corrected_facts)
 ```
 
 **Interaction rules:**
-- correction-service never writes to assessment records directly — it delegates to assessment-service.
-- The `prior_assessment_id` chain is the authoritative lineage. Any query for the full correction history follows this chain.
-- A `neutral` delta (no amount change) still creates a new assessment version and lineage record. No claim is generated for neutral corrections.
+- amendment-service never writes to assessment records directly â€” it delegates to assessment-service.
+- The `prior_assessment_id` chain is the authoritative lineage. Any query for the full amendment history follows this chain.
+- A `neutral` delta (no amount change) still creates a new assessment version and lineage record. No claim is generated for neutral amendments.
 - The age-gate rule (>3 years) is the only DK VAT-specific logic in this service. It is expressed as a configurable threshold, not hard-coded.
 
 **Depends on:**
-- `filing-service` [VAT-GENERIC] — caller
-- `assessment-service` [VAT-GENERIC] — creates new version
-- `Operational DB` [PLATFORM] — reads prior assessment
+- `filing-service` [VAT-GENERIC] â€” caller
+- `assessment-service` [VAT-GENERIC] â€” creates new version
+- `Operational DB` [PLATFORM] â€” reads prior assessment
 - `Kafka backbone` [PLATFORM]
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- DK VAT correction age-gate config [DK VAT config]
+- DK VAT amendment age-gate config [DK VAT config]
 
 ---
 
@@ -529,28 +529,28 @@ correct(prior_filing_id, corrected_facts)
 | Attribute | Detail |
 |---|---|
 | Layer | `[VAT-GENERIC]` |
-| Inbound events | `AssessmentCalculated` (regular filing), `ReturnCorrected` (correction with non-neutral delta) |
+| Inbound events | `AssessmentCalculated` (regular filing), `ReturnCorrected` (amendment with non-neutral delta) |
 | Idempotency key | `taxpayer_id + period_end + assessment_version` |
 | Transactional write | Claim intent + outbox record written in single ACID transaction |
-| Dispatch states | `queued` → `sent` → `acked` / `failed` → `dead_letter` |
+| Dispatch states | `queued` â†’ `sent` â†’ `acked` / `failed` â†’ `dead_letter` |
 | Inbound events (from connector) | `ClaimDispatched` (ack), `ClaimDispatchFailed` (failure / dead letter) |
 | Outbound events | `ClaimCreated` [CloudEvents] |
 | Audit evidence | `ClaimIntentEvidence`, `AdjustmentClaimEvidence`, `DispatchOutcomeEvidence` |
 
 **Interaction rules:**
-- The claim intent write and the outbox record write are always in the same database transaction. This is the outbox pattern guarantee — claim intents cannot be lost on service restart (ADR-004).
+- The claim intent write and the outbox record write are always in the same database transaction. This is the outbox pattern guarantee â€” claim intents cannot be lost on service restart (ADR-004).
 - `claim-orchestrator` does not dispatch claims directly. It publishes the claim intent to the outbox; the relay forwards it to Kafka; `claim-connector` consumes and dispatches.
 - Idempotency: if a duplicate `AssessmentCalculated` or `ReturnCorrected` event arrives for the same idempotency key, `claim-orchestrator` returns the existing claim record without creating a new one.
-- On receiving `ClaimDispatchFailed` with `dead_letter=true`, it updates claim state to `dead_letter` and writes evidence. No automatic retry — operator playbook applies.
-- For correction with `delta_type=neutral`, no claim is created.
+- On receiving `ClaimDispatchFailed` with `dead_letter=true`, it updates claim state to `dead_letter` and writes evidence. No automatic retry â€” operator playbook applies.
+- For amendment with `delta_type=neutral`, no claim is created.
 
 **Depends on:**
-- `Operational DB` [PLATFORM] — claim intent + outbox
-- `Outbox infrastructure` [PLATFORM] — transactional publication
+- `Operational DB` [PLATFORM] â€” claim intent + outbox
+- `Outbox infrastructure` [PLATFORM] â€” transactional publication
 - `Kafka backbone` [PLATFORM]
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `claim-connector` [DK VAT] — downstream consumer
+- `claim-connector` [DK VAT] â€” downstream consumer
 
 ---
 
@@ -563,14 +563,14 @@ correct(prior_filing_id, corrected_facts)
 | Layer | `[VAT-GENERIC]` (mechanism) / `[DK VAT]` (data) |
 | Accessed by | `filing-service` (version resolution at intake); `rule-engine-service` (rule lookup during evaluation) |
 | Owned entities | Rule: `rule_id`, `rule_pack`, `legal_reference`, `effective_from`, `effective_to`, `applies_when`, `expression`, `severity` |
-| Version resolution | Lookup active rules where `effective_from ≤ period_end ≤ effective_to` |
-| No-gap constraint | Rule history must be contiguous — no unresolvable period gaps allowed |
+| Version resolution | Lookup active rules where `effective_from â‰¤ period_end â‰¤ effective_to` |
+| No-gap constraint | Rule history must be contiguous â€” no unresolvable period gaps allowed |
 | Performance | p99 < 100ms (cached per `rule_version_id`) |
 
 **Interaction rules:**
 - `filing-service` resolves and pins `rule_version_id` at intake. All downstream evaluation uses this pinned version.
 - `rule-engine-service` uses the catalog at evaluation time to load the rule expressions for the given `rule_version_id`.
-- New rules enter the catalog through a governed ingestion process: `legal_reference` required, `effective_from` / `effective_to` required, regression suite must pass. Rule activation is data-only — no code deploy.
+- New rules enter the catalog through a governed ingestion process: `legal_reference` required, `effective_from` / `effective_to` required, regression suite must pass. Rule activation is data-only â€” no code deploy.
 - The catalog is read-only at runtime by operational services. Rule catalog writes are an administrative/governance operation.
 
 ---
@@ -601,16 +601,16 @@ correct(prior_filing_id, corrected_facts)
 
 ### 4.1 `rule-engine-service` `[DK VAT]`
 
-**Responsibility:** Pure, stateless, deterministic evaluation of Danish VAT legal rules (ML §§) against the DK Rule Catalog. This is the only service that contains Danish tax law logic.
+**Responsibility:** Pure, stateless, deterministic evaluation of Danish VAT legal rules (ML Â§Â§) against the DK Rule Catalog. This is the only service that contains Danish tax law logic.
 
 | Attribute | Detail |
 |---|---|
 | Layer | `[DK VAT]` |
 | Inbound | Synchronous call from `filing-service`: `evaluate(facts, rule_version_id)` |
 | Input | DK VAT filing facts + `rule_version_id` |
-| Output | `EvaluatedFacts`, `RuleOutcomes[]` with ML §§ references, severity per outcome |
-| Constraint | Pure function — no side effects, no DB writes, no external calls during evaluation |
-| Determinism | `evaluate(facts, rule_version_id) → outcomes` is identical for identical inputs at any point in time |
+| Output | `EvaluatedFacts`, `RuleOutcomes[]` with ML Â§Â§ references, severity per outcome |
+| Constraint | Pure function â€” no side effects, no DB writes, no external calls during evaluation |
+| Determinism | `evaluate(facts, rule_version_id) â†’ outcomes` is identical for identical inputs at any point in time |
 | Audit evidence | `RuleEvaluationEvidence` to `audit-evidence` |
 
 **DK VAT Rule Pack execution order:**
@@ -618,11 +618,11 @@ correct(prior_filing_id, corrected_facts)
 | # | Pack | Description |
 |---|---|---|
 | 1 | `filing_validation` | Cadence and obligation period alignment |
-| 2 | `domestic_vat` | Salgsmoms / købsmoms baseline calculation |
-| 3 | `reverse_charge_eu_goods` | Rubrik A goods, EU supplier (ML §46 EU) |
-| 4 | `reverse_charge_eu_services` | Rubrik A services, EU supplier (ML §46 EU) |
-| 5 | `reverse_charge_dk` | Domestic reverse-charge categories (ML §46 DK) |
-| 6 | `exemption` | ML §13 exempt activities — zero output VAT |
+| 2 | `domestic_vat` | Salgsmoms / kÃ¸bsmoms baseline calculation |
+| 3 | `reverse_charge_eu_goods` | Rubrik A goods, EU supplier (ML Â§46 EU) |
+| 4 | `reverse_charge_eu_services` | Rubrik A services, EU supplier (ML Â§46 EU) |
+| 5 | `reverse_charge_dk` | Domestic reverse-charge categories (ML Â§46 DK) |
+| 6 | `exemption` | ML Â§13 exempt activities â€” zero output VAT |
 | 7 | `deduction_rights` | Full / none / partial (pro-rata) input VAT deduction |
 | 8 | `cross_border` | Rubrik B/C international reporting values |
 
@@ -630,11 +630,11 @@ correct(prior_filing_id, corrected_facts)
 - `rule-engine-service` is called synchronously by `filing-service` after validation passes.
 - The determinism guarantee enables legal replay: any historical filing can be re-evaluated by passing the original `facts` and pinned `rule_version_id` to get the original outcome.
 - The service reads from the DK Rule Catalog (read-only access to `Rule Catalog` entries for the given `rule_version_id`). It does not write to any store during evaluation.
-- Rule outcomes include ML §§ legal references. These references are persisted in `RuleEvaluationEvidence` and flow into the assessment record for audit defensibility.
+- Rule outcomes include ML Â§Â§ legal references. These references are persisted in `RuleEvaluationEvidence` and flow into the assessment record for audit defensibility.
 
 **Depends on:**
-- `filing-service` [VAT-GENERIC] — caller
-- `Rule Catalog` [DK VAT] — rule data for given `rule_version_id`
+- `filing-service` [VAT-GENERIC] â€” caller
+- `Rule Catalog` [DK VAT] â€” rule data for given `rule_version_id`
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
 
@@ -642,20 +642,20 @@ correct(prior_filing_id, corrected_facts)
 
 ### 4.2 `Rule Catalog` `[DK VAT]`
 
-**Responsibility:** Danish VAT legal rule data store. Each record represents one rule expression with its ML §§ legal reference, applicability condition, and effective date range. This is a data artifact that populates the Rule Catalog mechanism.
+**Responsibility:** Danish VAT legal rule data store. Each record represents one rule expression with its ML Â§Â§ legal reference, applicability condition, and effective date range. This is a data artifact that populates the Rule Catalog mechanism.
 
 | Attribute | Detail |
 |---|---|
 | Layer | `[DK VAT]` |
-| Schema | `rule_id`, `rule_pack`, `legal_reference` (ML §§), `effective_from`, `effective_to`, `applies_when`, `expression`, `severity` |
+| Schema | `rule_id`, `rule_pack`, `legal_reference` (ML Â§Â§), `effective_from`, `effective_to`, `applies_when`, `expression`, `severity` |
 | Governance | New rule requires: `legal_reference`, `effective_from`, `effective_to`, regression suite pass |
-| Activation | Data-only — no code deployment needed to activate a new rule version |
+| Activation | Data-only â€” no code deployment needed to activate a new rule version |
 | Accessed by | `rule-engine-service` (read-only at evaluation time), `filing-service` (version resolution) |
 
 **Interaction rules:**
 - Rule data changes must not break existing tests. Regression suite runs before any catalog update is promoted to production.
 - Effective date ranges must be contiguous for the rule packs in use. Gaps cause version resolution failures and block intake.
-- Legal references (ML §§) are mandatory metadata — they tie each rule to the Danish legislation it implements.
+- Legal references (ML Â§Â§) are mandatory metadata â€” they tie each rule to the Danish legislation it implements.
 
 ---
 
@@ -668,38 +668,38 @@ correct(prior_filing_id, corrected_facts)
 | Layer | `[DK VAT]` |
 | Inbound | Kafka topic (claim intents from outbox via relay) |
 | Outbound | `POST /claims` to SKAT External Claims System |
-| Adaptation | Generic claim payload → SKAT contract format (DK VAT SKAT API) |
+| Adaptation | Generic claim payload â†’ SKAT contract format (DK VAT SKAT API) |
 | Currency | Enforces `DKK` denomination and DK rounding rules |
 | Idempotency | SKAT call includes `idempotency_key` = `taxpayer_id + period_end + assessment_version` |
 | Retry policy | Exponential backoff, max 5 attempts |
-| Dead letter | After 5 failures → DLQ + `ClaimDispatchFailed (dead_letter=true)` event |
+| Dead letter | After 5 failures â†’ DLQ + `ClaimDispatchFailed (dead_letter=true)` event |
 | Audit evidence | `DispatchAttemptFailed` on each failed attempt; `ClaimDispatched` on success |
 
 **Retry interaction sequence:**
 
 ```
 Dequeue claim intent
-→ POST /claims to SKAT
-  → 200 OK:  emit ClaimDispatched → claim-orchestrator updates to acked
-  → 5xx/timeout:
+â†’ POST /claims to SKAT
+  â†’ 200 OK:  emit ClaimDispatched â†’ claim-orchestrator updates to acked
+  â†’ 5xx/timeout:
       - write DispatchAttemptFailed to audit-evidence
       - requeue with exponential backoff delay
-      - if attempt ≥ 5: DLQ + ClaimDispatchFailed(dead_letter=true)
+      - if attempt â‰¥ 5: DLQ + ClaimDispatchFailed(dead_letter=true)
 ```
 
 **Interaction rules:**
 - `claim-connector` is the anti-corruption layer for SKAT. Any SKAT API changes are isolated here. No other Tax Core service knows the SKAT contract format.
-- Currency is always `DKK`. The connector enforces this constraint — claims from the generic orchestrator carry a currency field which the connector validates.
+- Currency is always `DKK`. The connector enforces this constraint â€” claims from the generic orchestrator carry a currency field which the connector validates.
 - The SKAT authentication mechanism is TBD (OQ-01). The connector will own this credential without exposing it to other services.
 - `claim-orchestrator` consumes the outbound events from `claim-connector` to update claim state and write dispatch outcome evidence.
 
 **Depends on:**
-- `Kafka backbone` [PLATFORM] — inbound consumer
-- `DLQ` [PLATFORM] — dead letter on max retries
+- `Kafka backbone` [PLATFORM] â€” inbound consumer
+- `DLQ` [PLATFORM] â€” dead letter on max retries
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `claim-orchestrator` [VAT-GENERIC] — consumes its outbound events
-- SKAT External Claims System — external dependency
+- `claim-orchestrator` [VAT-GENERIC] â€” consumes its outbound events
+- SKAT External Claims System â€” external dependency
 
 ---
 
@@ -721,10 +721,10 @@ Dequeue claim intent
 - On submission failure, the connector must retry and emit evidence before giving up.
 
 **Depends on:**
-- `eu-sales-obligation-service` [VAT-GENERIC] — caller
+- `eu-sales-obligation-service` [VAT-GENERIC] â€” caller
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- EU Sales Reporting System — external dependency
+- EU Sales Reporting System â€” external dependency
 
 ---
 
@@ -738,7 +738,7 @@ Dequeue claim intent
 | Inbound API | `POST /imports/customs-assessments` (from Customs/Told system) |
 | Reconciliation API | `POST /imports/customs-reconciliation` |
 | Events emitted | `CustomsAssessmentImported`, `CustomsIntegrationFailed`, `CustomsIntegrationRetried`, `CustomsReconciliationMismatchDetected` [CloudEvents] |
-| Audit evidence | `customs_reference_id`, payload hash, import timestamp, reconciliation outcome — all linked to `trace_id` |
+| Audit evidence | `customs_reference_id`, payload hash, import timestamp, reconciliation outcome â€” all linked to `trace_id` |
 | Anti-corruption | Customs/Told API changes are isolated here |
 
 **Key interactions:**
@@ -747,13 +747,13 @@ Dequeue claim intent
 Inbound customs facts
   1. Receive POST /imports/customs-assessments from Customs/Told
   2. Normalize to Tax Core import VAT contract
-  3. Emit CustomsAssessmentImported → Kafka → filing-service
+  3. Emit CustomsAssessmentImported â†’ Kafka â†’ filing-service
   4. Write customs evidence to audit-evidence
 
 Reconciliation path
   1. Receive POST /imports/customs-reconciliation
   2. Compare customs facts against filed VAT return line facts
-  3. On mismatch: emit CustomsReconciliationMismatchDetected → audit + operations
+  3. On mismatch: emit CustomsReconciliationMismatchDetected â†’ audit + operations
   4. On match: write reconciliation confirmation evidence
 ```
 
@@ -763,11 +763,11 @@ Reconciliation path
 - All customs-related audit evidence must include `customs_reference_id` for traceability to the Customs/Told source system.
 
 **Depends on:**
-- `Kafka backbone` [PLATFORM] — event publication
+- `Kafka backbone` [PLATFORM] â€” event publication
 - `audit-evidence` [PLATFORM]
 - `OpenTelemetry` [PLATFORM]
-- `filing-service` [VAT-GENERIC] — downstream consumer of `CustomsAssessmentImported`
-- Customs/Told external system — inbound source
+- `filing-service` [VAT-GENERIC] â€” downstream consumer of `CustomsAssessmentImported`
+- Customs/Told external system â€” inbound source
 
 ---
 
@@ -778,14 +778,14 @@ Reconciliation path
 The filing intake path is synchronous from portal user action to HTTP response. All steps within this chain share the same `trace_id`.
 
 ```
-User → portal-bff → API Gateway → filing-service
-                                    ↓ validate()     → validation-service
-                                    ↓ evaluate()     → rule-engine-service
-                                    ↓ [event]        → assessment-service
-                                    ← AssessmentCalculated
-                                    ↓ [event]        → claim-orchestrator
-                                    ← ClaimCreated
-                                    → 201 response
+User â†’ portal-bff â†’ API Gateway â†’ filing-service
+                                    â†“ validate()     â†’ validation-service
+                                    â†“ evaluate()     â†’ rule-engine-service
+                                    â†“ [event]        â†’ assessment-service
+                                    â† AssessmentCalculated
+                                    â†“ [event]        â†’ claim-orchestrator
+                                    â† ClaimCreated
+                                    â†’ 201 response
 ```
 
 Response latency budget:
@@ -797,22 +797,22 @@ Response latency budget:
 After `filing-service` returns the synchronous response, asynchronous event processing continues:
 
 ```
-claim-orchestrator → outbox → Kafka → claim-connector → SKAT
-                                        ↓ ClaimDispatched or ClaimDispatchFailed
-                                    → claim-orchestrator (state update)
-                                        ↓ DispatchOutcomeEvidence
-                                    → audit-evidence
+claim-orchestrator â†’ outbox â†’ Kafka â†’ claim-connector â†’ SKAT
+                                        â†“ ClaimDispatched or ClaimDispatchFailed
+                                    â†’ claim-orchestrator (state update)
+                                        â†“ DispatchOutcomeEvidence
+                                    â†’ audit-evidence
 ```
 
-### 5.3 Correction Chain
+### 5.3 Amendment Chain
 
 ```
-User → portal-bff → API Gateway → filing-service
-                                    ↓ correct()      → correction-service
-                                                          ↓ (read) prior assessment
-                                                          ↓ createVersion() → assessment-service
-                                                          ↓ ReturnCorrected [if non-neutral]
-                                    ← claim-orchestrator → outbox → claim-connector
+User â†’ portal-bff â†’ API Gateway â†’ filing-service
+                                    â†“ correct()      â†’ amendment-service
+                                                          â†“ (read) prior assessment
+                                                          â†“ createVersion() â†’ assessment-service
+                                                          â†“ ReturnCorrected [if non-neutral]
+                                    â† claim-orchestrator â†’ outbox â†’ claim-connector
 ```
 
 ### 5.4 Audit Evidence Pattern
@@ -821,8 +821,8 @@ Every service writes evidence to `audit-evidence` at each decision point. Eviden
 
 ```
 Any service decision
-  → [async] POST audit-evidence (trace_id, event_type, decision summary, domain refs)
-      → Kafka → Audit Store (Lakehouse / Iceberg)
+  â†’ [async] POST audit-evidence (trace_id, event_type, decision summary, domain refs)
+      â†’ Kafka â†’ Audit Store (Lakehouse / Iceberg)
 ```
 
 Evidence must include `trace_id` to enable full reconstruction of any filing's processing history from a single identifier.
@@ -831,12 +831,12 @@ Evidence must include `trace_id` to enable full reconstruction of any filing's p
 
 ```
 filing-service.intake(filing)
-  → Rule Catalog: SELECT rule_version WHERE effective_from ≤ period_end ≤ effective_to
-  → pin rule_version_id to Filing record
-  → pass rule_version_id to rule-engine-service.evaluate()
-    → Rule Catalog: load all rules for rule_version_id (cached)
-    → evaluate rule packs in order
-    → return EvaluatedFacts with ML §§ references
+  â†’ Rule Catalog: SELECT rule_version WHERE effective_from â‰¤ period_end â‰¤ effective_to
+  â†’ pin rule_version_id to Filing record
+  â†’ pass rule_version_id to rule-engine-service.evaluate()
+    â†’ Rule Catalog: load all rules for rule_version_id (cached)
+    â†’ evaluate rule packs in order
+    â†’ return EvaluatedFacts with ML Â§Â§ references
 ```
 
 ### 5.6 EU-Sales Obligation Chain
@@ -844,20 +844,20 @@ filing-service.intake(filing)
 EU-sales obligations follow a separate lifecycle from domestic VAT returns, sharing only the `taxpayer_id` / `cvr_number` linkage.
 
 ```
-API Gateway → eu-sales-obligation-service
-  1. POST /eu-sales-obligations/generate → create EuSalesObligation (status=eu_sales_due)
-  2. Emit EuSalesObligationCreated → Kafka → audit-evidence
+API Gateway â†’ eu-sales-obligation-service
+  1. POST /eu-sales-obligations/generate â†’ create EuSalesObligation (status=eu_sales_due)
+  2. Emit EuSalesObligationCreated â†’ Kafka â†’ audit-evidence
 
 Submission path
   POST /eu-sales-obligations/{id}/submissions
-  → eu-sales-reporting-connector.submit()
-  → EU Sales Reporting System
-  ← EuSalesObligationSubmitted
-  → eu-sales-obligation-service updates status=eu_sales_submitted
+  â†’ eu-sales-reporting-connector.submit()
+  â†’ EU Sales Reporting System
+  â† EuSalesObligationSubmitted
+  â†’ eu-sales-obligation-service updates status=eu_sales_submitted
 
 Overdue path
   Scheduler / stream processor detects due_date passed
-  → emit EuSalesObligationOverdue → audit-evidence + compliance signals
+  â†’ emit EuSalesObligationOverdue â†’ audit-evidence + compliance signals
 ```
 
 ### 5.7 Customs Import Chain
@@ -866,21 +866,21 @@ Customs import VAT facts arrive from the external Customs/Told system and are in
 
 ```
 Customs/Told System
-  → POST /imports/customs-assessments → customs-told-adapter
-      → normalize to Tax Core import VAT contract
-      → emit CustomsAssessmentImported → Kafka → filing-service
-      → write customs evidence to audit-evidence
+  â†’ POST /imports/customs-assessments â†’ customs-told-adapter
+      â†’ normalize to Tax Core import VAT contract
+      â†’ emit CustomsAssessmentImported â†’ Kafka â†’ filing-service
+      â†’ write customs evidence to audit-evidence
 
 filing-service
-  → consume CustomsAssessmentImported
-  → make import VAT facts available for rule evaluation
-  → line-level LineFact records created with customs source references
+  â†’ consume CustomsAssessmentImported
+  â†’ make import VAT facts available for rule evaluation
+  â†’ line-level LineFact records created with customs source references
 
 Reconciliation path
-  POST /imports/customs-reconciliation → customs-told-adapter
-  → compare customs facts vs filing line facts
-  → mismatch: emit CustomsReconciliationMismatchDetected → audit + alert
-  → match: write confirmation evidence
+  POST /imports/customs-reconciliation â†’ customs-told-adapter
+  â†’ compare customs facts vs filing line facts
+  â†’ mismatch: emit CustomsReconciliationMismatchDetected â†’ audit + alert
+  â†’ match: write confirmation evidence
 ```
 
 ### 5.8 Preliminary Assessment Chain
@@ -889,21 +889,21 @@ When a domestic VAT filing obligation passes its due date without a submitted re
 
 ```
 obligation-service
-  → detects ObligationOverdue
-  → emit PreliminaryAssessmentTriggered → assessment-service
+  â†’ detects ObligationOverdue
+  â†’ emit PreliminaryAssessmentTriggered â†’ assessment-service
 
 assessment-service
-  → create preliminary Assessment (assessment_type=preliminary, filing_id=null)
-  → emit PreliminaryAssessmentIssued → claim-orchestrator, audit
-  → claim-orchestrator may create preliminary claim intent
+  â†’ create preliminary Assessment (assessment_type=preliminary, filing_id=null)
+  â†’ emit PreliminaryAssessmentIssued â†’ claim-orchestrator, audit
+  â†’ claim-orchestrator may create preliminary claim intent
 
 [Later: taxpayer files return]
 filing-service
-  → POST /vat-filings (regular)
-  → assessment-service creates regular assessment
-  → emit PreliminaryAssessmentSupersededByFiledReturn (supersedes_assessment_id=preliminary)
-  → emit FinalAssessmentCalculatedFromFiledReturn
-  → audit-evidence stores bidirectional linkage
+  â†’ POST /vat-filings (regular)
+  â†’ assessment-service creates regular assessment
+  â†’ emit PreliminaryAssessmentSupersededByFiledReturn (supersedes_assessment_id=preliminary)
+  â†’ emit FinalAssessmentCalculatedFromFiledReturn
+  â†’ audit-evidence stores bidirectional linkage
 ```
 
 ### 5.9 Overlay Configuration Pattern
@@ -916,7 +916,7 @@ DK VAT overlay components configure generic VAT services through injected config
 | `eu-sales-obligation-service` | DK EU-sales reporting contract + submission endpoint [via eu-sales-reporting-connector] |
 | `filing-service` | DK VAT Canonical Filing Schema (field definitions, normalization map); customs import facts injected via `CustomsAssessmentImported` events |
 | `validation-service` | DK VAT validation rules (Rubrik cross-field constraints, CVR format) |
-| `correction-service` | DK VAT age gate (>3 years threshold for manual routing) |
+| `amendment-service` | DK VAT age gate (>3 years threshold for manual routing) |
 | `claim-orchestrator` | Currency field = `DKK` (injected via claim payload configuration) |
 
 ---
@@ -987,7 +987,7 @@ RBAC is enforced at the API Gateway. Downstream services trust the asserted iden
 | Role | Services reachable |
 |---|---|
 | `preparer` | filing-service (own CVR), portal-bff |
-| `reviewer_approver` | filing-service (read all), correction-service (approve) |
+| `reviewer_approver` | filing-service (read all), amendment-service (approve) |
 | `operations_support` | claim-orchestrator (read status, DLQ reprocess) |
 | `auditor` | audit-evidence (read-only), filing-service (read all) |
 
@@ -1020,10 +1020,10 @@ When a national or customer-specific deviation is requested, it must be routed t
 
 | Outcome | Module impact |
 |---|---|
-| `policy change` | Update DK VAT configuration artifact (cadence policy, filing schema, age gate, etc.) — no module code change |
-| `country extension` | Add new DK VAT overlay module (new connector, new rule pack) — VAT-GENERIC modules unchanged |
-| `core change` | Modify VAT-GENERIC or PLATFORM module — requires full architecture review and regression |
-| `reject` | Request is outside Tax Core product scope — handled externally |
+| `policy change` | Update DK VAT configuration artifact (cadence policy, filing schema, age gate, etc.) â€” no module code change |
+| `country extension` | Add new DK VAT overlay module (new connector, new rule pack) â€” VAT-GENERIC modules unchanged |
+| `core change` | Modify VAT-GENERIC or PLATFORM module â€” requires full architecture review and regression |
+| `reject` | Request is outside Tax Core product scope â€” handled externally |
 
 ---
 
@@ -1055,3 +1055,4 @@ Architecture contract for all module work:
 | OQ-15 | Settlement trigger legal thresholds and notification SLA details? | `settlement-trigger-service`, `obligation-service`, `portal-bff` |
 | OQ-16 | IRM handoff contract for `HighRiskCaseTaskCreated` (sync API vs event-only)? | `risk-profile-refresh-service`, IRM integration |
 | OQ-17 | Payment-plan partner integration contract and ownership boundaries? | `settlement-flow`, external collection integration |
+

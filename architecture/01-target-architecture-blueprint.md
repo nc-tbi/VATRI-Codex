@@ -1,7 +1,7 @@
-# 01 - Target Architecture Blueprint (Danish VAT Tax Core)
+﻿# 01 - Target Architecture Blueprint (Danish VAT Tax Core)
 
 ## 1. Architecture Scope and Drivers
-- Support filing types: `regular`, `zero`, `correction`.
+- Support filing types: `regular`, `zero`, `amendment`.
 - Support outcomes: `payable`, `refund`, `zero`.
 - Preserve end-to-end audit trace from filing input to claim dispatch.
 - Externalize rules with effective dating and legal references.
@@ -26,8 +26,8 @@ TC --> AUD[Audit and Reporting]
 
 In scope:
 - taxpayer self-service portal and portal BFF
-- API-first ingestion for registration, obligation, filing, correction, and status queries
-- obligation, filing, validation, assessment, correction, claim dispatch, audit evidence
+- API-first ingestion for registration, obligation, filing, amendment, and status queries
+- obligation, filing, validation, assessment, amendment, claim dispatch, audit evidence
 - tax-specific collection/settlement integration boundaries
 
 Out of scope:
@@ -42,7 +42,7 @@ R[Registration] --> O[Obligation]
 O --> F[Filing]
 F --> V[Validation]
 V --> T[Tax Rule and Assessment]
-T --> C[Correction]
+T --> C[Amendment]
 T --> L[Claim]
 C --> L
 F --> A[Audit]
@@ -78,7 +78,7 @@ API --> REGAPI[Registration API]
 API --> OBLAPI[Obligation API]
 API --> EUSAPI[EU-Sales Obligation API]
 API --> FILAPI[Filing API]
-API --> CORAPI[Correction API]
+API --> CORAPI[Amendment API]
 API --> QRYAPI[Assessment and Status API]
 API --> CLMAPI[Claim API]
 
@@ -86,7 +86,7 @@ REGAPI --> REGSVC[Registration Service]
 OBLAPI --> OBLSVC[Obligation Service]
 EUSAPI --> EUSVC[EU-Sales Obligation Service]
 FILAPI --> FIL[Filing Service]
-CORAPI --> COR[Correction Service]
+CORAPI --> COR[Amendment Service]
 QRYAPI --> ASM[Assessment Service]
 CLMAPI --> ORC[Claim Orchestrator]
 EUSVC --> EUX[EU-Sales Reporting Connector]
@@ -95,7 +95,7 @@ FIL --> CUS[Customs or Told Adapter]
 FIL --> VAL[Validation Service]
 VAL --> RULE[VAT Rule Engine]
 RULE --> ASM[Assessment Service]
-ASM --> COR[Correction Service]
+ASM --> COR[Amendment Service]
 ASM --> ORC[Claim Orchestrator]
 COR --> ORC
 ORC --> CON[External Claim Connector]
@@ -150,9 +150,9 @@ Tax Core API surface (minimum):
 - Filings:
   - `POST /vat-filings`
   - `GET /vat-filings/{filing_id}`
-- Corrections:
-  - `POST /vat-filings/{filing_id}/corrections`
-  - `GET /corrections/{correction_id}`
+- Amendments:
+  - `POST /vat-filings/{filing_id}/amendments`
+  - `GET /amendments/{correction_id}`
 - Assessment and status:
   - `GET /assessments/{assessment_id}`
   - `GET /tax-periods/{taxpayer_id}/{period_end}/status`
@@ -347,14 +347,14 @@ Open-source-only compliance rule:
 - Integration instability -> queue, DLQ, reconciliation
 - Data quality -> strict validation and feedback contract
 - Audit defensibility -> append-only evidence
-- Tooling novelty risk -> apply “adopt where value is proven” governance with explicit maturity gates.
+- Tooling novelty risk -> apply â€œadopt where value is provenâ€ governance with explicit maturity gates.
 
 ## 9. Delivery Phasing and Migration Plan
 1. Foundation: API gateway, registration/obligation/filing API contracts, baseline validation, audit scaffold
 2. Assessment Core: rule engine, reverse charge, exemptions, obligations
 3. Portal and BFF: taxpayer self-service UI, portal BFF orchestration, API parity validation
 4. Claims Integration: orchestrator, connector, retry/idempotency
-5. Corrections and Controls: versioning, lineage, dashboards, alerts
+5. Amendments and Controls: versioning, lineage, dashboards, alerts
 6. Advanced Scenarios: modules for `Needs module`, routed `Manual/legal`
 7. ViDA Step 1-3: recurring ingress, prefill/reclassification controls, near-real-time balance and settlement triggers
 
@@ -390,3 +390,4 @@ Future-proofing workstream (cross-phase):
   - near-real-time VAT balance updates
   - taxpayer-initiated and system-initiated settlement paths (threshold/time policy)
   - B2C source transition support (`lump_sum` to `SAF-T`/`POS`)
+

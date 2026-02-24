@@ -1,4 +1,4 @@
-# Architecture Output Folder (Danish VAT Tax Core)
+﻿# Architecture Output Folder (Danish VAT Tax Core)
 
 This folder contains architecture outputs derived from the business analysis package under `analysis/`.
 
@@ -10,7 +10,7 @@ This folder contains architecture outputs derived from the business analysis pac
 - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
 - `architecture/adr/ADR-003-append-only-audit-evidence.md`
 - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
-- `architecture/adr/ADR-005-versioned-corrections.md`
+- `architecture/adr/ADR-005-versioned-amendments.md`
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-008-open-source-only-technology-policy.md`
@@ -40,3 +40,4 @@ This folder contains architecture outputs derived from the business analysis pac
   - `Country 1 (DK VAT)` via overlay and rule-pack configuration.
   - `Country N` via additional overlays on unchanged core capabilities.
 - This contract is mandatory for architect and designer outputs.
+

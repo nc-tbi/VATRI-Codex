@@ -1,10 +1,10 @@
-# ADR-009: Taxpayer Portal BFF and API-First Ingress
+﻿# ADR-009: Taxpayer Portal BFF and API-First Ingress
 
 ## Status
 Accepted
 
 ## Context
-Tax Core must support both taxpayer self-service usage and machine-to-machine integration for all major VAT entry types (registration, obligations, filings, corrections, and status retrieval).
+Tax Core must support both taxpayer self-service usage and machine-to-machine integration for all major VAT entry types (registration, obligations, filings, amendments, and status retrieval).
 
 ## Decision
 Adopt a dual ingress model:
@@ -19,3 +19,4 @@ Enforce API-first parity:
 - Better channel flexibility for end users and integrators.
 - Stronger contract governance requirements across portal and API clients.
 - Additional operational scope for BFF reliability and traceability.
+

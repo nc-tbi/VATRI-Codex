@@ -1,4 +1,4 @@
-# Critical Review Findings - Business Analyst Output - 2026-02-24 - 001
+﻿# Critical Review Findings - Business Analyst Output - 2026-02-24 - 001
 
 ## 1. Review Scope and Referenced Inputs
 Reviewed the business analyst analysis package for correctness, internal consistency, traceability, and architecture-readiness.
@@ -67,7 +67,7 @@ Impact:
 6. Source-link and terminology normalization is inconsistent.
 Status: `confirmed`
 Evidence:
-- Correction links differ across documents (`analysis/01-vat-system-overview-dk.md:46`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md:99`).
+- Amendment links differ across documents (`analysis/01-vat-system-overview-dk.md:46`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md:99`).
 - Transliteration terms are used inconsistently (for example `forelobig fastsaettelse`) (`analysis/07-filing-scenarios-and-claim-outcomes-dk.md:68`).
 Impact:
 - Minor maintainability and reference-quality issue.
@@ -85,7 +85,7 @@ Impact:
 - If unresolved, architecture and design phases may encode incomplete calculation logic and miss mandatory integrations.
 - Gaps will likely surface late (integration and UAT), causing rework across rule engine, data model, and API contracts.
 
-## 6. Required Corrections and Acceptance Criteria
+## 6. Required Amendments and Acceptance Criteria
 1. Resolve formula inconsistency:
 - Update `analysis/02` to either include reverse-charge effects in derived logic or explicitly define computation stages that incorporate abroad VAT fields.
 
@@ -108,3 +108,4 @@ Acceptance criteria:
 
 ## 7. Review Decision
 `approved_with_changes`
+

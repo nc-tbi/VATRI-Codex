@@ -1,4 +1,4 @@
-# Capability to Backlog Mapping
+﻿# Capability to Backlog Mapping
 
 ## Phase 1: Foundation
 ### Epic E1: Canonical Filing Platform
@@ -38,15 +38,15 @@
 - Feature F7.2: Alerting for failures and backlog growth
 - Feature F7.3: Customs/told reconciliation workflow and mismatch resolution controls
 
-## Phase 4: Corrections and Controls
-### Epic E8: Correction Versioning
+## Phase 4: Amendments and Controls
+### Epic E8: Amendment Versioning
 - Feature F8.1: Prior/new comparison and lineage chain
 - Feature F8.2: Adjustment claim generation
 
 ### Epic E9: Compliance Dashboards
 - Feature F9.1: Obligation dashboard
 - Feature F9.2: Validation and warning analytics
-- Feature F9.3: Assessment and correction anomaly detection
+- Feature F9.3: Assessment and amendment anomaly detection
 - Feature F9.4: Preliminary-to-final assessment supersession audit dashboard
 
 ## Phase 4A: Integration Boundaries
@@ -70,7 +70,7 @@
 - Feature F10.4: Special scheme modules (`brugtmoms`, `OSS/IOSS`, `momskompensation`)
 
 ### Epic E11: Manual/Legal Routing
-- Feature F11.1: Case-routing for old-period corrections and dispute triggers
+- Feature F11.1: Case-routing for old-period amendments and dispute triggers
 - Feature F11.2: Decision package export for legal/case systems
 
 ### Epic E14: Product-First Coexistence and Governance
@@ -125,3 +125,4 @@
 - Feature M3.2: GitOps + IaC for environment provisioning and drift control
 - Feature M3.3: Policy-as-code admission controls
 - Feature M3.4: Supply-chain controls (SBOM, signing, provenance verification)
+

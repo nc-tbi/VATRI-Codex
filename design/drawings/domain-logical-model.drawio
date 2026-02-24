@@ -1,0 +1,32 @@
+<mxfile host="app.diagrams.net" modified="2026-02-24T12:25:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
+  <diagram id="domain01" name="Domain Logical Model">
+    <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="2" value="Taxpayer&#xa;taxpayer_id (PK)&#xa;cvr_number&#xa;status" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="60" y="60" width="220" height="130" as="geometry"/></mxCell>
+        <mxCell id="3" value="Registration&#xa;registration_id (PK)&#xa;taxpayer_id (FK)&#xa;effective_date&#xa;registration_status" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1"><mxGeometry x="340" y="60" width="230" height="150" as="geometry"/></mxCell>
+        <mxCell id="4" value="Obligation&#xa;obligation_id (PK)&#xa;taxpayer_id (FK)&#xa;period_start&#xa;period_end&#xa;due_date&#xa;cadence&#xa;status" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="620" y="50" width="240" height="180" as="geometry"/></mxCell>
+        <mxCell id="5" value="Filing&#xa;filing_id (PK)&#xa;taxpayer_id (FK)&#xa;obligation_id (FK)&#xa;filing_type&#xa;rule_version_id&#xa;status&#xa;trace_id" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="910" y="50" width="250" height="180" as="geometry"/></mxCell>
+        <mxCell id="6" value="LineFact&#xa;line_fact_id (PK)&#xa;filing_id (FK)&#xa;supply_type&#xa;place_of_supply_country&#xa;reverse_charge_applied&#xa;deduction_percentage" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="1210" y="50" width="260" height="170" as="geometry"/></mxCell>
+
+        <mxCell id="7" value="Assessment&#xa;assessment_id (PK)&#xa;filing_id (FK)&#xa;assessment_type&#xa;assessment_version&#xa;result_type&#xa;claim_amount&#xa;rounding_policy_version_id" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="1"><mxGeometry x="910" y="300" width="270" height="190" as="geometry"/></mxCell>
+        <mxCell id="8" value="Claim&#xa;claim_id (PK)&#xa;assessment_id (FK)&#xa;taxpayer_id (FK)&#xa;amount&#xa;currency&#xa;status&#xa;idempotency_key" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0277bd;" vertex="1" parent="1"><mxGeometry x="1220" y="320" width="250" height="170" as="geometry"/></mxCell>
+        <mxCell id="9" value="Rule&#xa;rule_id (PK)&#xa;rule_pack&#xa;legal_reference&#xa;effective_from&#xa;effective_to&#xa;expression" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="600" y="320" width="250" height="170" as="geometry"/></mxCell>
+        <mxCell id="10" value="AuditEvidence&#xa;evidence_id (PK)&#xa;trace_id&#xa;event_type&#xa;service_identity&#xa;payload_hash&#xa;timestamp" style="shape=rectangle;rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" vertex="1" parent="1"><mxGeometry x="310" y="330" width="250" height="170" as="geometry"/></mxCell>
+
+        <mxCell id="100" value="1..*" style="endArrow=block;html=1;" edge="1" parent="1" source="2" target="3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="101" value="1..*" style="endArrow=block;html=1;" edge="1" parent="1" source="2" target="4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="102" value="1..*" style="endArrow=block;html=1;" edge="1" parent="1" source="4" target="5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="103" value="1..*" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="6"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="104" value="1..*" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="7"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="105" value="1..1" style="endArrow=block;html=1;" edge="1" parent="1" source="7" target="8"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="106" value="uses version" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="9"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="107" value="writes evidence" style="endArrow=block;html=1;" edge="1" parent="1" source="5" target="10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="108" style="endArrow=block;html=1;" edge="1" parent="1" source="7" target="10"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="109" style="endArrow=block;html=1;" edge="1" parent="1" source="8" target="10"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

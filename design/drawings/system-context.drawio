@@ -1,0 +1,71 @@
+<mxfile host="app.diagrams.net" modified="2026-02-24T12:00:00.000Z" agent="Codex" version="24.7.17" editor="draw.io">
+  <diagram id="sysctx01" name="System Context">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="2" value="Taxpayer and Representative" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="220" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="ERP or API Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="220" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="Registration Source (virk.dk)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="5" value="Tax Core VAT Platform" style="swimlane;rounded=1;whiteSpace=wrap;html=1;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="330" y="80" width="560" height="420" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="Portal BFF and API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
+          <mxGeometry x="20" y="50" width="230" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="Core VAT Services&#xa;Registration, Obligation, Filing, Assessment, Correction, Claim" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="5">
+          <mxGeometry x="20" y="150" width="360" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" value="DK VAT Overlay&#xa;Rule Engine, Claim Connector, EU Reporting Connector, Customs Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="5">
+          <mxGeometry x="20" y="280" width="360" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="Data and Audit Plane&#xa;Operational DB, Event Backbone, Audit Store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="5">
+          <mxGeometry x="400" y="170" width="140" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="10" value="External Claims System (SKAT)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="960" y="130" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="EU Sales Reporting System" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="960" y="250" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="Customs and Told Source" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="960" y="370" width="240" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="Audit and Reporting Consumers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="960" y="490" width="240" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="20" value="Portal interactions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="2" target="6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="API submissions" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="3" target="6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="22" value="Status events" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="4" target="7">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="23" value="Claim dispatch" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="8" target="10">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="24" value="EU sales submission" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="8" target="11">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="Import VAT facts" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="12" target="8">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="26" value="Audit evidence and analytics" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" edge="1" parent="1" source="9" target="13">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

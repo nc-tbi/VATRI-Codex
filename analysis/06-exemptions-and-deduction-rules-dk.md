@@ -72,3 +72,23 @@ Each input VAT line should include:
 - SKAT - What is VAT / exemptions examples: https://skat.dk/borger/moms/hvad-er-moms
 - SKAT - Momsfritagelser (public list guidance): https://skat.dk/erhverv/moms/momsfritagelser
 - Den Juridiske Vejledning - VAT exemptions references: https://info.skat.dk/data.aspx?oid=1947062&chk=217747
+
+## OQ-05 Resolution (Deduction Percentage Sourcing)
+
+### Confirmed Decision
+- [confirmed] v1 uses an effective-dated `TaxpayerDeductionPolicy` entity as authoritative source for `deduction_percentage` when `deduction_right_type=partial`.
+- [confirmed] Rule evaluation pins `deduction_policy_version_id` on each line-level deduction decision.
+- [confirmed] `approved_by` supports `self_calculated`, `skat_issued`, and `annual_adjustment` source modes.
+
+### Scope Position
+- [confirmed] Preliminary per-period deduction application is in scope.
+- [assumed] Annual correction (`aarsregulering`, ML SS38 stk. 2) operational batch process is out of current release scope but schema/event support is pre-modeled.
+
+### Required Data Additions
+- `deduction_policy_version_id` (on policy + referenced from `LineFact`)
+- `approved_by` source attribute on policy version
+- effective date window (`effective_from`, `effective_to`) for legal-time correctness
+
+### Impact
+- Deduction rule-pack design is unblocked for Phase 2.
+- No breaking schema change is needed when annual adjustment process is later activated.

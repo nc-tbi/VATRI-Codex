@@ -53,6 +53,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |-- DESIGNER.md                      # Designer operating contract
 |-- CRITICAL_REVIEWER.md             # Critical reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding optimizer operating contract
+|-- CODE_BUILDER.md                  # Code builder operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace role context policy
 `-- CLAUDE.md                        # Project guide
 ```
@@ -124,6 +125,7 @@ Role-based contracts define how AI agents must operate in this repository:
 - **[DESIGNER.md](DESIGNER.md)** - Solution Designer role.
 - **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** - Critical Reviewer role.
 - **[CODING_OPTIMIZER.md](CODING_OPTIMIZER.md)** - Coding Optimizer role.
+- **[CODE_BUILDER.md](CODE_BUILDER.md)** - Code Builder role.
 - **[ROLE_CONTEXT_POLICY.md](ROLE_CONTEXT_POLICY.md)** - Workspace-wide role context and governance policy.
 
 Critical Reviewer output convention:

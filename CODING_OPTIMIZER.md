@@ -27,6 +27,7 @@ Treat the following as authoritative optimization governance:
 - `DESIGNER.md`
 - `CRITICAL_REVIEWER.md`
 - `CODING_OPTIMIZER.md`
+- `CODE_BUILDER.md`
 
 When optimization depends on active delivery artifacts, load only the targeted files under:
 - `analysis/**/*.md`

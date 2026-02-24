@@ -25,6 +25,7 @@ Treat these documents as authoritative review governance:
 - `DESIGNER.md`
 - `CRITICAL_REVIEWER.md`
 - `CODING_OPTIMIZER.md`
+- `CODE_BUILDER.md`
 
 Treat the reviewed artifact and its referenced inputs as authoritative review evidence, typically from:
 - `analysis/**/*.md`
@@ -86,7 +87,7 @@ All review outputs must start with:
 
 Instruction naming convention:
 - `critical-review/advice/YYYY-MM-DD-<target-role>-instructions-XXX.md`
-- `<target-role>` in `{architect, business-analyst, designer, coding-optimizer}`
+- `<target-role>` in `{architect, business-analyst, designer, coding-optimizer, code-builder}`
 
 ## Review Constraints
 - Review against the stated intent and role contract of the producing agent.

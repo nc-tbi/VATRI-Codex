@@ -31,6 +31,7 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- DESIGNER.md                      # Designer operating contract
 |-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding Optimizer operating contract
+|-- CODE_BUILDER.md                  # Code Builder operating contract
 |-- ROLE_CONTEXT_POLICY.md           # Workspace-wide role-scoped context policy
 `-- CLAUDE.md                        # This file
 ```
@@ -48,6 +49,7 @@ Always read the relevant role contract before domain work.
 | `DESIGNER.md` | Solution Designer | `architecture/**` + `design/**` |
 | `CRITICAL_REVIEWER.md` | Critical Reviewer | Review targets in `analysis/**`, `architecture/**`, `design/**` + governing role contracts |
 | `CODING_OPTIMIZER.md` | Coding Optimizer | Role contracts, workspace governance docs, and targeted delivery artifacts for optimization |
+| `CODE_BUILDER.md` | Code Builder | `architecture/**` + `design/**` + implementation workspace artifacts |
 | `ROLE_CONTEXT_POLICY.md` | Workspace policy | Role-scoped loading rules |
 
 ### Role-Scoped Context Rule (Mandatory)
@@ -64,6 +66,7 @@ Role standards policy:
 - Designer role keeps standards/technology choices open unless explicitly constrained by approved architecture scope.
 - Critical Reviewer role performs evidence-first quality checks and does not expand review scope unless requested.
 - Coding Optimizer role improves role/process/token efficiency while preserving compliance and quality guardrails.
+- Code Builder role implements approved architecture/design contracts with deterministic and auditable behavior.
 
 ---
 

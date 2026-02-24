@@ -27,6 +27,7 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Designer: `design/`
 - Critical Reviewer: `critical-review/`
 - Coding Optimizer: `optimization/`
+- Code Builder: `mcp-server/`
 
 ## Approved Source Sets
 
@@ -56,18 +57,34 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Primary:
   - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md`
   - `critical-review/*.md` and `critical-review/**/*.md`
-  - role contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`
+  - role contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`
   - workspace policy: `ROLE_CONTEXT_POLICY.md`
 - Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims
 - Standards policy: perform evidence-first quality checks; do not expand scope beyond requested review targets.
 
 ### Coding Optimizer
 - Primary:
-  - role/governance contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
+  - role/governance contracts: `architect.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
   - optimization artifacts: `optimization/*.md` and `optimization/**/*.md`
   - review artifacts when relevant: `critical-review/*.md` and `critical-review/**/*.md`
 - Secondary (only when needed): selected `analysis/**/*.md`, `architecture/**/*.md`, and `design/**/*.md` to validate optimization opportunities against real workflow outputs
 - Standards policy: optimize for quality-preserving efficiency; do not reduce compliance, traceability, determinism, or security guardrails.
+
+### Code Builder
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`
+  - implementation-driving architecture/design sources:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/03-future-proof-modern-data-stack-and-standards.md`
+    - `architecture/adr/*.md`
+    - `architecture/delivery/*.md`
+    - `architecture/traceability/*.md`
+    - `architecture/designer/*.md`
+    - `design/*.md` and `design/**/*.md`
+  - implementation workspace artifacts: `mcp-server/**/*.md`, `mcp-server/**/*.ts`, `mcp-server/**/*.json`
+- Secondary (only when needed): selected `analysis/*.md` for rule/legal implementation clarity
+- Standards policy: implement architecture and design contracts exactly; do not introduce non-approved semantic forks.
 
 ## MCP Usage Guidance
 - Architect:
@@ -82,6 +99,8 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - Use `get_role_context_bundle` with `role=critical_reviewer` and explicit `paths` when possible
 - Coding Optimizer:
   - Use `get_role_context_bundle` with `role=coding_optimizer` and explicit `paths` when possible
+- Code Builder:
+  - Use `get_role_context_bundle` with `role=code_builder` and explicit `paths` when possible
 
 ## Enforcement Intent
 This is a living policy. Update it whenever role scope, folder ownership, source-of-truth boundaries, or MCP tool capabilities change.

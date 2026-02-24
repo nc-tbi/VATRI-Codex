@@ -256,6 +256,8 @@ Preliminary assessment lifecycle and replacement semantics:
   - preliminary outcomes are immutable records and never deleted
   - final assessment references superseded preliminary record by `supersedes_assessment_id`
   - audit store keeps bidirectional linkage between preliminary and final outcomes
+  - preliminary claim intent is created only for payable preliminary assessments when trigger policy conditions pass
+  - non-payable preliminary assessments do not create claim intents
 
 Architecture-level data contract fields (reverse charge and deduction rights):
 - Reverse-charge minimum fields:
@@ -271,8 +273,14 @@ Architecture-level data contract fields (reverse charge and deduction rights):
   - `deduction_percentage`
   - `deduction_basis_reference`
   - `allocation_method_id`
+  - `deduction_policy_version_id`
 - Context flow:
   - Filing captures fields -> Validation checks required combinations -> Rule Engine evaluates eligibility and percentages -> Assessment computes deductible result -> Audit persists full input/output lineage
+
+Deduction policy sourcing contract (OQ-05 resolved):
+- Source of truth is effective-dated `TaxpayerDeductionPolicy`.
+- Rule engine resolves policy by legal time and pins `deduction_policy_version_id` on line-level outcomes.
+- Annual correction mode is data-model ready and operationally deferred.
 
 DKK normalization and rounding policy ownership:
 - Ownership: Tax Core architecture and rule governance (not portal/BFF).

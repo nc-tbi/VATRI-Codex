@@ -138,3 +138,9 @@ Translate Danish VAT filing and assessment needs into implementable architecture
 - Tax Core shall support B2C sales-source transition modes (`lump_sum` -> `SAF-T`/`POS`) as configuration.
 - Tax Core shall expose statutory-time-limit profile links for assessment/collection lifecycle control.
 
+### Deduction Policy Resolution (OQ-05)
+- Tax Core shall implement effective-dated `TaxpayerDeductionPolicy` as the authoritative deduction percentage source for mixed-use taxpayers.
+- Tax Core shall pin `deduction_policy_version_id` to line-level deduction decisions for audit replay.
+- Tax Core shall support policy source modes: `self_calculated`, `skat_issued`, `annual_adjustment`.
+- Tax Core shall keep annual-correction process activation behind a future release flag while retaining data-model compatibility.
+

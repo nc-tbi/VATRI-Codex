@@ -1,9 +1,10 @@
 ﻿# Solution Design: VAT Filing and Assessment (Tax Core â€” Denmark)
 
-> **Status:** Draft v1.4
+> **Status:** Draft v1.6
 > **Designer:** Solution Designer (DESIGNER.md contract)
 > **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/03-future-proof-modern-data-stack-and-standards.md`, ADR-001 through ADR-009, `architecture/delivery/capability-to-backlog-mapping.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/01-03`
 > **Analysis inputs:** `analysis/02-vat-form-fields-dk.md`, `analysis/03-vat-flows-obligations.md`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`, `analysis/09-product-scope-and-requirements-alignment.md`
+> **Platform decisions:** `design/recommendations/internal-platform-choices-suggestions.md` (D-01 through D-17)
 > **Working folder:** `design/`
 > **Drawings:** `design/drawings/tax-core-vat.drawio`
 > **Module guide:** `design/02-module-interaction-guide.md`
@@ -27,6 +28,7 @@ End-to-end solution design for VAT filing and assessment on Tax Core, including 
 - `architecture/adr/ADR-006-open-standards-contract-first-integration.md`
 - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
 - `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
+- `architecture/adr/ADR-010-api-gateway-product-selection.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/01-solution-design-brief.md`
@@ -46,11 +48,13 @@ End-to-end solution design for VAT filing and assessment on Tax Core, including 
 ## Assumptions
 - Confirmed: Architect contract requires capability core + configuration overlay (`architecture/README.md`, `architecture/02-architectural-principles.md`).
 - Confirmed: ViDA Step 1-3 APIs/events and scenario IDs `S26-S34` are architecture-authoritative (`architecture/01-target-architecture-blueprint.md`, traceability matrix).
+- Confirmed: System S and Tax Core run on the same trusted network segment and require no API authentication between systems.
+- Confirmed: All active rules are effective now and remain effective until further notice (open-ended validity by default).
 - Assumed: Existing bounded contexts host new ViDA contracts without introducing new top-level platform contexts in this release.
 
 ## Risks and Open Questions
 - ViDA transport and cadence contract finalization remains open and affects operational sizing.
-- IRM handoff contract semantics for high-risk confirmed filings remain integration-dependent.
+- System S human-task-management handoff semantics for high-risk confirmed filings remain integration-dependent.
 - Settlement trigger policy and payment-plan partner contract details can still shift event schema fields.
 
 ## Acceptance Criteria
@@ -67,13 +71,13 @@ This design uses a three-layer model to clearly separate reusable infrastructure
 |---|---|---|
 | **Platform** | `[PLATFORM]` | Tax- and domain-agnostic infrastructure. Reusable for any system. No VAT or legal concepts. |
 | **Generic VAT** | `[VAT-GENERIC]` | VAT-domain specific, but jurisdiction-agnostic. Works for any country's VAT system. Contains VAT lifecycle concepts (filing, obligation, amendment, claim) but no national legislation. |
-| **Danish VAT Overlay** | `[DK VAT]` | Danish VAT legislation-specific. Contains Danish legal rules (ML Â§Â§), SKAT integrations, DK-specific field schemas (Rubrik A/B/C, CVR), DKK denomination, and DK regulatory thresholds. Applied as a configuration and rule overlay on top of the Generic VAT layer. |
+| **Danish VAT Overlay** | `[DK VAT]` | Danish VAT legislation-specific. Contains Danish legal rules (ML Â§Â§), System S integrations, DK-specific field schemas (Rubrik A/B/C, CVR), DKK denomination, and DK regulatory thresholds. Applied as a configuration and rule overlay on top of the Generic VAT layer. |
 
 ### Overlay Model
 
 ```mermaid
 flowchart TB
-    DK["DK VAT Overlay [DK VAT]\nML rules, CVR, Rubrik A/B/C, SKAT\nDKK thresholds and cadence policy data"]
+    DK["DK VAT Overlay [DK VAT]\nML rules, CVR, Rubrik A/B/C, System S\nDKK thresholds and cadence policy data"]
     VAT["Generic VAT Platform [VAT-GENERIC]\nfiling, validation, assessment, claim\ncorrection, obligation, registration, BFF\nrule catalog mechanism"]
     PLAT["Platform Infrastructure [PLATFORM]\nAPI gateway, event backbone, audit store\nschema registry, outbox, observability"]
 
@@ -90,10 +94,16 @@ The Generic VAT layer defines the **shape** of VAT processing. The DK VAT overla
 ### Product-First Scope Boundary
 Tax Core (SOLON TAX) is a **product-first fiscal core** â€” not a platform, toolbox, or reference implementation. Core tax semantics are non-optional. Non-tax enterprise domains (HR, CRM, general ledger, banking, non-tax case management) are external integrations, not in-scope capabilities. Partial adoption is supported through capability slices; national variation is governed through the extension governance model, not semantic forks.
 
+### Authoritative External Integration Constraint
+This design assumes a single external integration boundary: `System S`.
+- `System S` handles registration APIs before Tax Core filing/assessment processing.
+- `System S` handles taxpayer-accounting and collection-facing APIs after Tax Core claim and settlement outcomes.
+- Tax Core does not integrate with any other external system in this scope.
+
 ### In Scope
 - Portal BFF â€” taxpayer-facing facade translating portal actions into Tax Core API calls
 - VAT registration and obligation management
-- **EU-sales obligation management** (separate lifecycle from domestic VAT return)
+- Taxpayer registration capture and synchronization with `System S` registration APIs
 - VAT filing intake, canonical normalization, and schema validation
 - Field and cross-field validation (including reverse-charge and deduction-right minimum fields)
 - Deterministic rule evaluation (domestic VAT, reverse charge, exemptions, deductions)
@@ -101,7 +111,7 @@ Tax Core (SOLON TAX) is a **product-first fiscal core** â€” not a platform,
 - **Preliminary assessment** lifecycle (issued on overdue, superseded by filed return)
 - Amendment versioning and lineage
 - Claim creation, outbox publication, and external dispatch
-- **Customs/import VAT integration** (Customs/Told Adapter â€” inbound facts, reconciliation)
+- System S accounting integration (`taxpayer-accounting/payment-events`, `taxpayer-accounting/payment-segments`)
 - Append-only audit evidence across all stages
 - Modern data stack (Kafka backbone, OpenAPI/AsyncAPI/CloudEvents, OpenTelemetry, Lakehouse audit plane)
 - Return-level aggregates linked to line-level fact records for reproducibility
@@ -137,10 +147,8 @@ S01-S34 per `architecture/traceability/scenario-to-architecture-traceability-mat
 flowchart LR
     Taxpayer["Taxpayer /\nRepresentative"]
     ERP["ERP / Bookkeeping"]
-    REG_SRC["Registration Source\n(virk.dk) [DK VAT]"]
-    SKAT["External Claims\nSystem (SKAT) [DK VAT]"]
-    EU_RPT["EU Sales Reporting\n(external) [DK VAT]"]
-    CUSTOMS["Customs / Told\n(external) [DK VAT]"]
+    S_REG["System S Registration API\n(external) [System S]"]
+    S_ACC["System S Taxpayer Accounting API\n(external) [System S]"]
     AUD_RPT["Audit and Reporting"]
 
     subgraph PORTAL["Portal Layer"]
@@ -153,7 +161,7 @@ flowchart LR
         subgraph VAT_GENERIC_PLANE["Generic VAT Services [VAT-GENERIC]"]
             RS["registration-service"]
             OBS["obligation-service"]
-            EUSOBS["eu-sales-obligation-service"]
+            EUSOBS["system-s-registration-projection-service"]
             FS["filing-service"]
             VS["validation-service"]
             AS["assessment-service"]
@@ -164,9 +172,9 @@ flowchart LR
         subgraph DK_OVERLAY["DK VAT Overlay [DK VAT]"]
             RE["rule-engine-service"]
             RC[("Rule Catalog\n(ML Â§Â§ rules)")]
-            CC["claim-connector\n(SKAT adapter)"]
-            EUX["eu-sales-reporting-connector"]
-            CUS["customs-told-adapter"]
+            CC["system-s-connector\n(System S accounting adapter)"]
+            EUX["system-s-registration-adapter"]
+            CUS["system-s-accounting-adapter"]
         end
 
         subgraph DATA_PLANE["Data Plane [PLATFORM]"]
@@ -180,7 +188,7 @@ flowchart LR
 
     Taxpayer -->|portal UI| BFF
     ERP -->|POST /vat-filings| GW
-    REG_SRC -->|status events| RS
+    S_REG -->|registration reference data| EUX
     BFF -->|OpenAPI 3.1| GW
     GW --> RS
     GW --> OBS
@@ -194,11 +202,11 @@ flowchart LR
     CS --> CO
     CO --> Q
     Q --> CC
-    CC -->|POST /claims| SKAT
+    CC -->|collection-facing payloads| S_ACC
     EUSOBS --> EUX
-    EUX -->|EU sales report| EU_RPT
-    CUS -->|CustomsAssessmentImported| FS
-    CUSTOMS -->|import facts| CUS
+    EUX -->|POST/PUT registration/parties*| S_REG
+    CUS -->|GET taxpayer-accounting/*| FS
+    S_ACC -->|payment events/segments| CUS
     RE --- RC
     FS --- ODB
     AS --- ODB
@@ -220,18 +228,18 @@ flowchart TB
     subgraph DK["DK VAT Overlay [DK VAT]"]
         DK1["rule-engine-service\nML Â§Â§ rule packs"]
         DK2["Rule Catalog\neffective-dated DK rules"]
-        DK3["claim-connector\nSKAT adapter"]
+        DK3["system-s-connector\nSystem S adapter"]
         DK4["DK VAT Filing Schema\nCVR Â· Rubrik A/B/C Â· salgsmoms/kÃ¸bsmoms"]
         DK5["DK Cadence Policy\n50k threshold Â· half-yearly/quarterly/monthly"]
-        DK6["eu-sales-reporting-connector\nEU reporting adapter"]
-        DK7["customs-told-adapter\nimport VAT facts Â· reconciliation"]
+        DK6["system-s-registration-adapter\nEU reporting adapter"]
+        DK7["system-s-accounting-adapter\nimport VAT facts Â· reconciliation"]
     end
 
     subgraph VAT["Generic VAT Platform [VAT-GENERIC]"]
         V1["portal-bff"]
         V2["registration-service"]
         V3["obligation-service"]
-        V3B["eu-sales-obligation-service"]
+        V3B["system-s-registration-projection-service"]
         V4["filing-service"]
         V5["validation-service"]
         V6["assessment-service"]
@@ -257,7 +265,7 @@ flowchart TB
     DK4 -->|configures| V4
     DK5 -->|configures| V3
     DK6 -->|extends| V3B
-    DK7 -->|injects customs facts| V4
+    DK7 -->|injects accounting facts| V4
 
     V4 -->|uses| P5
     V8 -->|uses| P8
@@ -276,14 +284,14 @@ flowchart LR
     GW["API Gateway [PLATFORM]"]
     RS["registration-service [VAT-GENERIC]"]
     OBS["obligation-service [VAT-GENERIC]"]
-    EUSOBS["eu-sales-obligation-service [VAT-GENERIC]"]
+    EUSOBS["system-s-registration-projection-service [VAT-GENERIC]"]
     FS["filing-service [VAT-GENERIC]"]
     CS["amendment-service [VAT-GENERIC]"]
 
     UI -->|authenticated requests| BFF
-    BFF -->|POST /registrations| GW --> RS
+    BFF -->|POST /registration/parties| GW --> RS
     BFF -->|GET /obligations| GW --> OBS
-    BFF -->|GET /eu-sales-obligations| GW --> EUSOBS
+    BFF -->|POST/GET registration projection| GW --> EUSOBS
     BFF -->|POST /vat-filings| GW --> FS
     BFF -->|POST /vat-filings amendment| GW --> CS
     BFF -->|GET /vat-filings/:id| GW --> FS
@@ -299,13 +307,13 @@ flowchart TB
     BFF_CTX["Portal BFF Context\nportal-bff (VAT-GENERIC)"]
     REG_CTX["Registration Context\nregistration-service (VAT-GENERIC)"]
     OBL_CTX["Obligation Context\nobligation-service (VAT-GENERIC)"]
-    EUS_CTX["EU Sales Obligation Context\neu-sales-obligation-service (VAT-GENERIC)\neu-sales-reporting-connector (DK VAT)"]
+    EUS_CTX["System S Registration Sync Context\nsystem-s-registration-projection-service (VAT-GENERIC)\nsystem-s-registration-adapter (DK VAT)"]
     FIL_CTX["Filing Context\nfiling-service (VAT-GENERIC)"]
     VAL_CTX["Validation Context\nvalidation-service (VAT-GENERIC)"]
     RULE_CTX["Tax Rule and Assessment Context\nrule-engine (DK VAT)\nassessment-service (VAT-GENERIC)"]
-    COR_CTX["Amendment Context\ncorrection-service (VAT-GENERIC)"]
-    CLM_CTX["Claim Context\nclaim-orchestrator (VAT-GENERIC)\nclaim-connector (DK VAT)"]
-    CUS_CTX["Customs Context\ncustoms-told-adapter (DK VAT)"]
+    COR_CTX["Amendment Context\namendment-service (VAT-GENERIC)"]
+    CLM_CTX["Claim Context\nclaim-orchestrator (VAT-GENERIC)\nsystem-s-connector (DK VAT)"]
+    CUS_CTX["System S Accounting Context\nsystem-s-accounting-adapter (DK VAT)"]
     AUD_CTX["Audit Context\naudit-evidence (PLATFORM)"]
 
     BFF_CTX -->|"API calls"| REG_CTX
@@ -314,8 +322,8 @@ flowchart TB
     BFF_CTX -->|"API calls"| FIL_CTX
     REG_CTX -->|"RegistrationStatusChanged"| OBL_CTX
     OBL_CTX -->|"ObligationCreated"| FIL_CTX
-    EUS_CTX -->|"EuSalesObligationCreated"| AUD_CTX
-    CUS_CTX -->|"CustomsAssessmentImported"| FIL_CTX
+    EUS_CTX -->|"TaxpayerRegistrationSynchronized"| AUD_CTX
+    CUS_CTX -->|"SystemSPaymentEventsIngested"| FIL_CTX
     FIL_CTX -->|"ReturnSubmitted"| VAL_CTX
     VAL_CTX -->|"ReturnValidated"| RULE_CTX
     RULE_CTX -->|"AssessmentCalculated"| COR_CTX
@@ -378,8 +386,8 @@ sequenceDiagram
     participant AS as assessment-service [VAT-GENERIC]
     participant CO as claim-orchestrator [VAT-GENERIC]
     participant OBX as Outbox [PLATFORM]
-    participant CC as claim-connector [DK VAT]
-    participant ECS as SKAT Claims
+    participant CC as system-s-connector [DK VAT]
+    participant ECS as System S Claims
     participant AE as audit-evidence [PLATFORM]
 
     User->>BFF: submit filing (portal action)
@@ -403,7 +411,7 @@ sequenceDiagram
     CO->>OBX: persist claim intent (transactional)
     CO->>AE: ClaimIntentEvidence
     OBX->>CC: dequeue (Kafka)
-    CC->>ECS: POST /claims [DK VAT SKAT contract]
+    CC->>ECS: POST /claims [DK VAT System S contract]
     ECS-->>CC: 200 OK / claim_ref
     CC->>CO: ClaimDispatched [CloudEvents]
     CO->>AE: DispatchOutcomeEvidence
@@ -439,8 +447,8 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant CC as claim-connector [DK VAT]
-    participant ECS as SKAT Claims
+    participant CC as system-s-connector [DK VAT]
+    participant ECS as System S Claims
     participant Q as Kafka Queue [PLATFORM]
     participant DLQ as DLQ [PLATFORM]
     participant CO as claim-orchestrator [VAT-GENERIC]
@@ -532,12 +540,12 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-    state "EU-Sales Obligation State Machine [VAT-GENERIC]" as ESM {
-        [*] --> eu_sales_due : EuSalesObligationCreated
-        eu_sales_due --> eu_sales_submitted : EuSalesObligationSubmitted
-        eu_sales_due --> eu_sales_overdue : deadline passed
-        eu_sales_submitted --> [*] : terminal
-        eu_sales_overdue --> [*] : operator / legal routing
+    state "System S Registration Sync State Machine [VAT-GENERIC]" as ESM {
+        [*] --> registration_received : TaxpayerRegistrationSubmitted
+        registration_received --> registration_synced : TaxpayerRegistrationSynchronized
+        registration_received --> registration_sync_failed : sync failure
+        registration_synced --> [*] : terminal
+        registration_sync_failed --> [*] : operator rerun / retry
     }
 ```
 
@@ -549,6 +557,7 @@ stateDiagram-v2
 
 #### `API Gateway`
 Routes authenticated requests to VAT-GENERIC services. Enforces RBAC at the entry point. Injects `trace_id` (OpenTelemetry). No VAT domain knowledge.
+**Technology:** Kong Gateway OSS (Apache 2.0). Decision: ADR-010 (accepted). Documented fallback: Apache APISIX (Apache 2.0). (D-09)
 
 #### `audit-evidence`
 Append-only structured evidence writer and query API, keyed by `trace_id`. Written to by every service at every decision point. Feeds the Audit Store via Kafka. No domain knowledge â€” pure evidence persistence. (ADR-003)
@@ -558,48 +567,54 @@ Evidence schema:
 
 #### `Kafka backbone + DLQ`
 Decoupled domain event distribution. All inter-service async communication flows through Kafka topics. DLQ captures failed deliveries. (ADR-007)
+**Technology:** Apache Kafka on Strimzi operator (Kubernetes, Apache 2.0). Strimzi is CNCF Incubating; compatible with managed Kafka offerings where portability is preserved. (D-01)
 
 #### `Schema Registry`
 Manages Avro/Protobuf schemas for all events. CI/CD compatibility gates prevent breaking changes from reaching consumers. (ADR-006)
+**Technology:** Apicurio Registry (Apache 2.0). Compatibility mode: `BACKWARD_TRANSITIVE`. One schema group per bounded context. (D-04)
 
 #### `Outbox infrastructure`
 Transactional outbox tables ensure claim intents are never lost on service restart. Relay publisher polls and forwards to Kafka. (ADR-004)
+**Technology:** PostgreSQL transactional outbox table + application-level polling relay (v1). Debezium CDC connector (Apache 2.0) as v2 upgrade path. (D-08)
 
 #### `Operational DB (ACID Relational)`
-Stores filings, assessments, claims, obligations. Strong consistency for all decision writes. Strict schema migration discipline.
+Stores filings, assessments, claims, obligations, rule catalog entries. Strong consistency for all decision writes. Strict schema migration discipline.
+**Technology:** PostgreSQL 16+. Per-bounded-context schema isolation (`filing`, `assessment`, `claim`, `obligation`, `registration`, `rule_catalog`) within a shared cluster for v1. (D-07, D-02)
 
 #### `Audit Store (Lakehouse / Iceberg)`
 Apache Iceberg open table format on object storage. Immutable, queryable, partitioned by period. Receives evidence via Kafka ingestion. Isolated from operational service databases. (ADR-007, ADR-008)
+**Technology:** Apache Iceberg (Apache 2.0) + MinIO object storage (Apache 2.0) + Trino query engine (Apache 2.0) + dbt Core ELT (Apache 2.0). (D-15)
 
 #### `OpenTelemetry`
 Traces, metrics, and logs across all services, including the portal BFF. `trace_id` correlates every request end-to-end from portal action to claim dispatch.
+**Technology (backend):** Prometheus (Apache 2.0) for metrics + Grafana Tempo (Apache 2.0) for traces + Grafana Loki (Apache 2.0) for logs. All services export via OpenTelemetry SDK; all correlated by `trace_id`. (D-10)
 
 ---
 
 ### 3.2 Generic VAT Layer `[VAT-GENERIC]`
 
-These services contain VAT lifecycle logic but are configurable for any jurisdiction. They have no hard-coded Danish rules, legal references, or SKAT-specific integrations.
+These services contain VAT lifecycle logic but are configurable for any jurisdiction. They have no hard-coded Danish rules, legal references, or System S-specific integrations.
 
 #### `portal-bff`
 **Responsibility:** Taxpayer-facing facade. Translates portal actions into Tax Core API calls. Composes UX-oriented responses. Does not own or execute tax domain logic.
 
 | Concern | Detail |
 |---|---|
-| Accepts | Authenticated portal commands: register, view obligations, submit filing, submit amendment, view filing status |
-| Translates to | `POST /registrations`, `GET /obligations`, `POST /vat-filings`, `GET /vat-filings/{id}` |
+| Accepts | Authenticated portal commands: register taxpayer, view obligations, submit filing, submit amendment, view filing status |
+| Translates to | `POST /registration/parties`, `POST /registration/portal-users/quick-create`, `GET /obligations`, `POST /vat-filings`, `GET /vat-filings/{id}` |
 | Does NOT | Execute tax calculations, validate legal rules, or hold tax domain state |
 | Returns | UX-composed responses (aggregating Tax Core API responses) |
 | Standards | OpenAPI 3.1 contract to API Gateway; `trace_id` propagated from portal entry point |
 | API coverage | All portal workflows must be 100% achievable via public Tax Core APIs (API coverage rule) |
 
 #### `registration-service`
-**Responsibility:** Taxpayer VAT registration lifecycle. Translates external registration events into internal `RegistrationStatusChanged` events. Stores registration status and effective dates.
+**Responsibility:** Taxpayer registration lifecycle. Accepts portal registration payloads, validates required registration attributes, and synchronizes taxpayer identity to System S registration APIs before activating internal filing obligations.
 
 | Concern | Detail |
 |---|---|
-| Accepts | `POST /registrations`, external registration source events |
-| Owns | Registration records (`taxpayer_id`, `status`, `effective_date`) |
-| Emits | `RegistrationStatusChanged` [CloudEvents] |
+| Accepts | `POST /registration/parties`, `PUT /registration/parties/{id}`, registration updates from System S |
+| Owns | Registration records (`taxpayer_id`, `status`, `effective_date`, `system_s_party_id`, `additional_info`) |
+| Emits | `RegistrationStatusChanged`, `TaxpayerRegistrationSubmitted`, `TaxpayerRegistrationSynchronized` [CloudEvents] |
 | Triggers | Obligation lifecycle when registration becomes active |
 
 #### `obligation-service`
@@ -612,16 +627,16 @@ These services contain VAT lifecycle logic but are configurable for any jurisdic
 | Emits | `ObligationCreated`, `ObligationOverdue`, `PreliminaryAssessmentTriggered` [CloudEvents] |
 | Configurable | DK VAT cadence thresholds and due-date rules injected as policy data [DK VAT] |
 
-#### `eu-sales-obligation-service`
-**Responsibility:** EU-sales obligation lifecycle management, separate from the domestic VAT return. Manages EU-sales reporting obligations from generation through submission and overdue tracking. Delegates to the `eu-sales-reporting-connector` [DK VAT] for external EU reporting submission.
+#### `system-s-registration-projection-service`
+**Responsibility:** Registration projection and sync orchestration service. Maintains the internal projection of what has been accepted by System S registration endpoints and coordinates resync/retry operations.
 
 | Concern | Detail |
 |---|---|
-| Accepts | `POST /eu-sales-obligations/generate`, `GET /eu-sales-obligations/{taxpayer_id}`, `POST /eu-sales-obligations/{obligation_id}/submissions` |
-| Owns | EU-sales obligation records (`obligation_id`, `taxpayer_id`, `period`, `status`) |
-| States | `eu_sales_due` â†’ `eu_sales_submitted` / `eu_sales_overdue` |
-| Emits | `EuSalesObligationCreated`, `EuSalesObligationSubmitted`, `EuSalesObligationOverdue` [CloudEvents] |
-| Delegates | Submission dispatch to `eu-sales-reporting-connector` [DK VAT] |
+| Accepts | `POST /registration-projections`, `GET /registration-projections/{taxpayer_id}`, `POST /registration-projections/{taxpayer_id}/resync` |
+| Owns | Registration sync projection records (`projection_id`, `taxpayer_id`, `system_s_party_id`, `status`) |
+| States | `registration_received` -> `registration_synced` / `registration_sync_failed` |
+| Emits | `TaxpayerRegistrationSubmitted`, `TaxpayerRegistrationSynchronized`, `TaxpayerRegistrationSyncFailed` [CloudEvents] |
+| Delegates | External registration API dispatch to `system-s-registration-adapter` [DK VAT] |
 
 #### `filing-service`
 **Responsibility:** Canonical intake, normalization, state machine ownership, response contract.
@@ -706,45 +721,45 @@ These components and configuration artifacts contain Danish VAT legislation. The
 4. `reverse_charge_eu_services` â€” Rubrik A services (ML Â§46 EU)
 5. `reverse_charge_dk` â€” domestic categories (ML Â§46 DK)
 6. `exemption` â€” ML Â§13 exempt activity
-7. `deduction_rights` â€” full / none / partial allocation
+7. `deduction_rights` â€” full / none / partial allocation; resolves `TaxpayerDeductionPolicy` by legal time; pins `deduction_policy_version_id` on line-level outcomes (OQ-05 resolved, D-16)
 8. `cross_border` â€” Rubrik B/C reporting
 
 #### `Rule Catalog` [DK VAT]
-Effective-dated store of Danish VAT legal rules. Each record: `rule_id`, `rule_pack`, `legal_reference` (ML Â§Â§), `effective_from`, `effective_to`, `applies_when`, `expression`, `severity`. (ADR-002)
+Effective-dated store of Danish VAT legal rules. Each record: `rule_id`, `rule_pack`, `legal_reference` (ML Â§Â§), `effective_from`, `effective_to` (nullable/open-ended), `applies_when`, `expression`, `severity`. (ADR-002)
 
-Governance: new rule requires `legal_reference`, `effective_from`, `effective_to`, regression pass. Activation is data-only.
+Governance: new rule requires `legal_reference` and `effective_from`; `effective_to` is optional and defaults to open-ended "until further notice". Regression pass is required. Activation is data-only.
 
-#### `claim-connector` [DK VAT adapter]
-**Responsibility:** Queue consumer adapting generic claim intents to the SKAT External Claims System API.
+#### `system-s-connector` [DK VAT adapter]
+**Responsibility:** Queue consumer adapting generic claim intents to the System S External Claims System API.
 
 | Concern | Detail |
 |---|---|
-| Adapts | Generic claim payload â†’ SKAT POST /claims format |
+| Adapts | Generic claim payload â†’ System S POST /claims format |
 | Currency | Enforces `DKK` denomination and rounding |
-| Auth | SKAT-specific authentication (TBD â€” OQ-01) |
+| Auth | None required (trusted internal network between Tax Core and System S) |
 | Retry | Exponential backoff, max 5 attempts |
-| Anti-corruption | Wraps SKAT API behind internal interface â€” SKAT contract changes are isolated here |
+| Anti-corruption | Wraps System S API behind internal interface â€” System S contract changes are isolated here |
 
-#### `eu-sales-reporting-connector` [DK VAT adapter]
-**Responsibility:** Adapter between `eu-sales-obligation-service` and the external EU Sales Reporting system. Handles Danish-specific EU reporting contract format.
-
-| Concern | Detail |
-|---|---|
-| Receives | Submission request from `eu-sales-obligation-service` |
-| Adapts | Generic EU-sales submission â†’ DK-specific EU reporting contract |
-| Emits | `EuSalesObligationSubmitted` on success |
-| Audit | Writes submission evidence to `audit-evidence` |
-
-#### `customs-told-adapter` [DK VAT integration]
-**Responsibility:** Receives inbound customs/import VAT facts from the Danish Customs/Told system, normalizes them to the Tax Core import VAT contract, and injects them into the filing pipeline. Owns the reconciliation loop between customs import facts and filed VAT amounts.
+#### `system-s-registration-adapter` [DK VAT adapter]
+**Responsibility:** Adapter between `system-s-registration-projection-service` and external System S registration APIs. Handles registration contract translation and response normalization.
 
 | Concern | Detail |
 |---|---|
-| Inbound API | `POST /imports/customs-assessments` (from Customs/Told) |
-| Reconciliation API | `POST /imports/customs-reconciliation` |
-| Events emitted | `CustomsAssessmentImported`, `CustomsIntegrationFailed`, `CustomsIntegrationRetried`, `CustomsReconciliationMismatchDetected` |
-| Audit evidence | `customs_reference_id`, payload hash, import timestamp, reconciliation outcome linked to `trace_id` |
-| Anti-corruption | Wraps Customs/Told API â€” Told contract changes isolated here |
+| Receives | Registration sync request from `system-s-registration-projection-service` |
+| Adapts | Internal taxpayer registration payload -> `registration/parties` and related System S registration contracts |
+| Emits | `TaxpayerRegistrationSynchronized` on success; `TaxpayerRegistrationSyncFailed` on failure |
+| Audit | Writes registration sync evidence to `audit-evidence` |
+
+#### `system-s-accounting-adapter` [DK VAT integration]
+**Responsibility:** Integrates with System S taxpayer-accounting APIs after filing and assessment outcomes. Retrieves payment events/segments and maps them into Tax Core accounting evidence for settlement and reconciliation.
+
+| Concern | Detail |
+|---|---|
+| API interaction | `GET /taxpayer-accounting/payment-events`, `GET /taxpayer-accounting/payment-segments` |
+| Key query key | `segmentId` for event/segment correlation |
+| Events emitted | `SystemSPaymentEventsIngested`, `SystemSPaymentSegmentsIngested`, `SystemSAccountingIntegrationFailed` |
+| Audit evidence | `segment_id`, payload hash, fetch timestamp, reconciliation outcome linked to `trace_id` |
+| Anti-corruption | Wraps System S taxpayer-accounting API changes behind internal contracts |
 
 #### DK VAT Canonical Filing Schema [DK VAT configuration on `filing-service`]
 
@@ -834,14 +849,37 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 
 | Endpoint | Backing Tax Core API | Notes |
 |---|---|---|
-| `POST /portal/registrations` | `POST /registrations` | Translates portal payload |
+| `POST /portal/registrations` | `POST /registration/parties` | Creates taxpayer party (no `additionalInfo` submitted by this solution) |
+| `POST /portal/registrations/{id}/users` | `POST /registration/portal-users/quick-create` | Creates portal user linked to taxpayer |
+| `PUT /portal/registrations/{id}` | `PUT /registration/parties/{id}` | Updates registration details |
 | `GET /portal/obligations` | `GET /obligations?cvr=...` | Filters and composes for UX |
-| `GET /portal/eu-sales-obligations` | `GET /eu-sales-obligations/{taxpayer_id}` | EU-sales obligation view |
 | `POST /portal/filings` | `POST /vat-filings` | Adds `source_channel=portal` |
 | `POST /portal/amendments` | `POST /vat-filings` (filing_type=amendment) | Ensures prior reference |
 | `GET /portal/filings/{id}` | `GET /vat-filings/{id}` | Direct pass-through with UX shaping |
 
-### 4.4 Outbound POST /claims to SKAT [DK VAT adapter]
+### 4.4 System S Integration Contracts (authoritative subset)
+
+| Integration area | System S endpoint | Usage in this solution | Contract notes |
+|---|---|---|---|
+| Registration create | `POST /registration/parties` | Portal taxpayer registration submission and sync | `additionalInfo` omitted by this solution |
+| Registration read/update | `GET /registration/parties/{id}`, `PUT /registration/parties/{id}` | Registration status projection and resync | Preserve System S `id` as `system_s_party_id` |
+| Registration search | `GET /registration/parties` | Duplicate checks and projection rebuild | Query uses effective-dated filters where needed |
+| Portal user create | `POST /registration/portal-users/quick-create` | Self-service account bootstrapping | `keycloakUserExistsSW` treated as deprecated |
+| Party type metadata | `GET /registration/party-types/{code}` | Optional metadata lookup | `validAdditionalInfoTypes` not used by this solution |
+| Accounting events | `GET /taxpayer-accounting/payment-events` | Settlement/reconciliation ingestion | Support `segmentId` filtering/correlation |
+| Accounting segments | `GET /taxpayer-accounting/payment-segments` | Segment-level status reconciliation | Support `segmentId` filtering/correlation |
+
+#### 4.4.1 Party-Type Additional Information Policy
+
+For this solution scope, party-type `additionalInfo` is not used.
+
+Policy:
+- Portal-bff does not submit `additionalInfo` for `POST/PUT /registration/parties*`.
+- registration-service does not enforce `validAdditionalInfoTypes` rules.
+- system-s-registration-adapter forwards registration without `additionalInfo` unless mandated by a future change request.
+- Any future use of `additionalInfo` requires a new design decision and test expansion.
+
+### 4.5 Outbound POST /claims to System S [DK VAT adapter]
 
 ```json
 {
@@ -860,28 +898,28 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 }
 ```
 
-### 4.5 ViDA Step 1-3 API Contracts (configuration-driven)
+### 4.6 ViDA Step 1-3 API Contracts (configuration-driven)
 
 | ViDA Step | Endpoint | Purpose | Guardrail |
 |---|---|---|---|
 | Step 1 | `POST /vida/reports/ingest` | Receive recurring ViDA eReports for verification/classification | Ingested data is non-binding until verified/classified |
 | Step 1 | `POST /risk/high-risk/review-requests` | Create taxpayer-facing high-risk review request | Explainability payload required (`risk_reason_codes[]`) |
-| Step 1 | `POST /risk/high-risk/{review_id}/confirm` | Taxpayer confirms unchanged filing | Confirmed unchanged high-risk routes to IRM task event |
+| Step 1 | `POST /risk/high-risk/{review_id}/confirm` | Taxpayer confirms unchanged filing | Confirmed unchanged high-risk routes to System S human-task-management event |
 | Step 2 | `POST /prefill/prepare` | Build prefill package for open obligation period | Prefill mode controlled by policy (`full_b2b`, `partial_b2c`) |
 | Step 2 | `POST /prefill/{prefill_id}/reclassifications` | Submit source-report reclassifications | `prefill_edit_policy=reclassification_only` |
 | Step 3 | `GET /vat-balance/{taxpayer_id}` | Read ongoing VAT balance projection | Balance is projection/evidence-backed, not legal override |
 | Step 3 | `POST /settlements/requests` | Submit taxpayer-initiated settlement request | Must link to active balance snapshot and policy context |
 
-### 4.6 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
+### 4.7 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
 
 | Event | Layer | Publisher | Consumers | Key Fields |
 |---|---|---|---|---|
 | `VatRegistrationStatusChanged` | VAT-GENERIC | registration-service | obligation-service, audit | `taxpayer_id`, `status`, `effective_date` |
 | `FilingObligationCreated` | VAT-GENERIC | obligation-service | filing-service, audit | `taxpayer_id`, `period`, `due_date`, `cadence` |
 | `ObligationOverdue` | VAT-GENERIC | obligation-service | assessment-service, audit | `taxpayer_id`, `obligation_id`, `period_end` |
-| `EuSalesObligationCreated` | VAT-GENERIC | eu-sales-obligation-service | audit | `taxpayer_id`, `period`, `due_date` |
-| `EuSalesObligationSubmitted` | DK VAT | eu-sales-reporting-connector | eu-sales-obligation-service, audit | `obligation_id`, `submitted_at` |
-| `EuSalesObligationOverdue` | VAT-GENERIC | eu-sales-obligation-service | audit | `obligation_id`, `period_end` |
+| `TaxpayerRegistrationSubmitted` | VAT-GENERIC | registration-service | system-s-registration-projection-service, audit | `taxpayer_id`, `registration_id`, `trace_id` |
+| `TaxpayerRegistrationSynchronized` | DK VAT | system-s-registration-adapter | registration-service, audit | `taxpayer_id`, `system_s_party_id`, `synced_at` |
+| `TaxpayerRegistrationSyncFailed` | DK VAT | system-s-registration-adapter | registration-service, audit, operations | `taxpayer_id`, `error`, `attempt` |
 | `VatReturnSubmitted` | VAT-GENERIC | filing-service | validation-service, audit | `filing_id`, `trace_id`, `filing_type` |
 | `VatReturnValidated` | VAT-GENERIC | validation-service | filing-service, audit | `filing_id`, `passed`, `errors[]`, `warnings[]` |
 | `VatAssessmentCalculated` | VAT-GENERIC | assessment-service | claim-orchestrator, audit | `filing_id`, `assessment_version`, `result_type`, `net_vat_amount`, `rounding_policy_version_id` |
@@ -890,18 +928,18 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 | `PreliminaryAssessmentSupersededByFiledReturn` | VAT-GENERIC | assessment-service | audit | `assessment_id`, `supersedes_assessment_id`, `filing_id` |
 | `FinalAssessmentCalculatedFromFiledReturn` | VAT-GENERIC | assessment-service | claim-orchestrator, audit | `assessment_id`, `filing_id`, `supersedes_assessment_id` |
 | `VatReturnCorrected` | VAT-GENERIC | amendment-service | claim-orchestrator, audit | `filing_id`, `prior_version`, `new_version`, `delta_type` |
-| `CustomsAssessmentImported` | DK VAT | customs-told-adapter | filing-service, audit | `customs_reference_id`, `taxpayer_id`, `import_timestamp` |
-| `CustomsIntegrationFailed` | DK VAT | customs-told-adapter | audit, operations | `customs_reference_id`, `error`, `attempt` |
-| `CustomsReconciliationMismatchDetected` | DK VAT | customs-told-adapter | audit, operations | `customs_reference_id`, `trace_id`, `mismatch_details` |
+| `SystemSPaymentEventsIngested` | DK VAT | system-s-accounting-adapter | settlement-trigger-service, audit | `taxpayer_id`, `segment_id`, `event_count` |
+| `SystemSPaymentSegmentsIngested` | DK VAT | system-s-accounting-adapter | settlement-trigger-service, audit | `taxpayer_id`, `segment_id`, `segment_status` |
+| `SystemSAccountingIntegrationFailed` | DK VAT | system-s-accounting-adapter | audit, operations | `segment_id`, `error`, `attempt` |
 | `ClaimCreated` | VAT-GENERIC | claim-orchestrator | audit | `claim_id`, `filing_id`, `idempotency_key` |
-| `ClaimDispatched` | DK VAT | claim-connector | claim-orchestrator, audit | `claim_id`, `claim_ref`, `dispatched_at` |
-| `ClaimDispatchFailed` | DK VAT | claim-connector | claim-orchestrator, audit | `claim_id`, `attempt`, `error`, `dead_letter: bool` |
+| `ClaimDispatched` | DK VAT | system-s-connector | claim-orchestrator, audit | `claim_id`, `claim_ref`, `dispatched_at` |
+| `ClaimDispatchFailed` | DK VAT | system-s-connector | claim-orchestrator, audit | `claim_id`, `attempt`, `error`, `dead_letter: bool` |
 | `VidaEReportReceived` | VAT-GENERIC | vida-ingestion-service | vida-verification-classification-service, audit | `vida_report_id`, `taxpayer_id`, `period`, `source_profile` |
 | `HighRiskFlagRaised` | VAT-GENERIC | risk-profile-refresh-service | portal-bff, audit | `taxpayer_id`, `risk_score`, `risk_reason_codes[]` |
 | `TaxpayerReviewRequested` | VAT-GENERIC | risk-profile-refresh-service | portal-bff, audit | `review_id`, `taxpayer_id`, `recommended_action` |
 | `TaxpayerAmendRequested` | VAT-GENERIC | portal-bff | filing-service, audit | `review_id`, `taxpayer_id`, `filing_id` |
 | `TaxpayerConfirmSubmitted` | VAT-GENERIC | portal-bff | risk-profile-refresh-service, audit | `review_id`, `taxpayer_id`, `filing_id` |
-| `HighRiskCaseTaskCreated` | DK VAT | risk-profile-refresh-service | IRM integration, audit | `review_id`, `taxpayer_id`, `task_ref` |
+| `HighRiskCaseTaskCreated` | DK VAT | risk-profile-refresh-service | System S human-task-management integration, audit | `review_id`, `taxpayer_id`, `task_ref` |
 | `PrefillPrepared` | VAT-GENERIC | prefill-computation-service | portal-bff, filing-service, audit | `prefill_id`, `taxpayer_id`, `prefill_mode` |
 | `PrefillReclassified` | VAT-GENERIC | prefill-computation-service | filing-service, audit | `prefill_id`, `changes[]`, `actor` |
 | `VatBalanceUpdated` | VAT-GENERIC | vat-balance-service | portal-bff, settlement-trigger-service, audit | `taxpayer_id`, `period`, `vat_balance_amount` |
@@ -909,9 +947,9 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 | `SystemSettlementTriggered` | VAT-GENERIC | settlement-trigger-service | settlement-flow, audit | `trigger_id`, `taxpayer_id`, `policy_id` |
 | `SystemSettlementObligationCreated` | VAT-GENERIC | settlement-trigger-service | obligation-service, audit | `obligation_id`, `taxpayer_id`, `due_date` |
 | `SystemSettlementNoticeIssued` | VAT-GENERIC | settlement-trigger-service | portal-bff, audit | `notice_id`, `taxpayer_id`, `trigger_id` |
-| `PaymentPlanEstablished` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `taxpayer_id`, `instalment_schedule` |
-| `PaymentPlanInstalmentMissed` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `instalment_no`, `missed_at` |
-| `PaymentPlanTerminated` | DK VAT | settlement-flow | external collection integration, audit | `plan_id`, `terminated_at`, `reason_code` |
+| `PaymentPlanEstablished` | DK VAT | settlement-flow | System S taxpayer-accounting integration, audit | `plan_id`, `taxpayer_id`, `instalment_schedule` |
+| `PaymentPlanInstalmentMissed` | DK VAT | settlement-flow | System S taxpayer-accounting integration, audit | `plan_id`, `instalment_no`, `missed_at` |
+| `PaymentPlanTerminated` | DK VAT | settlement-flow | System S taxpayer-accounting integration, audit | `plan_id`, `terminated_at`, `reason_code` |
 
 ---
 
@@ -981,6 +1019,7 @@ DK VAT overlay fields:
 - `deduction_percentage`
 - `deduction_basis_reference`
 - `allocation_method_id`
+- `deduction_policy_version_id` (FK, references `TaxpayerDeductionPolicy`)
 
 **Claim** `[VAT-GENERIC + DK VAT currency rule]`
 - `claim_id` (PK)
@@ -1003,11 +1042,12 @@ DK VAT overlay fields:
 - `return_type_expected`
 - `status` (`due | submitted | overdue`)
 
-**EuSalesObligation** `[VAT-GENERIC service + DK VAT reporting adapter]`
-- `obligation_id` (PK)
-- `taxpayer_id`, `cvr_number`
-- `period_start`, `period_end`, `due_date`
-- `status` (`eu_sales_due | eu_sales_submitted | eu_sales_overdue`)
+**RegistrationSyncRecord** `[VAT-GENERIC service + DK VAT registration adapter]`
+- `projection_id` (PK)
+- `taxpayer_id`, `cvr_number`, `system_s_party_id`
+- `submitted_at`, `synced_at`
+- `status` (`registration_received | registration_synced | registration_sync_failed`)
+- `last_error_code`, `last_error_message`
 
 **Rule** `[DK VAT]`
 - `rule_id` (PK)
@@ -1041,6 +1081,45 @@ Ownership: Tax Core architecture and rule governance (not portal-bff).
 | Round output/claim amounts at finalization | `assessment-service`, using `rounding_policy_version_id` |
 | Audit persistence | Store `claim_amount_pre_round`, `claim_amount` (rounded), and `rounding_policy_version_id` for replay and legal traceability |
 
+### Rounding Policy Entity (D-06)
+
+Rounding policy is versioned per jurisdiction + effective date. One active policy per jurisdiction at any time.
+
+| Field | Type | Description |
+|---|---|---|
+| `rounding_policy_version_id` | UUID PK | Immutable version identifier pinned to each assessment |
+| `jurisdiction_code` | string | e.g. `DK` |
+| `effective_from` | date | Policy start date |
+| `effective_to` | date \| null | null = open-ended (current active policy) |
+| `rounding_mode` | enum | `HALF_UP` \| `HALF_EVEN` |
+| `precision_scale` | int | Decimal places for final rounded amounts |
+
+Assessment records store `claim_amount_pre_round` (high-precision) and `claim_amount` (rounded) alongside `rounding_policy_version_id`, enabling deterministic replay and legal audit traceability.
+
+### Taxpayer Deduction Policy Entity (D-16)
+
+Danish mixed-use deduction (ML SS38) requires a stable deduction policy source for rule evaluation and audit traceability.
+
+v1 decision:
+- Use effective-dated `TaxpayerDeductionPolicy` per taxpayer.
+- Rule engine resolves and pins `deduction_policy_version_id` at line evaluation time.
+- Preliminary per-period deduction application is in scope.
+- Annual correction (`aarsregulering`, ML SS38 stk. 2) is modeled in data and event contract, but operational batch execution is deferred to a later phase.
+
+| Field | Type | Description |
+|---|---|---|
+| `deduction_policy_version_id` | UUID PK | Immutable version identifier pinned to each line-level deduction outcome |
+| `taxpayer_id` | string | Taxpayer this policy applies to |
+| `effective_from` | date | Policy start date |
+| `effective_to` | date \| null | null = open-ended (current active policy) |
+| `deduction_right_type` | enum | `full` \| `none` \| `partial` |
+| `deduction_percentage` | decimal | 0-100; nullable for `full` and `none` |
+| `allocation_method_id` | string | Method reference (for example turnover split) |
+| `approved_by` | enum | `self_calculated` \| `skat_issued` \| `annual_adjustment` |
+
+Line-level linkage addition:
+- `LineFact.deduction_policy_version_id` (FK) must be populated and auditable.
+
 ---
 
 ## 6. Rule Integration and Version Handling
@@ -1049,6 +1128,29 @@ Ownership: Tax Core architecture and rule governance (not portal-bff).
 1. `filing-service` resolves active `rule_version_id` from Rule Catalog at intake (by `tax_period_end`)
 2. `rule_version_id` pinned to Filing record immediately
 3. All downstream evaluation uses this pinned version â€” rule changes mid-flight do not affect in-flight filings
+
+### Rule Version Resolution Interface (D-03)
+
+```
+resolve_rule_version(
+  period_end:        date,    // required -- tax period end date
+  jurisdiction_code: string,  // required -- e.g. "DK"
+  filing_type?:      string   // optional -- present in interface, unused in v1
+) -> rule_version_id: string
+```
+
+**v1 behavior:** Resolves by `period_end` + `jurisdiction_code` only. The `filing_type` parameter is accepted but ignored, enabling forward compatibility without a breaking API change if filing-type-specific rule splits are mandated by future legislation.
+
+**Catalog query (v1):**
+```sql
+SELECT rule_version_id
+FROM rule_catalog
+WHERE jurisdiction_code = :jurisdiction_code
+  AND effective_from <= :period_end
+  AND (effective_to IS NULL OR :period_end <= effective_to)
+ORDER BY effective_from DESC
+LIMIT 1
+```
 
 ### DK VAT Rule Pack Execution Order
 ```
@@ -1070,7 +1172,7 @@ National or customer-specific deviations from Tax Core semantics are routed thro
 
 | Outcome | Meaning |
 |---|---|
-| `policy change` | Update the effective-dated policy or rule catalog for the jurisdiction |
+| `policy change` | Update the policy or rule catalog for the jurisdiction (defaults to effective immediately, open-ended until changed) |
 | `country extension` | Add a new DK VAT overlay artifact; VAT-GENERIC layer unchanged |
 | `core change` | Modify the VAT-GENERIC or PLATFORM layer; requires full architecture review |
 | `reject` | Request is outside Tax Core product scope; handled externally |
@@ -1079,17 +1181,18 @@ National or customer-specific deviations from Tax Core semantics are routed thro
 
 ## 7. Modern Stack Integration (ADR-006, ADR-007, ADR-008)
 
-| Concern | Standard | Layer |
+| Concern | Technology / Standard | Layer |
 |---|---|---|
 | Synchronous API contracts | OpenAPI 3.1, versioned per service | PLATFORM |
 | Async event contracts | AsyncAPI + CloudEvents | PLATFORM |
-| Schema management | Avro/Protobuf, Schema Registry, CI compatibility | PLATFORM |
-| Event backbone | Kafka-compatible broker | PLATFORM |
-| Outbox | Transactional outbox tables + relay | PLATFORM |
-| Observability | OpenTelemetry â€” traces/metrics/logs, trace_id end-to-end incl. BFF | PLATFORM |
-| Audit analytics | Events â†’ Lakehouse (Apache Iceberg) | PLATFORM |
-| Service auth | Zero-trust (mTLS or token-based) | PLATFORM |
-| Infrastructure | IaC + GitOps | PLATFORM |
+| Schema management | Avro/Protobuf + **Apicurio Registry** (Apache 2.0), BACKWARD_TRANSITIVE, CI compatibility gate (D-04) | PLATFORM |
+| Event backbone | **Apache Kafka on Strimzi** operator (Kubernetes, Apache 2.0) (D-01) | PLATFORM |
+| Outbox | PostgreSQL transactional outbox + polling relay; **Debezium** CDC as v2 upgrade (D-08) | PLATFORM |
+| Observability | OpenTelemetry SDK -> **Prometheus** (metrics) + **Grafana Tempo** (traces) + **Grafana Loki** (logs); `trace_id` end-to-end incl. BFF (D-10) | PLATFORM |
+| Audit analytics | Events -> **Apache Iceberg** + **MinIO** + **Trino** + **dbt Core** (all Apache 2.0) (D-15) | PLATFORM |
+| Service auth | **Linkerd** (Apache 2.0, CNCF Graduated) service mesh; mTLS service-to-service (D-12) | PLATFORM |
+| Infrastructure | **OpenTofu** (MPL-2.0) IaC + **ArgoCD** (Apache 2.0) GitOps (D-11) | PLATFORM |
+| Policy as code | **OPA + Gatekeeper** (Apache 2.0, CNCF Graduated) admission control and RBAC enforcement (D-13) | PLATFORM |
 | Supply chain | SBOM, artifact signing, provenance | PLATFORM |
 | Technology policy | Open-source-only for all core paths (ADR-008) | PLATFORM |
 
@@ -1122,7 +1225,7 @@ National or customer-specific deviations from Tax Core semantics are routed thro
 | rule-engine-service | `rule_evaluations_total`, `version_miss_total` | Version resolution failures |
 | assessment-service | `assessments_by_result_type`, `duration_p95` | Assessment failures |
 | claim-orchestrator | `claims_queued_total`, `claims_acked_total`, `dead_letter_total` | DLQ growth, failure burst |
-| claim-connector | `dispatch_attempts_total`, `dispatch_success_rate` | Success rate < threshold |
+| system-s-connector | `dispatch_attempts_total`, `dispatch_success_rate` | Success rate < threshold |
 
 Portal BFF `trace_id` must be propagated through all Tax Core service calls for end-to-end correlation.
 
@@ -1139,13 +1242,16 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | Overriding deterministic rule outcomes | **No** |
 
 ### Security Controls
-- TLS in transit (portal â†’ BFF â†’ API Gateway â†’ services, services â†’ SKAT)
-- Zero-trust service-to-service auth
+- TLS in transit (portal -> BFF -> API Gateway -> services, services -> System S)
+- **Service mesh (Linkerd, Apache 2.0, CNCF Graduated):** mTLS for all service-to-service communication within Tax Core; Prometheus-native metrics per sidecar. (D-12)
+- System S integration auth: not required (trusted internal network constraint)
 - Encryption at rest (Operational DB, Audit Store)
 - Secrets in centralized secrets manager
 - PII excluded from structured logs; present only in audit evidence
 - RBAC enforced at API Gateway; BFF holds no privileged access beyond what API Gateway grants
-- Policy-as-code admission controls; SBOM + artifact signing (ADR-008)
+- **Policy as code (OPA + Gatekeeper, Apache 2.0, CNCF Graduated):** Kubernetes admission control; CI-testable RBAC policy rules; prevents non-compliant workload deployments. (D-13)
+- **IaC/GitOps (OpenTofu MPL-2.0 + ArgoCD Apache 2.0):** All infrastructure defined as code; declarative GitOps delivery pipeline. Standard Terraform (BSL 1.1) is not permitted under ADR-008. (D-11)
+- SBOM + artifact signing; supply chain provenance (ADR-008)
 
 ---
 
@@ -1168,11 +1274,11 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | S-PRELIM - Supersession | VAT-GENERIC | assessment-service | Filed return supersedes preliminary; `supersedes_assessment_id` linked |
 | S20 - Contradictory data | VAT-GENERIC | validation | Blocking error, pipeline halted |
 | S21 - Past-period >3y | DK VAT | amendment | Manual/legal routing |
-| S-EUS - EU-sales obligation | DK VAT | eu-sales-obligation-service, connector | `EuSalesObligationCreated`, submission dispatched, evidence written |
-| S-CUS - Customs import | DK VAT | customs-told-adapter, filing-service | `CustomsAssessmentImported`, reconciliation, audit evidence |
+| S-REG - Taxpayer registration sync | DK VAT | portal-bff, registration-service, system-s-registration-adapter | `TaxpayerRegistrationSubmitted`, `TaxpayerRegistrationSynchronized`, system_s_party_id persisted, `additionalInfo` absent in outbound payload |
+| S-ACC - System S accounting pull | DK VAT | system-s-accounting-adapter, settlement-trigger-service | payment-events/payment-segments fetched by `segmentId`, reconciliation evidence written |
 | S-ROUND - Rounding policy | DK VAT | assessment-service | `claim_amount_pre_round` != `claim_amount`, `rounding_policy_version_id` stored |
 | S26 - High-risk amend/confirm loop | VAT-GENERIC | risk-profile-refresh-service, portal-bff, filing-service | `TaxpayerReviewRequested` then `TaxpayerAmendRequested` or `TaxpayerConfirmSubmitted` |
-| S27 - Confirm unchanged high-risk to IRM | DK VAT | risk-profile-refresh-service integration | `HighRiskCaseTaskCreated` on confirmed unchanged filing |
+| S27 - Confirm unchanged high-risk to System S tasking | DK VAT | risk-profile-refresh-service integration | `HighRiskCaseTaskCreated` on confirmed unchanged filing |
 | S28 - B2B full prefill (reclassification-only) | VAT-GENERIC | prefill-computation-service, filing-service | Numeric overwrite blocked, reclassification-only edits accepted |
 | S29 - B2C partial prefill + sales completion | VAT-GENERIC | prefill-computation-service, portal-bff, filing-service | Purchase-side prefill plus taxpayer sales-side completion |
 | S30 - B2B VAT balance + settlement request | VAT-GENERIC | vat-balance-service, settlement-trigger-service | `VatBalanceUpdated`, `SettlementRequested` linked to same taxpayer/period |
@@ -1209,43 +1315,45 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | Phase 1 | filing-service + OpenAPI spec, validation catalog (incl. reverse-charge + deduction-right min. fields), audit-evidence API, OpenTelemetry baseline |
 | Phase 1+ | portal-bff design + API parity test suite |
 | Phase 2 | rule-engine-service + DK Rule Catalog schema, assessment-service (staged derivation + rounding policy), obligation-service, preliminary assessment lifecycle |
-| Phase 3 | claim-orchestrator, outbox schema, claim-connector SKAT adapter, retry/DLQ playbook |
+| Phase 3 | claim-orchestrator, outbox schema, system-s-connector System S adapter, retry/DLQ playbook |
 | Phase 3M | AsyncAPI + CloudEvents, Schema Registry CI gates, Kafka backbone |
 | Phase 4 | amendment-service, lineage query API, compliance dashboard alerts |
 | Phase 4M | Lakehouse ingestion pipeline, audit analytics models |
-| Phase 5 | eu-sales-obligation-service + eu-sales-reporting-connector; customs-told-adapter + reconciliation; line-level fact store + reproducibility API |
-| Phase 6 | ViDA Step 1-3 enablement: ingestion/verification, high-risk review loop + IRM handoff, prefill controls, VAT balance + settlement triggers, payment-plan lifecycle events |
+| Phase 5 | system-s-registration-projection-service + system-s-registration-adapter; system-s-accounting-adapter + reconciliation; line-level fact store + reproducibility API |
+| Phase 6 | ViDA Step 1-3 enablement: ingestion/verification, high-risk review loop + System S task handoff, prefill controls, VAT balance + settlement triggers, payment-plan lifecycle events |
 | Phase 7 | Module contracts for S24, S25, C14, C15, C20, C21, C22 |
 
 ### Open Questions
 
-| # | Question | Impact | Owner |
-|---|---|---|---|
-| OQ-01 | SKAT Claims System API contract and auth mechanism? | Blocks claim-connector design | Architecture / Integration |
-| OQ-02 | Kafka hosting model (managed vs self-hosted)? | Affects outbox + connector implementation | Architecture |
-| OQ-03 | Rule Catalog storage: relational vs. document store? | Affects version resolution performance | Architecture |
-| OQ-04 | `rule_version_id` by period only, or also by filing type? | Affects rule resolution logic | Architecture / BA |
-| OQ-05 | Partial deduction %: per-taxpayer or per-period? | Affects deduction rights rule design | BA |
-| OQ-06 | Audit Store retention policy? | Affects Lakehouse partitioning | Architecture / Legal |
-| OQ-07 | Schema Registry technology (Apicurio, Confluent OSS)? | Affects CI gate implementation | Architecture |
-| OQ-08 | Portal BFF: same deployment unit as Tax Core or separate? | Affects auth model and deployment topology | Architecture |
-| OQ-09 | EU Sales Reporting: which external system and contract format? | Blocks eu-sales-reporting-connector design | Architecture / Integration |
-| OQ-10 | Customs/Told API: push or pull model, contract format, and auth? | Blocks customs-told-adapter design | Architecture / Integration |
-| OQ-11 | `rounding_policy_version_id`: single global policy or per-period per-jurisdiction? | Affects assessment-service rounding contract | Architecture / BA |
+| # | Status | Question | Impact | Owner |
+|---|---|---|---|---|
+| OQ-01 | Open | System S Claims System API contract details (status/error semantics and idempotency acknowledgment behavior)? | Refines system-s-connector error-handling and replay design | Architecture / Integration |
+| OQ-02 | **RESOLVED** | Kafka hosting model? | **D-01: Apache Kafka on Strimzi operator (Kubernetes, Apache 2.0). Managed hosting compatible.** | Architecture |
+| OQ-03 | **RESOLVED** | Rule Catalog storage? | **D-02: PostgreSQL 16+ dedicated schema within Operational DB cluster.** | Architecture |
+| OQ-04 | **RESOLVED** | `rule_version_id` by period only, or also by filing type? | **D-03: Period + jurisdiction_code in v1; filing_type optional in interface for forward compatibility.** | Architecture / BA |
+| OQ-05 | **RESOLVED** | Partial deduction percentage sourcing and granularity | **D-16: Effective-dated `TaxpayerDeductionPolicy` per taxpayer; pinned at evaluation time. Annual correction path modeled and deferred.** | BA |
+| OQ-06 | Open | Audit Store retention policy? | Affects Lakehouse partitioning | Architecture / Legal |
+| OQ-07 | **RESOLVED** | Schema Registry technology? | **D-04: Apicurio Registry (Apache 2.0), BACKWARD_TRANSITIVE compatibility, one schema group per bounded context.** | Architecture |
+| OQ-08 | **RESOLVED** | Portal BFF deployment boundary? | **D-05: Independently deployed Kubernetes workload; W3C TraceContext propagation mandatory.** | Architecture |
+| OQ-09 | Open | Reserved for future scope: `additionalInfo`/`validAdditionalInfoTypes` policy (currently out of scope and not implemented). | No current delivery impact | Architecture / Integration / BA |
+| OQ-10 | Open | Taxpayer-accounting API consumption policy: polling cadence, `segmentId` strategy, and consistency guarantees across `payment-events` and `payment-segments`? | Blocks accounting reconciliation and settlement trigger behavior | Architecture / Integration |
+| OQ-11 | **RESOLVED** | `rounding_policy_version_id` scope? | **D-06: Per jurisdiction_code + effective_from. Entity fields defined in Section 5.4.** | Architecture / BA |
+| OQ-12 | **RESOLVED** | API Gateway product selection? | **D-09: Kong Gateway OSS (Apache 2.0). ADR-010 accepted. Fallback: Apache APISIX.** | Architecture |
+| OQ-13 | Open | ViDA Step 3 stream processor scope: Kafka Streams (embedded, v1) vs Apache Flink (v2)? Decision required at ViDA Step 3 design milestone. | Affects infrastructure footprint and stateful computation capability | Architecture |
 
 ### Risks
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| SKAT Claims API changes without notice | Medium | High | Anti-corruption adapter in claim-connector |
+| System S Claims API changes without notice | Medium | High | Anti-corruption adapter in system-s-connector |
 | Rule catalog governance gaps | Medium | High | Schema validation at ingestion; block incomplete rules |
 | BFF bypassing API coverage rule | Low | High | API parity test suite enforced in CI |
 | Audit Store growth under high volume | Low | Medium | Lakehouse partitioning by period; retention policy |
 | Replay fidelity broken by rule version gaps | Low | High | No-gap constraint on effective_from/effective_to |
 | Kafka operational complexity | Medium | Medium | Managed hosting; platform team runbook |
 | Schema incompatibility breaks consumers | Low | High | Schema Registry CI/CD compatibility gate |
-| EU Sales Reporting API changes without notice | Medium | Medium | Anti-corruption adapter in eu-sales-reporting-connector |
-| Customs/Told API instability or reconciliation mismatch | Medium | High | Reconciliation API + mismatch events; manual operator playbook |
+| System S API changes without notice | Medium | Medium | Anti-corruption adapter in system-s-registration-adapter |
+| System S API instability or reconciliation mismatch | Medium | High | Reconciliation API + mismatch events; manual operator playbook |
 | Product scope erosion from custom semantic requests | Medium | High | Country-variation governance model (policy change / extension / core change / reject) |
 | AI advisory outputs mistaken for binding decisions | Low | High | AI boundary enforced by design; AI outputs labelled non-binding in UX |
 
@@ -1286,8 +1394,8 @@ This design is updated to support VAT 3.0 ladder **Step 1, Step 2, and Step 3**.
 
 #### E. External Integration Consequences
 - Add ViDA eReport connector and classification/verification service.
-- Keep customs/told integration and separate EU-sales obligation capability.
-- Add operational integration point with compliance/risk analytics capability (Lumenus context) as advisory/risk signals only.
+- Keep System S integration with explicit registration sync and taxpayer-accounting reconciliation capabilities.
+- Add operational integration point with internal compliance/risk analytics capability as advisory/risk signals only.
 
 ### 11.3 New/Refined Capabilities (Incremental by Step)
 
@@ -1405,7 +1513,7 @@ Configuration dimensions (minimum):
 - `prefill_mode` (`none|partial_b2c|full_b2b`)
 - `balance_mode` (`off|periodic_projection|near_realtime`)
 - `settlement_mode` (`manual_request|system_triggered|hybrid`)
-- `data_source_profile` (ViDA, SAF-T, POS, customs/told availability)
+- `data_source_profile` (ViDA, SAF-T, POS, System S availability)
 - `rule_pack_version_set`
 
 Architectural consequence:
@@ -1415,7 +1523,7 @@ Architectural consequence:
 
 #### Step 0 Baseline Enhancements
 - Filing cadence configuration must support: `monthly`, `quarterly`, `half_yearly`, `annual`.
-- High-risk cases from automated controls must be routable to IRM case-task creation.
+- High-risk cases from automated controls must be routable to System S human-task-management case-task creation.
 - Statutory time-limit tracking is required per relevant transaction/assessment item for assessment/collection windows.
 - Payment-plan lifecycle support is required at integration boundary level:
   - plan creation with instalments
@@ -1466,4 +1574,48 @@ Architectural consequence:
 - `settlement_trigger_policy_id`
 - `statutory_time_limit_profile_id`
 
+### 11.13 Preliminary Assessment Claim Trigger Policy (D-17)
 
+To close the preliminary-claim ambiguity, Tax Core uses a deterministic trigger policy:
+
+- A preliminary claim intent is created only when:
+  - `assessment_type=preliminary`
+  - `result_type=payable`
+  - `claim_amount > 0`
+  - no active preliminary claim exists for the same `taxpayer_id + period_end` idempotency key
+- A preliminary claim intent is suppressed when:
+  - `result_type in (refund, zero)` or `claim_amount <= 0`
+  - trigger policy blocks issuance (for example de-minimis threshold profile)
+
+Supersession behavior:
+- On `PreliminaryAssessmentSupersededByFiledReturn`, preliminary claim state must transition to `superseded`.
+- Final claim creation follows normal final-assessment path, with reconciliation against any preliminary claim already dispatched.
+
+Configuration hook:
+- `preliminary_claim_trigger_policy_id` controls optional threshold conditions without changing core orchestration logic.
+
+---
+
+## 12. Platform Technology Decisions
+
+All decisions comply with ADR-008 (open-source-only). See `design/recommendations/internal-platform-choices-suggestions.md` for full rationale and resolved OQ index.
+
+| Decision | Technology | License | Status |
+|---|---|---|---|
+| D-01 Kafka backbone | Apache Kafka on Strimzi operator | Apache 2.0 | Resolved (replaces OQ-02) |
+| D-02 Rule Catalog storage | PostgreSQL 16+ dedicated schema | PostgreSQL License | Resolved (replaces OQ-03) |
+| D-03 Rule version resolution | `resolve_rule_version(period_end, jurisdiction_code, [filing_type])` interface | N/A | Resolved (replaces OQ-04) |
+| D-04 Schema Registry | Apicurio Registry, BACKWARD_TRANSITIVE | Apache 2.0 | Resolved (replaces OQ-07) |
+| D-05 Portal BFF deployment | Separate Kubernetes workload, W3C TraceContext propagation | N/A | Resolved (replaces OQ-08) |
+| D-06 Rounding policy entity | Per jurisdiction_code + effective_from; fields defined in Section 5.4 | N/A | Resolved (replaces OQ-11) |
+| D-07 Operational DB | PostgreSQL 16+, per-bounded-context schemas | PostgreSQL License | Resolved |
+| D-08 Outbox | PostgreSQL outbox + polling relay (v1); Debezium CDC (v2 path) | Apache 2.0 | Resolved |
+| D-09 API Gateway | Kong Gateway OSS; fallback: Apache APISIX | Apache 2.0 | Resolved (ADR-010) |
+| D-10 Observability backend | Prometheus + Grafana Tempo + Grafana Loki (Grafana OSS stack) | Apache 2.0 | Resolved |
+| D-11 IaC / GitOps | OpenTofu (MPL-2.0) + ArgoCD (Apache 2.0). Terraform BSL 1.1 prohibited by ADR-008. | MPL-2.0 / Apache 2.0 | Resolved |
+| D-12 Service mesh | Linkerd, CNCF Graduated; mTLS service-to-service | Apache 2.0 | Resolved |
+| D-13 Policy as code | OPA + Gatekeeper, CNCF Graduated | Apache 2.0 | Resolved |
+| D-14 Stream processing | Kafka Streams embedded (v1); Apache Flink (v2 path) | Apache 2.0 | Resolved; revisit at ViDA Step 3 milestone |
+| D-15 Lakehouse / analytical | Apache Iceberg + MinIO + Trino + dbt Core | Apache 2.0 | Resolved |
+| D-16 Deduction policy entity | Effective-dated `TaxpayerDeductionPolicy` per taxpayer; pinned to LineFact via `deduction_policy_version_id` | N/A | Resolved (replaces OQ-05) |
+| D-17 Preliminary claim trigger policy | Preliminary claim generated only for payable preliminary assessments with trigger-policy pass; suppressed otherwise | N/A | Resolved (closes module-guide OQ-12) |

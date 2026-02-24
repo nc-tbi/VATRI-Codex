@@ -32,13 +32,15 @@ const architectureRoot = path.join(workspaceRoot, "architecture");
 const designRoot = path.join(workspaceRoot, "design");
 const criticalReviewRoot = path.join(workspaceRoot, "critical-review");
 const optimizationRoot = path.join(workspaceRoot, "optimization");
+const mcpServerRoot = path.join(workspaceRoot, "mcp-server");
 
 const roleSchema = z.enum([
   "architect",
   "business_analyst",
   "designer",
   "critical_reviewer",
-  "coding_optimizer"
+  "coding_optimizer",
+  "code_builder"
 ]);
 
 async function listMarkdownFiles(rootDir: string): Promise<string[]> {
@@ -98,7 +100,8 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     "business-analyst.md",
     "DESIGNER.md",
     "CRITICAL_REVIEWER.md",
-    "CODING_OPTIMIZER.md"
+    "CODING_OPTIMIZER.md",
+    "CODE_BUILDER.md"
   ];
 
   const roleSpecificRoots: Record<z.infer<typeof roleSchema>, string[]> = {
@@ -106,7 +109,8 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     business_analyst: [analysisRoot],
     designer: [architectureRoot, designRoot],
     critical_reviewer: [analysisRoot, architectureRoot, designRoot, criticalReviewRoot],
-    coding_optimizer: [optimizationRoot, criticalReviewRoot]
+    coding_optimizer: [optimizationRoot, criticalReviewRoot],
+    code_builder: [architectureRoot, designRoot, mcpServerRoot]
   };
 
   const roots = roleSpecificRoots[role];
@@ -117,7 +121,8 @@ async function getRoleContextFiles(role: z.infer<typeof roleSchema>): Promise<st
     business_analyst: ["business-analyst.md", "ROLE_CONTEXT_POLICY.md"],
     designer: ["DESIGNER.md", "ROLE_CONTEXT_POLICY.md"],
     critical_reviewer: [...contractFiles, "ROLE_CONTEXT_POLICY.md", "README.md", "mcp-server/README.md"],
-    coding_optimizer: [...contractFiles, ...commonGovernance]
+    coding_optimizer: [...contractFiles, ...commonGovernance],
+    code_builder: ["CODE_BUILDER.md", "ROLE_CONTEXT_POLICY.md", "CLAUDE.md", "README.md", "mcp-server/README.md"]
   };
 
   const governanceFiles = await Promise.all(

@@ -1,4 +1,4 @@
-import "./globals.css";
+﻿import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata = {
@@ -6,7 +6,7 @@ export const metadata = {
   description: "VATRI self-service portal",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="da">
       <body>
@@ -15,4 +15,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
     </html>
   );
 }
+
 

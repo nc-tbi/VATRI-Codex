@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/core/auth/context";
 
-export default function LoginPage(): JSX.Element {
+export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -45,4 +45,5 @@ export default function LoginPage(): JSX.Element {
     </div>
   );
 }
+
 

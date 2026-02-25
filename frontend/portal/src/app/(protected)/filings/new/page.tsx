@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import { submitFiling } from "@/core/api/tax-core";
@@ -8,7 +8,7 @@ function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 }
 
-export default function NewFilingPage(): JSX.Element {
+export default function NewFilingPage() {
   const { user } = useAuth();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
   const [outputVat, setOutputVat] = useState("0");
@@ -67,4 +67,5 @@ export default function NewFilingPage(): JSX.Element {
     </section>
   );
 }
+
 

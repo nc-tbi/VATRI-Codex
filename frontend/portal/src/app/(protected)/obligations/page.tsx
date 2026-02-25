@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listObligations } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function ObligationsPage(): JSX.Element {
+export default function ObligationsPage() {
   const { user } = useAuth();
   const [taxpayerIdInput, setTaxpayerIdInput] = useState(user?.taxpayer_scope ?? "");
   const taxpayerId = useMemo(() => (user?.role === "taxpayer" ? (user.taxpayer_scope ?? "") : taxpayerIdInput), [taxpayerIdInput, user]);
@@ -26,7 +26,7 @@ export default function ObligationsPage(): JSX.Element {
           <input className="w-full rounded border border-[var(--border)] px-3 py-2" value={taxpayerIdInput} onChange={(e) => setTaxpayerIdInput(e.target.value)} />
         </label>
       ) : null}
-      {query.isLoading ? <p className="mt-4 text-sm">Indlæser ...</p> : null}
+      {query.isLoading ? <p className="mt-4 text-sm">IndlÃ¦ser ...</p> : null}
       {query.error ? <p className="mt-4 text-sm text-danger">Kunne ikke hente forpligtelser.</p> : null}
       <table className="mt-6 w-full border-collapse text-sm">
         <thead>
@@ -46,4 +46,5 @@ export default function ObligationsPage(): JSX.Element {
     </section>
   );
 }
+
 

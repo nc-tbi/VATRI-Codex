@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { createRegistration } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function AdminTaxpayersNewPage(): JSX.Element {
+export default function AdminTaxpayersNewPage() {
   const { user } = useAuth();
   const [taxpayerId, setTaxpayerId] = useState("");
   const [cvr, setCvr] = useState("12345678");
@@ -32,10 +32,11 @@ export default function AdminTaxpayersNewPage(): JSX.Element {
       <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={(e) => void onSubmit(e)}>
         <label><span className="mb-1 block text-sm">Taxpayer ID</span><input className="w-full rounded border px-3 py-2" value={taxpayerId} onChange={(e) => setTaxpayerId(e.target.value)} required /></label>
         <label><span className="mb-1 block text-sm">CVR</span><input className="w-full rounded border px-3 py-2" value={cvr} onChange={(e) => setCvr(e.target.value)} required /></label>
-        <label><span className="mb-1 block text-sm">Årlig omsætning (DKK)</span><input className="w-full rounded border px-3 py-2" value={turnover} onChange={(e) => setTurnover(e.target.value)} required /></label>
+        <label><span className="mb-1 block text-sm">Ã…rlig omsÃ¦tning (DKK)</span><input className="w-full rounded border px-3 py-2" value={turnover} onChange={(e) => setTurnover(e.target.value)} required /></label>
         <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">Opret</button>
       </form>
     </section>
   );
 }
+
 

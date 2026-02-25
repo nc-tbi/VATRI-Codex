@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { filingAlter, filingRedo, filingUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function AdminFilingsAlterPage(): JSX.Element {
+export default function AdminFilingsAlterPage() {
   const { user } = useAuth();
   const [filingId, setFilingId] = useState("");
   const [field, setField] = useState("contact_reference");
@@ -47,4 +47,5 @@ export default function AdminFilingsAlterPage(): JSX.Element {
     </section>
   );
 }
+
 

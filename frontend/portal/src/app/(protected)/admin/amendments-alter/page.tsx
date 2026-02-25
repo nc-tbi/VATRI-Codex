@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { amendmentAlter, amendmentRedo, amendmentUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function AdminAmendmentsAlterPage(): JSX.Element {
+export default function AdminAmendmentsAlterPage() {
   const { user } = useAuth();
   const [amendmentId, setAmendmentId] = useState("");
   const [field, setField] = useState("delta_classification");
@@ -47,4 +47,5 @@ export default function AdminAmendmentsAlterPage(): JSX.Element {
     </section>
   );
 }
+
 

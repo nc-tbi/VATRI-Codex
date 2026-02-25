@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { getCadencePolicy } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function AdminCadencePage(): JSX.Element {
+export default function AdminCadencePage() {
   const { user } = useAuth();
   const [turnover, setTurnover] = useState("50000");
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
@@ -25,7 +25,7 @@ export default function AdminCadencePage(): JSX.Element {
   return (
     <section>
       <h2 className="text-2xl font-semibold">Admin: Kadence</h2>
-      <p className="mt-2 text-[var(--muted)]">Beregn gældende kadence fra omsætning.</p>
+      <p className="mt-2 text-[var(--muted)]">Beregn gÃ¦ldende kadence fra omsÃ¦tning.</p>
       <form className="mt-4 flex gap-2" onSubmit={(e) => void onSubmit(e)}>
         <input className="w-full max-w-sm rounded border px-3 py-2" value={turnover} onChange={(e) => setTurnover(e.target.value)} />
         <button className="rounded bg-action px-4 py-2 text-white" type="submit">Beregn</button>
@@ -35,4 +35,5 @@ export default function AdminCadencePage(): JSX.Element {
     </section>
   );
 }
+
 

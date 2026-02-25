@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,7 +21,7 @@ const adminLinks = [
   "/admin/amendments-alter",
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }): JSX.Element {
+export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
@@ -63,4 +63,5 @@ export function AppShell({ children }: { children: React.ReactNode }): JSX.Eleme
     </div>
   );
 }
+
 

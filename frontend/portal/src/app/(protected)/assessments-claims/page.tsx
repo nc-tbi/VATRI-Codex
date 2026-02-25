@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { listAssessments, listClaims } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function AssessmentsClaimsPage(): JSX.Element {
+export default function AssessmentsClaimsPage() {
   const { user } = useAuth();
   const [taxpayerInput, setTaxpayerInput] = useState(user?.taxpayer_scope ?? "");
   const taxpayerId = useMemo(() => (user?.role === "taxpayer" ? (user.taxpayer_scope ?? "") : taxpayerInput), [taxpayerInput, user]);
@@ -39,7 +39,7 @@ export default function AssessmentsClaimsPage(): JSX.Element {
           <article className="rounded border p-4" key={`${idx}-${String(entry.assessment?.filing_id ?? "")}`}>
             <h3 className="font-medium">Assessment {String(entry.assessment?.assessment_id ?? "")}</h3>
             <p className="mt-1 text-sm">Resultat: {String(entry.transparency?.result_type ?? "ukendt")}</p>
-            <p className="mt-1 text-sm">Beløb: {String(entry.transparency?.claim_amount ?? "-")}</p>
+            <p className="mt-1 text-sm">BelÃ¸b: {String(entry.transparency?.claim_amount ?? "-")}</p>
             <p className="mt-2 text-sm text-[var(--muted)]">{entry.transparency?.explanation ?? "Ingen forklaring modtaget."}</p>
           </article>
         ))}
@@ -55,4 +55,5 @@ export default function AssessmentsClaimsPage(): JSX.Element {
     </section>
   );
 }
+
 

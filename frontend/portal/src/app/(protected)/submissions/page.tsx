@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { listAmendments, listFilings } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function SubmissionsPage(): JSX.Element {
+export default function SubmissionsPage() {
   const { user } = useAuth();
   const [taxpayerInput, setTaxpayerInput] = useState(user?.taxpayer_scope ?? "");
   const taxpayerId = useMemo(() => (user?.role === "taxpayer" ? (user.taxpayer_scope ?? "") : taxpayerInput), [taxpayerInput, user]);
@@ -55,4 +55,5 @@ export default function SubmissionsPage(): JSX.Element {
     </section>
   );
 }
+
 

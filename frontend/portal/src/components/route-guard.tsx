@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/core/auth/context";
 import { canAccess, requiresAuth } from "@/core/rbac/route-guards";
 
-export function RouteGuard({ children }: { children: React.ReactNode }): JSX.Element {
+export function RouteGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -21,8 +21,9 @@ export function RouteGuard({ children }: { children: React.ReactNode }): JSX.Ele
     }
   }, [loading, pathname, router, user]);
 
-  if (loading) return <p>Indlæser session ...</p>;
+  if (loading) return <p>IndlÃ¦ser session ...</p>;
   if (requiresAuth(pathname) && !user) return <p>Omdirigerer til login ...</p>;
   return <>{children}</>;
 }
+
 

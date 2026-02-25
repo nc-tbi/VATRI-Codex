@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { clearSession, getAccessToken, getRefreshToken, getStoredUser, login as doLogin, logout as doLogout, me } from "./service";
@@ -13,7 +13,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserClaims | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -63,4 +63,5 @@ export function useAuth(): AuthContextValue {
   }
   return ctx;
 }
+
 

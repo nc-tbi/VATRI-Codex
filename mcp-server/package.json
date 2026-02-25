@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "tax-core-mcp-server",
   "version": "0.1.0",
   "private": true,
@@ -10,7 +10,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

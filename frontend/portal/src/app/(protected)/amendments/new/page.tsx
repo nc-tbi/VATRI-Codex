@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import { submitAmendment } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 
-export default function NewAmendmentPage(): JSX.Element {
+export default function NewAmendmentPage() {
   const { user } = useAuth();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
   const [originalFilingId, setOriginalFilingId] = useState("");
@@ -41,7 +41,7 @@ export default function NewAmendmentPage(): JSX.Element {
         },
       };
       const result = await submitAmendment(body, user ?? undefined);
-      setMessage(`Ændring indsendt. Amendment ID: ${String((result as { amendment?: { amendment_id?: string } }).amendment?.amendment_id ?? "ukendt")}`);
+      setMessage(`Ã†ndring indsendt. Amendment ID: ${String((result as { amendment?: { amendment_id?: string } }).amendment?.amendment_id ?? "ukendt")}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Indsendelse fejlede.");
     }
@@ -49,16 +49,17 @@ export default function NewAmendmentPage(): JSX.Element {
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold">Ny ændringsangivelse</h2>
-      <p className="mt-2 text-[var(--muted)]">Vælg tidligere indsendelse og indtast korrektioner.</p>
+      <h2 className="text-2xl font-semibold">Ny Ã¦ndringsangivelse</h2>
+      <p className="mt-2 text-[var(--muted)]">VÃ¦lg tidligere indsendelse og indtast korrektioner.</p>
       {message ? <p className="mt-4 rounded border border-success bg-green-50 p-3 text-sm text-success">{message}</p> : null}
       {error ? <p className="mt-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</p> : null}
       <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={(e) => void onSubmit(e)}>
         <label className="block"><span className="mb-1 block text-sm">Original filing ID</span><input className="w-full rounded border px-3 py-2" value={originalFilingId} onChange={(e) => setOriginalFilingId(e.target.value)} required /></label>
         <label className="block"><span className="mb-1 block text-sm">Nyt nettoresultat (DKK)</span><input className="w-full rounded border px-3 py-2" value={newNet} onChange={(e) => setNewNet(e.target.value)} /></label>
-        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">Indsend ændring</button>
+        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">Indsend Ã¦ndring</button>
       </form>
     </section>
   );
 }
+
 

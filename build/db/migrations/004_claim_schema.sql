@@ -1,7 +1,6 @@
--- 004_claim_schema.sql — Claim bounded context schema
+﻿-- 004_claim_schema.sql - Claim bounded context schema
 -- ADR-004: outbox + queue + idempotency
--- Idempotency key: {taxpayer_id}:{period_end}:{rule_version_id}
--- Status lifecycle: queued → sent → acked | failed → dead_letter (after 3 failures)
+-- Canonical idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}
 
 CREATE SCHEMA IF NOT EXISTS claim;
 
@@ -19,10 +18,10 @@ CREATE TABLE IF NOT EXISTS claim.claim_intents (
   rule_version_id       TEXT        NOT NULL,
   calculation_trace_id  TEXT        NOT NULL,
 
-  -- Outbox state
   status                TEXT        NOT NULL DEFAULT 'queued'
-                          CHECK (status IN ('queued','sent','acked','failed','dead_letter')),
+                          CHECK (status IN ('queued','sent','acked','failed','dead_letter','superseded')),
   retry_count           INT         NOT NULL DEFAULT 0 CHECK (retry_count >= 0),
+  next_retry_at         TIMESTAMPTZ NULL,
   last_attempted_at     TIMESTAMPTZ NULL,
 
   created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -31,3 +30,6 @@ CREATE TABLE IF NOT EXISTS claim.claim_intents (
 CREATE INDEX IF NOT EXISTS idx_claim_taxpayer   ON claim.claim_intents (taxpayer_id);
 CREATE INDEX IF NOT EXISTS idx_claim_status     ON claim.claim_intents (status);
 CREATE INDEX IF NOT EXISTS idx_claim_filing     ON claim.claim_intents (filing_id);
+CREATE INDEX IF NOT EXISTS idx_claim_dispatch_window
+  ON claim.claim_intents (next_retry_at, created_at)
+  WHERE status IN ('queued','failed');

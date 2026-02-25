@@ -92,4 +92,53 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
       },
     });
   });
+
+  await page.route("**/assessments*", async (route) => {
+    const method = route.request().method().toUpperCase();
+    if (method === "GET") {
+      await json(route, { assessments: [] });
+      return;
+    }
+    if (method === "POST") {
+      const body = (route.request().postDataJSON() ?? {}) as { filing?: Record<string, unknown> };
+      const filingId = String(body.filing?.filing_id ?? "FILING-NEW-001");
+      await json(route, {
+        trace_id: "trace-assess-1",
+        assessment: {
+          assessment_id: "ASSESS-001",
+          filing_id: filingId,
+          rule_version_id: "DK-VAT-001",
+          result_type: "payable",
+          claim_amount: 100,
+          stage1_gross_output_vat: 100,
+          stage2_total_deductible_input_vat: 0,
+          stage3_pre_adjustment_net_vat: 100,
+          stage4_net_vat: 100,
+        },
+      }, 201);
+      return;
+    }
+    await json(route, {});
+  });
+
+  await page.route("**/claims*", async (route) => {
+    const method = route.request().method().toUpperCase();
+    if (method === "GET") {
+      await json(route, { claims: [] });
+      return;
+    }
+    if (method === "POST") {
+      await json(route, {
+        trace_id: "trace-claim-1",
+        idempotent: false,
+        claim: {
+          claim_id: "CLAIM-001",
+          status: "queued",
+          claim_amount: 100,
+        },
+      }, 201);
+      return;
+    }
+    await json(route, {});
+  });
 }

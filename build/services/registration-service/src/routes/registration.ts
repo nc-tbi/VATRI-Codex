@@ -26,6 +26,9 @@ interface CreateRegistrationBody {
   taxpayer_id: string;
   cvr_number: string;
   annual_turnover_dkk: number;
+  business_profile?: Record<string, unknown>;
+  contact?: Record<string, unknown>;
+  address?: Record<string, unknown>;
 }
 
 interface TransferBody {
@@ -43,14 +46,14 @@ export async function registrationRoutes(
   app.post("/", async (req: FastifyRequest, reply: FastifyReply) => {
     const body = req.body as CreateRegistrationBody;
     const traceId = req.id;
-    const { taxpayer_id, cvr_number, annual_turnover_dkk } = body;
+    const { taxpayer_id, cvr_number, annual_turnover_dkk, business_profile, contact, address } = body;
 
     if (!taxpayer_id || !cvr_number || annual_turnover_dkk === undefined) {
       return reply.badRequest("taxpayer_id, cvr_number, and annual_turnover_dkk are required");
     }
 
     const registration = createRegistration(taxpayer_id, cvr_number, annual_turnover_dkk, traceId);
-    await repo.saveRegistration(registration);
+    await repo.saveRegistration(registration, { business_profile, contact, address });
     await publisher.publishRegistrationCreated(registration, traceId);
 
     return reply.status(201).send({

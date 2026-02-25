@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS obligation.obligations (
   cadence                    TEXT          NOT NULL
                                CHECK (cadence IN ('monthly','quarterly','half_yearly','annual')),
   state                      TEXT          NOT NULL
-                               CHECK (state IN ('active','submitted','overdue','preliminary_triggered')),
+                               CHECK (state IN ('due','submitted','overdue')),
   trace_id                   TEXT          NOT NULL,
   created_at                 TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   filing_id                  UUID          NULL,

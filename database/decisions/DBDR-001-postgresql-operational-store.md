@@ -10,7 +10,18 @@ Accepted
 Tax Core services require strong transactional consistency for filings, assessments, amendments, and claims while preserving bounded-context isolation and append-only evidence obligations.
 
 ## Decision
-Use PostgreSQL 15+ as the operational data store across bounded contexts, with one schema namespace per context.
+Use PostgreSQL 16+ as the operational data store across bounded contexts, with one schema namespace per context.
+
+Canonical persistence scope includes:
+- `filing.line_facts` for line-level reproducibility evidence.
+- `rule_catalog.rule_versions` and related rule-pack/version metadata.
+- effective-dated policy entities for cadence and statutory time limits.
+
+Migration path (runtime alignment):
+1. Implement `rule_catalog` schema tables and seed process in operational DB.
+2. Keep current runtime in-memory cache as read-through optimization only.
+3. Switch rule resolution reads to DB-backed repository/API contract.
+4. Block release until runtime, OpenAPI, and DB contracts all resolve from the same persisted source.
 
 ## Alternatives Considered
 - Separate datastore per bounded context (higher operational overhead in current scope)
@@ -36,6 +47,15 @@ Use PostgreSQL 15+ as the operational data store across bounded contexts, with o
 - Positive: straightforward developer adoption (already used in service repositories).
 - Negative: requires disciplined schema governance to avoid cross-context joins.
 - Negative: scaling strategy must separate operational and analytical workloads (handled by ADR-007).
+
+## Ownership and Release-Gate Contract
+- Line-level fact persistence ownership: Filing bounded context (`filing` schema).
+- Rule catalog persistence ownership: Rule Engine bounded context (`rule_catalog` schema), read by filing/assessment/claim through service/API contracts.
+- Cadence and statutory time-limit policy ownership: Obligation policy bounded context (`obligation_policy` schema), referenced by obligation/assessment records.
+
+Release-gating requirements:
+- Required linkage keys on line facts: `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref`.
+- Return-level reproducibility from persisted line facts is mandatory for release signoff.
 
 ## Rollback Considerations
 If future scale or product direction requires polyglot persistence, retain PostgreSQL as system of record for legal evidence while introducing read-model stores incrementally via event replication.

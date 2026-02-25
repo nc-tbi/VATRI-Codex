@@ -150,6 +150,23 @@
 - **Rationale:** Eliminates ambiguity about whether non-payable preliminary assessments should trigger claims. Deterministic trigger policy preserves idempotency semantics and clean supersession lineage. Aligns with ADR-004 (outbox + claim dispatch) and ADR-003 (append-only evidence).
 - **Resolves:** Module Guide OQ-12 (preliminary assessment claim trigger)
 
+### D-18 — Line-Level Fact Persistence Contract
+
+- **Decision:** `LineFact` persistence is mandatory in `filing.line_facts` (PostgreSQL 16+) and is release-gating, not deferred.
+- **Ownership:** Filing bounded context owns writes and schema governance for line-level facts.
+- **Mandatory keys:** `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref`.
+- **Release gate:** Return-level reproducibility checks must reconstruct staged totals from persisted line facts before release promotion.
+- **Rationale:** Preserves legal replay and audit reproducibility guarantees from architecture/design contracts.
+
+### D-19 — Statutory and Cadence Policy Persistence
+
+- **Decision:** Effective-dated policy entities are persisted in PostgreSQL 16+ under `obligation_policy` schema:
+  - `cadence_profiles` (effective-dated cadence policy versions)
+  - `statutory_time_limit_profiles` (effective-dated statutory assessment/collection windows)
+- **Ownership:** Obligation policy bounded context; referenced by obligation/assessment records via
+  `cadence_policy_version_id` and `statutory_time_limit_profile_id`.
+- **Rationale:** Avoids enum-only policy encoding, preserves temporal legal correctness, and enables auditable policy replay.
+
 ---
 
 ## Resolved OQ Index

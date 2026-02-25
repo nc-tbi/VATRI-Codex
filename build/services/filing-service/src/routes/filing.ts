@@ -106,6 +106,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
         filing_id: ctx.filing.filing_id,
         state: ctx.state,
         trace_id: traceId,
+        idempotent: false,
         assessment: ctx.assessment,
         claim_intent: ctx.claim_intent,
       };

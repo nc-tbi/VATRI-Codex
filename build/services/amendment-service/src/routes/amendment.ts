@@ -18,6 +18,7 @@ interface RouteOptions extends FastifyPluginOptions {
 interface AmendmentBody {
   original_filing_id: string;
   taxpayer_id: string;
+  tax_period_end: string;
   original_assessment: StagedAssessment;
   new_assessment: StagedAssessment;
 }
@@ -74,20 +75,32 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
   const publisher = new AmendmentEventPublisher(opts.kafka);
 
   app.post<{ Body: AmendmentBody }>("/", async (req, reply) => {
-    const { original_filing_id, taxpayer_id, original_assessment, new_assessment } = req.body;
+    const { original_filing_id, taxpayer_id, tax_period_end, original_assessment, new_assessment } = req.body;
     const traceId = req.id;
+
+    if (!original_filing_id || !taxpayer_id || !tax_period_end || !original_assessment || !new_assessment) {
+      return reply.status(400).send({ error: "BAD_REQUEST", message: "original_filing_id, taxpayer_id, tax_period_end, original_assessment, new_assessment are required", trace_id: traceId });
+    }
+    if (original_assessment.filing_id !== original_filing_id) {
+      return reply.status(422).send({ error: "AMENDMENT_ERROR", message: "original_assessment.filing_id must match original_filing_id", trace_id: traceId });
+    }
 
     try {
       const amendment = createAmendment(
-        original_filing_id,
         taxpayer_id,
+        tax_period_end,
         original_assessment,
         new_assessment,
         traceId
       );
       await repo.saveAmendment(amendment);
       await publisher.publishAmendmentCreated(amendment, traceId);
-      return reply.status(201).send({ trace_id: traceId, amendment });
+      return reply.status(201).send({
+        trace_id: traceId,
+        idempotent: false,
+        amendment_id: amendment.amendment_id,
+        amendment,
+      });
     } catch (err) {
       if (err instanceof AmendmentError) {
         return reply.status(422).send({ error: "AMENDMENT_ERROR", message: err.message, trace_id: traceId });

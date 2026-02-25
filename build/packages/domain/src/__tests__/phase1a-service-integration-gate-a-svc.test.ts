@@ -84,6 +84,7 @@ describe("[gate:A-SVC][lane:service-integration] amendment/validation/rule-engin
       payload: {
         original_filing_id: original.filing_id,
         taxpayer_id: "tp-amend-001",
+        tax_period_end: "2026-03-31",
         original_assessment: original,
         new_assessment: amended,
       },

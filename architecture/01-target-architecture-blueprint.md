@@ -123,7 +123,7 @@ Modern runtime and data platform profile:
 - Service runtime: containerized microservices on Kubernetes with service mesh support for zero-trust mTLS and traffic policy.
 - Event backbone: durable event streaming platform (Kafka-compatible) for domain events, outbox delivery, and replay.
 - Stream processing: stateful stream processor for near-real-time obligation/compliance signals and data-quality monitors.
-- Operational store: ACID relational database for transactional states (`filing`, `assessment_version`, `claim_status`).
+- Operational store: PostgreSQL 16+ ACID relational database for transactional states (`filing`, `assessment_version`, `claim_status`).
 - Analytical lakehouse: object storage + open table format (`Apache Iceberg` class) for immutable audit/event analytics.
 - Transformation layer: SQL-first ELT and semantic models (dbt-style workflow) for compliance and operational reporting.
 - Query layer: open-source federated SQL engine/warehouse for audit/regulatory analytics without coupling to service databases.
@@ -209,6 +209,7 @@ Deterministic staged derivation contract:
 Return-level vs line-level data boundary:
 - Return-level store holds canonical filing aggregates and staged derived totals.
 - Line-level fact store holds reverse-charge, exemption, deduction-right, and place-of-supply facts.
+- Ownership: Filing bounded context (`filing.line_facts`) owns persistence of canonical line facts.
 - Required linkage keys:
   - `filing_id`
   - `line_fact_id`
@@ -217,6 +218,8 @@ Return-level vs line-level data boundary:
   - `source_document_ref`
 - Reproducibility rule:
   - return-level aggregates and deductible totals must be reproducible from linked line-level facts.
+- Release-gating requirement:
+  - releases are blocked if reproducibility checks cannot reconstruct return-level totals from persisted line facts.
 
 EU-sales obligation lifecycle contract:
 - States:
@@ -332,6 +335,11 @@ ViDA and country overlay configuration dimensions:
 - `b2c_sales_source_mode` (`lump_sum`, `saft`, `pos`)
 - `settlement_trigger_policy_id`
 - `statutory_time_limit_profile_id`
+
+Persistence ownership for policy and rule governance:
+- Rule catalog persistence: `rule_catalog` schema (effective-dated `rule_versions` and rule-set membership); PostgreSQL is authoritative source of truth.
+- Cadence policy persistence: `obligation_policy.cadence_profiles` effective-dated policy entity, referenced by obligation generation.
+- Statutory time-limit persistence: `obligation_policy.statutory_time_limit_profiles` effective-dated entity, referenced by obligation/assessment lifecycle records.
 
 Interface and contract standards:
 - Synchronous APIs: `OpenAPI 3.1` with versioned contracts and backward-compatibility policy.

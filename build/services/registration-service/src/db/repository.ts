@@ -11,15 +11,26 @@ import {
 export class RegistrationRepository {
   constructor(private readonly sql: Sql) {}
 
-  async saveRegistration(registration: RegistrationRecord): Promise<void> {
+  async saveRegistration(
+    registration: RegistrationRecord,
+    metadata?: {
+      business_profile?: Record<string, unknown>;
+      contact?: Record<string, unknown>;
+      address?: Record<string, unknown>;
+    },
+  ): Promise<void> {
     await this.sql`
       INSERT INTO registration.registrations (
         registration_id, taxpayer_id, cvr_number, status, cadence,
-        annual_turnover_dkk, trace_id, created_at
+        annual_turnover_dkk, trace_id, created_at,
+        business_profile, contact, address
       ) VALUES (
         ${registration.registration_id}, ${registration.taxpayer_id},
         ${registration.cvr_number}, ${registration.status}, ${registration.cadence},
-        ${registration.annual_turnover_dkk}, ${registration.trace_id}, ${registration.created_at}
+        ${registration.annual_turnover_dkk}, ${registration.trace_id}, ${registration.created_at},
+        ${metadata?.business_profile ? JSON.stringify(metadata.business_profile) : null}::jsonb,
+        ${metadata?.contact ? JSON.stringify(metadata.contact) : null}::jsonb,
+        ${metadata?.address ? JSON.stringify(metadata.address) : null}::jsonb
       )
       ON CONFLICT (registration_id) DO NOTHING
     `;

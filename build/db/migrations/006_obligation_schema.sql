@@ -4,7 +4,7 @@
 
 CREATE SCHEMA IF NOT EXISTS obligation;
 
-CREATE TABLE obligation.obligations (
+CREATE TABLE IF NOT EXISTS obligation.obligations (
   obligation_id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
   taxpayer_id              TEXT         NOT NULL,
   tax_period_start         DATE         NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE obligation.obligations (
                              CHECK (cadence IN ('monthly', 'quarterly', 'half_yearly', 'annual')),
   state                    TEXT         NOT NULL
                              CHECK (state IN ('due', 'submitted', 'overdue')),
-  filing_id                TEXT,
+  filing_id                UUID,
   preliminary_assessment_id UUID,
   trace_id                 TEXT         NOT NULL,
   created_at               TIMESTAMPTZ  NOT NULL DEFAULT NOW()
@@ -23,7 +23,7 @@ CREATE TABLE obligation.obligations (
 CREATE INDEX obligation_obligations_taxpayer_idx ON obligation.obligations (taxpayer_id);
 CREATE INDEX obligation_obligations_period_idx ON obligation.obligations (tax_period_end);
 
-CREATE TABLE obligation.preliminary_assessments (
+CREATE TABLE IF NOT EXISTS obligation.preliminary_assessments (
   preliminary_assessment_id UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   obligation_id             UUID        NOT NULL REFERENCES obligation.obligations (obligation_id),
   taxpayer_id               TEXT        NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE obligation.preliminary_assessments (
   estimated_net_vat         NUMERIC(15, 2) NOT NULL,
   state                     TEXT        NOT NULL
                               CHECK (state IN ('triggered', 'issued', 'superseded_by_filing', 'final_calculated')),
-  superseding_filing_id     TEXT,
+  superseding_filing_id     UUID,
   final_net_vat             NUMERIC(15, 2),
   triggered_at              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   issued_at                 TIMESTAMPTZ,

@@ -33,9 +33,12 @@ CREATE TABLE IF NOT EXISTS filing.filings (
   adjustments                    NUMERIC(18,2) NOT NULL DEFAULT 0,
   rubrik_a_goods                 NUMERIC(18,2) NOT NULL DEFAULT 0,
   rubrik_a_services              NUMERIC(18,2) NOT NULL DEFAULT 0,
-  rubrik_b_goods                 NUMERIC(18,2) NOT NULL DEFAULT 0,
+  rubrik_b_goods_reportable      NUMERIC(18,2) NOT NULL DEFAULT 0,
+  rubrik_b_goods_non_reportable  NUMERIC(18,2) NOT NULL DEFAULT 0,
   rubrik_b_services              NUMERIC(18,2) NOT NULL DEFAULT 0,
   rubrik_c                       NUMERIC(18,2) NOT NULL DEFAULT 0,
+  reimbursement_oil_and_bottled_gas_duty  NUMERIC(18,2) NOT NULL DEFAULT 0,
+  reimbursement_electricity_duty          NUMERIC(18,2) NOT NULL DEFAULT 0,
 
   -- Denormalised assessment (from staged-derivation)
   stage1                NUMERIC(18,2) NULL,

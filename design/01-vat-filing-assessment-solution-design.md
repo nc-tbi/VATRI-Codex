@@ -1123,6 +1123,8 @@ DK VAT overlay fields:
 - `taxpayer_id`, `cvr_number`
 - `period_start`, `period_end`, `due_date`
 - `cadence` (`monthly | quarterly | half_yearly | annual`) (DK VAT data)
+- `cadence_policy_version_id` (FK to effective-dated cadence policy)
+- `statutory_time_limit_profile_id` (FK to effective-dated statutory time-limit profile)
 - `return_type_expected`
 - `status` (`due | submitted | overdue`)
 
@@ -1153,6 +1155,11 @@ The filing data model separates return-level aggregates from line-level transact
 | **Line-level fact store** | Reverse-charge, exemption, deduction-right, and place-of-supply facts per line | `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref` |
 
 **Reproducibility rule:** Return-level aggregates and deductible totals must be reproducible from linked line-level facts. Any audit query that reconstructs a return must be able to derive identical stage totals from the line-fact store records.
+
+Ownership and release gating:
+- `filing-service` owns canonical persistence of `LineFact` records in the `filing` bounded-context schema.
+- Required keys are release-gating and cannot be optional: `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref`.
+- Release is blocked when reproducibility checks fail to reconstruct return-level totals from persisted line facts.
 
 ### 5.4 DKK Normalization and Rounding Policy
 
@@ -1403,7 +1410,7 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | Phase 3M | AsyncAPI + CloudEvents, Schema Registry CI gates, Kafka backbone |
 | Phase 4 | amendment-service, lineage query API, compliance dashboard alerts |
 | Phase 4M | Lakehouse ingestion pipeline, audit analytics models |
-| Phase 5 | system-s-registration-projection-service + system-s-registration-adapter; system-s-accounting-adapter + reconciliation; line-level fact store + reproducibility API |
+| Phase 5 | system-s-registration-projection-service + system-s-registration-adapter; system-s-accounting-adapter + reconciliation; reproducibility query API and controls |
 | Phase 6 | ViDA Step 1-3 enablement: ingestion/verification, high-risk review loop + System S task handoff, prefill controls, VAT balance + settlement triggers, payment-plan lifecycle events |
 | Phase 7 | Module contracts for S24, S25, C14, C15, C20, C21, C22 |
 

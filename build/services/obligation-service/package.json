@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@fastify/cors": "^10.1.0",
     "@fastify/sensible": "^6.0.4",
     "@tax-core/domain": "*",
     "fastify": "^5.7.4",

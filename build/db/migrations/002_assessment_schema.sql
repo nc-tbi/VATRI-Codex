@@ -1,16 +1,19 @@
--- 002_assessment_schema.sql — Assessment bounded context schema
--- ADR-001: one PostgreSQL schema per bounded context
--- Stores staged derivation results (S1-S4) for audit and downstream use.
+﻿-- 002_assessment_schema.sql - Assessment bounded context schema
+-- Aligns with append-only/versioned assessment persistence and denormalized lookup fields.
 
 CREATE SCHEMA IF NOT EXISTS assessment;
 
 CREATE TABLE IF NOT EXISTS assessment.assessments (
   assessment_id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  filing_id             UUID        NOT NULL UNIQUE,  -- one assessment per filing_id
+  filing_id             UUID        NOT NULL,
+  assessment_version    INT         NOT NULL DEFAULT 1 CHECK (assessment_version >= 1),
+  assessment_type       TEXT        NOT NULL DEFAULT 'regular'
+                         CHECK (assessment_type IN ('regular','preliminary','amendment')),
+  taxpayer_id           TEXT        NOT NULL,
+  tax_period_end        DATE        NOT NULL,
   rule_version_id       TEXT        NOT NULL,
   trace_id              TEXT        NOT NULL,
 
-  -- Staged derivation (all four values persisted — ADR-003 full audit trail)
   stage1_gross_output_vat            NUMERIC(18,2) NOT NULL,
   stage2_total_deductible_input_vat  NUMERIC(18,2) NOT NULL,
   stage3_pre_adjustment_net_vat      NUMERIC(18,2) NOT NULL,
@@ -18,9 +21,12 @@ CREATE TABLE IF NOT EXISTS assessment.assessments (
 
   result_type           TEXT        NOT NULL CHECK (result_type IN ('payable','refund','zero')),
   claim_amount          NUMERIC(18,2) NOT NULL CHECK (claim_amount >= 0),
+  assessed_at           TIMESTAMPTZ NOT NULL,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-  assessed_at           TIMESTAMPTZ NOT NULL
+  CONSTRAINT uq_assessment_filing_version UNIQUE (filing_id, assessment_version)
 );
 
 CREATE INDEX IF NOT EXISTS idx_assessment_filing ON assessment.assessments (filing_id);
-CREATE INDEX IF NOT EXISTS idx_assessment_result ON assessment.assessments (result_type);
+CREATE INDEX IF NOT EXISTS idx_assessment_taxpayer_period ON assessment.assessments (taxpayer_id, tax_period_end);
+CREATE INDEX IF NOT EXISTS idx_assessment_assessed_at ON assessment.assessments (assessed_at DESC);

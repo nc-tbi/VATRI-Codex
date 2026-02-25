@@ -7,6 +7,10 @@ import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
+function uuid(): string {
+  return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+}
+
 export default function NewAmendmentPage() {
   const searchParams = useSearchParams();
   const filingFromContext = searchParams.get("original_filing_id") ?? "";
@@ -14,6 +18,7 @@ export default function NewAmendmentPage() {
   const { t } = useOverlayI18n();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
   const [originalFilingId, setOriginalFilingId] = useState(filingFromContext);
+  const [taxPeriodEnd, setTaxPeriodEnd] = useState("2026-03-31");
   const [newNet, setNewNet] = useState("0");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +32,7 @@ export default function NewAmendmentPage() {
       const body = {
         original_filing_id: originalFilingId,
         taxpayer_id: taxpayerId,
+        tax_period_end: taxPeriodEnd,
         original_assessment: {
           filing_id: originalFilingId,
           trace_id: "portal-amendment",
@@ -37,7 +43,7 @@ export default function NewAmendmentPage() {
           claim_amount: 0,
         },
         new_assessment: {
-          filing_id: originalFilingId,
+          filing_id: uuid(),
           trace_id: "portal-amendment",
           rule_version_id: "DK-VAT-001",
           assessed_at: now,
@@ -75,6 +81,10 @@ export default function NewAmendmentPage() {
         <label className="block">
           <span className="mb-1 block text-sm">{t("amendments_new.original_filing_id")}</span>
           <input className="w-full rounded border px-3 py-2" value={originalFilingId} onChange={(e) => setOriginalFilingId(e.target.value)} required readOnly={Boolean(filingFromContext)} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm">{t("obligations.period")} ({t("shared.end_date")})</span>
+          <input className="w-full rounded border px-3 py-2" type="date" value={taxPeriodEnd} onChange={(e) => setTaxPeriodEnd(e.target.value)} required />
         </label>
         <label className="block">
           <span className="mb-1 block text-sm">{t("amendments_new.new_net_result")}</span>

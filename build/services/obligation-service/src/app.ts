@@ -2,6 +2,7 @@
 // Manages obligation lifecycle and preliminary assessment supersession
 // Source: architecture/delivery/capability-to-backlog-mapping.md §Phase 2 Epic E5
 import Fastify, { type FastifyInstance } from "fastify";
+import cors from "@fastify/cors";
 import sensible from "@fastify/sensible";
 import type { Sql } from "postgres";
 import type { Kafka } from "kafkajs";
@@ -20,6 +21,19 @@ export function buildApp(config: AppConfig): FastifyInstance {
   });
 
   app.register(sensible);
+  const allowedOrigins = (
+    process.env.SERVICE_ALLOWED_ORIGINS ?? "http://127.0.0.1:3000,http://localhost:3000"
+  )
+    .split(",")
+    .map((x) => x.trim())
+    .filter((x) => x.length > 0);
+  app.register(cors, {
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("Origin not allowed"), false);
+    },
+    allowedHeaders: ["content-type", "authorization", "x-user-role", "x-subject-id", "x-role", "x-trace-id"],
+  });
 
   app.get("/health", async () => ({ status: "ok", service: "obligation-service" }));
 

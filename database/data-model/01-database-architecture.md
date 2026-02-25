@@ -46,8 +46,9 @@ This document is the authoritative database architecture for the Tax Core platfo
 
 **Recommended fix (Phase 4+):** Remove `claim_id` and `claim_status` from `filing.filings`. The filing service should obtain claim status from the claim orchestrator via API or event, not from its own DB. This is a lower-priority refactor; flagged here as a data model debt item.
 
-### F-004 — Validation and Rule Engine services are correctly stateless
-`validation-service` and `rule-engine-service` repositories are intentionally empty. Correct — no persistent state required for these contexts. Rule catalog state belongs to the rule-engine's in-memory catalog (loaded at startup), not a writable DB table in the current implementation. A persistent rule catalog table is deferred (see Risks).
+### F-004 - Validation service is stateless; rule catalog is persistent
+`validation-service` repositories are intentionally empty and remain stateless.
+`rule-engine-service` evaluation is stateless at runtime, but rule catalog is architecture-authoritative persistent data in PostgreSQL (`rule_catalog` schema, D-02), not an in-memory/deferred-only contract.
 
 ### F-005 — Audit bounded context has no dedicated schema yet
 The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an `AUD` (Audit Store) as a distinct downstream target. Currently audit writes go through `@tax-core/domain`'s `evidence-writer.ts` with no authoritative DDL. An `audit.evidence_entries` schema is required.
@@ -58,11 +59,11 @@ The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an 
 
 | # | Assumption | Status |
 |---|---|---|
-| A-01 | PostgreSQL ≥ 15 is the operational store for all Tax Core services | `confirmed` — implied by `postgres` npm package usage and open-source policy (ADR-008) |
+| A-01 | PostgreSQL 16+ is the operational store for all Tax Core services | `confirmed` - design and architecture decisions (D-02, D-07) |
 | A-02 | Each bounded context owns exactly one PostgreSQL schema namespace | `confirmed` — all repositories use schema-prefixed table names |
 | A-03 | All monetary amounts are in DKK; multi-currency is out of scope | `confirmed` — blueprint §5 DKK normalization policy |
 | A-04 | UUIDs are the natural primary key type for all entities | `confirmed` — all repositories use UUID ids |
-| A-05 | The rule catalog is currently an in-memory TypeScript construct; a persistent DB rule catalog table is deferred | `assumed` — no rule catalog repository found; flagged in Risks |
+| A-05 | Rule catalog is persisted in PostgreSQL `rule_catalog` schema with effective dating; runtime services may cache read models in memory | `confirmed` |
 | A-06 | The audit store is co-located in the same PostgreSQL instance (separate schema namespace) | `assumed` — simplest topology for Phase 1-3; lakehouse is long-term destination (ADR-007) |
 | A-07 | `next_retry_at` column is required on `claim.claim_intents` per Phase 3 domain changes | `confirmed` — memory record from Phase 3 contract freeze |
 
@@ -73,7 +74,7 @@ The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an 
 | ID | Risk / Question | Severity | Mitigation |
 |---|---|---|---|
 | R-01 | Assessment upsert (F-001) actively destroys amendment lineage. Any amendment processed today overwrites the original assessment. | **Critical** | DBDR-002 issued; DDL correction in `database/schemas/assessment.sql`; Code Builder must update repository before amendment scenarios go live. |
-| R-02 | No persistent rule catalog table. Rule version pinning is stable at runtime (in-memory) but cannot be queried or audited from the database. | High | Raise with Architect whether rule catalog table (with `effective_from`/`effective_to` per ADR-002) is required before Gate C / Phase 4. |
+| R-02 | Rule catalog persistence implementation lag vs architecture decision (D-02) in runtime code paths | High | Implement `rule_catalog` schema and service repository reads; block release until DB contract and runtime are aligned. |
 | R-03 | Audit schema has no DDL or migration. Evidence writes will fail silently or be lost if the audit store is not provisioned. | High | `database/schemas/audit.sql` defined here as first authoritative DDL. |
 | R-04 | `filing.filings` cross-context columns `claim_id`/`claim_status` (F-003) create implicit coupling. Not blocking for current phases but will be a migration cost later. | Medium | Document as tech debt; schedule removal in Phase 4 data model refactor. |
 | R-05 | No migration tooling decision made yet. All DDL is currently applied ad hoc (Docker init scripts). | Medium | DBDR required; Flyway or Liquibase (both open-source) are candidates. Raise with DevOps before Phase 4 schema changes. |
@@ -97,7 +98,7 @@ The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an 
 
 ## 7. Technology Selection
 
-**Selected:** PostgreSQL 15+ (open-source, Apache-2.0-compatible license)
+**Selected:** PostgreSQL 16+ (open-source, PostgreSQL License)
 
 **Rationale:**
 - Satisfies ADR-008 open-source-only policy.
@@ -123,7 +124,7 @@ The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an 
 | Amendment | `amendment` | Amendment lineage + admin alter events | `amendments` append-only; `amendment_admin_alter_events` append-only |
 | Claim | `claim` | Claim intents + dispatch lifecycle | `claim_intents` idempotent insert; status mutable |
 | Audit | `audit` | Immutable evidence entries | `evidence_entries` append-only (hard constraint) |
-| Rule Engine | _(stateless — in-memory catalog)_ | None | Persistent catalog deferred (R-02) |
+| Rule Engine | `rule_catalog` | Effective-dated rule versions and pack metadata | Append-only version rows |
 
 ---
 
@@ -207,6 +208,33 @@ audit.evidence_entries ◄─── trace_id, filing_id, assessment_id, claim_id
 | `superseded_at` | TIMESTAMPTZ | NULL | | Timestamp of supersession. |
 | `final_net_vat` | NUMERIC(18,2) | NULL | | Actual net VAT from the filed return, populated on supersession. |
 
+### 10.3A obligation_policy.cadence_profiles
+
+| Column | Type | Nullable | Constraint | Description |
+|---|---|---|---|---|
+| `cadence_policy_version_id` | UUID | NOT NULL | PRIMARY KEY | Effective-dated cadence policy version identifier. |
+| `jurisdiction_code` | TEXT | NOT NULL | | Jurisdiction (e.g. `DK`). |
+| `cadence_code` | TEXT | NOT NULL | CHECK (cadence_code IN ('monthly','quarterly','half_yearly','annual')) | Cadence class. |
+| `turnover_threshold_min_dkk` | NUMERIC(18,2) | NOT NULL | | Inclusive lower threshold for policy applicability. |
+| `turnover_threshold_max_dkk` | NUMERIC(18,2) | NULL | | Exclusive upper threshold; null for open-ended. |
+| `effective_from` | DATE | NOT NULL | | Start date for policy validity. |
+| `effective_to` | DATE | NULL | | End date; null for open-ended. |
+| `trace_id` | TEXT | NOT NULL | | Correlation ID. |
+| `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable creation timestamp. |
+
+### 10.3B obligation_policy.statutory_time_limit_profiles
+
+| Column | Type | Nullable | Constraint | Description |
+|---|---|---|---|---|
+| `statutory_time_limit_profile_id` | UUID | NOT NULL | PRIMARY KEY | Effective-dated statutory time-limit profile identifier. |
+| `jurisdiction_code` | TEXT | NOT NULL | | Jurisdiction (e.g. `DK`). |
+| `assessment_window_days` | INTEGER | NOT NULL | CHECK (assessment_window_days > 0) | Allowed assessment window duration. |
+| `collection_window_days` | INTEGER | NOT NULL | CHECK (collection_window_days > 0) | Allowed collection window duration. |
+| `effective_from` | DATE | NOT NULL | | Start date for policy validity. |
+| `effective_to` | DATE | NULL | | End date; null for open-ended. |
+| `trace_id` | TEXT | NOT NULL | | Correlation ID. |
+| `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable creation timestamp. |
+
 ### 10.4 filing.filings
 
 | Column | Type | Nullable | Constraint | Description |
@@ -245,6 +273,28 @@ audit.evidence_entries ◄─── trace_id, filing_id, assessment_id, claim_id
 | `claim_id` | UUID | NOT NULL | | Cross-context soft reference to claim intent. (F-003 debt) |
 | `claim_status` | TEXT | NOT NULL | | Denormalized claim status. (F-003 debt) |
 | `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable record creation timestamp. |
+
+### 10.4A filing.line_facts
+
+| Column | Type | Nullable | Constraint | Description |
+|---|---|---|---|---|
+| `line_fact_id` | UUID | NOT NULL | PRIMARY KEY | Canonical line-level fact identifier. |
+| `filing_id` | UUID | NOT NULL | REFERENCES filing.filings(filing_id) | Parent filing linkage key. |
+| `calculation_trace_id` | TEXT | NOT NULL | INDEX | Calculation/reproducibility linkage key. |
+| `rule_version_id` | TEXT | NOT NULL | | Rule catalog version pinned at evaluation time. |
+| `source_document_ref` | TEXT | NOT NULL | | Source evidence/document reference. |
+| `line_sequence` | INTEGER | NOT NULL | CHECK (line_sequence > 0) | Source line ordering for deterministic replay. |
+| `supply_type` | TEXT | NULL | | Reverse-charge and place-of-supply classification input. |
+| `reverse_charge_applied` | BOOLEAN | NULL | | Reverse-charge indicator. |
+| `deduction_right_type` | TEXT | NULL | | Deduction classification (`full`, `none`, `partial`). |
+| `deduction_percentage` | NUMERIC(5,2) | NULL | | Deduction percentage used for this line. |
+| `deduction_policy_version_id` | UUID | NULL | | Effective-dated policy linkage. |
+| `payload_snapshot` | JSONB | NULL | | Full line fact payload snapshot for audit/replay. |
+| `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable creation timestamp. |
+
+Release-gate contract:
+- Mandatory linkage keys: `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref`.
+- Return-level stage totals and deductible totals must be reproducible from persisted `filing.line_facts`.
 
 ### 10.5 filing.filing_admin_alter_events
 
@@ -345,6 +395,31 @@ Same structure as `filing.filing_admin_alter_events` with `amendment_id` in plac
 
 ---
 
+### 10.11 rule_catalog.rule_versions
+
+| Column | Type | Nullable | Constraint | Description |
+|---|---|---|---|---|
+| `rule_version_id` | TEXT | NOT NULL | PRIMARY KEY | Rule version identifier pinned on filing/assessment/claim records. |
+| `jurisdiction_code` | TEXT | NOT NULL | | Jurisdiction key (`DK`, etc.). |
+| `effective_from` | DATE | NOT NULL | | Start date for legal validity. |
+| `effective_to` | DATE | NULL | | End date; null for open-ended validity. |
+| `version_status` | TEXT | NOT NULL | CHECK (version_status IN ('draft','active','retired')) | Lifecycle state. |
+| `legal_reference_bundle` | JSONB | NULL | | Legal references bound to this version set. |
+| `trace_id` | TEXT | NOT NULL | | Correlation ID. |
+| `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable creation timestamp. |
+
+### 10.12 rule_catalog.rule_set_items
+
+| Column | Type | Nullable | Constraint | Description |
+|---|---|---|---|---|
+| `rule_set_item_id` | UUID | NOT NULL | PRIMARY KEY | Surrogate key. |
+| `rule_version_id` | TEXT | NOT NULL | REFERENCES rule_catalog.rule_versions(rule_version_id) | Parent version linkage. |
+| `rule_id` | TEXT | NOT NULL | | Rule identifier. |
+| `severity` | TEXT | NOT NULL | CHECK (severity IN ('error','warning','info')) | Rule severity. |
+| `applies_when` | JSONB | NULL | | Rule applicability expression payload. |
+| `expression_payload` | JSONB | NOT NULL | | Rule expression body. |
+| `created_at` | TIMESTAMPTZ | NOT NULL | DEFAULT NOW() | Immutable creation timestamp. |
+
 ## 11. Append-Only and Audit Controls (ADR-003)
 
 The following tables are legally mandated append-only. No application code may issue `UPDATE` or `DELETE` on these tables:
@@ -366,7 +441,7 @@ The following tables are legally mandated append-only. No application code may i
 
 ### Rule catalog versioning (ADR-002)
 - `rule_version_id` is stored as a TEXT reference on `filing.filings`, `assessment.assessments`, and `claim.claim_intents`.
-- The rule catalog itself is currently in-memory (TypeScript). A persistent `rule_engine.rule_versions` table with `effective_from`/`effective_to` columns is required before Phase 4 (R-02).
+- Rule catalog is persisted in PostgreSQL `rule_catalog` schema with effective-dated tables (`rule_versions`, `rule_sets`, `rule_set_items`). Runtime services may cache read models but PostgreSQL is authoritative (D-02).
 
 ### Amendment versioning (ADR-005)
 - `assessment.assessments` carries `assessment_version` starting at 1.
@@ -470,6 +545,8 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 | F-001 | Assessment upsert defect — must fix before Phase 4 | Code Builder | ADR-003, ADR-005 |
 | F-002 | Cross-schema JOIN in assessment service | Code Builder | ADR-001 |
 | F-003 | claim_id/claim_status in filing table — tech debt | Code Builder (Phase 4) | ADR-001 |
-| R-02 | Persistent rule catalog table required | Architect + Code Builder | ADR-002 |
+| R-02 | Rule catalog runtime alignment to persistent `rule_catalog` schema required | Architect + Code Builder | ADR-002 |
 | R-05 | Migration tooling decision | Database Architect + DevOps | ADR-008 |
 | R-06 | Formal data retention policy | Database Architect + Legal | GDPR, Bogføringsloven |
+
+

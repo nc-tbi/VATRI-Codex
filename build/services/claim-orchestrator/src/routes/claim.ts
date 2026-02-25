@@ -76,7 +76,7 @@ export async function claimRoutes(app: FastifyInstance, opts: RouteOptions): Pro
       await repo.saveClaim(claim);
       await publisher.publishClaimCreated(claim, traceId);
 
-      return reply.status(201).send({ trace_id: traceId, claim });
+      return reply.status(201).send({ trace_id: traceId, idempotent: false, claim });
     } catch (err) {
       if (err instanceof IdempotencyConflictError) {
         return reply.status(409).send({ error: "IDEMPOTENCY_CONFLICT", message: err.message, trace_id: traceId });

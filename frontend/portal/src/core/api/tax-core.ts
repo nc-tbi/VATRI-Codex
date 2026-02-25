@@ -86,6 +86,17 @@ export interface SubmissionResult {
   body: Record<string, unknown>;
 }
 
+interface AssessmentCreateResponse {
+  trace_id: string;
+  assessment: Record<string, unknown>;
+}
+
+interface ClaimCreateResponse {
+  trace_id: string;
+  claim: Record<string, unknown>;
+  idempotent?: boolean;
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
 }
@@ -151,6 +162,29 @@ export async function submitAmendment(body: Record<string, unknown>, user?: User
   return parseSubmissionResult(response.status, response.data, "amendment", "amendment_id");
 }
 
+export async function createAssessmentFromFiling(
+  filing: Record<string, unknown>,
+  ruleVersionId: string,
+  user?: UserClaims,
+): Promise<Record<string, unknown>> {
+  const payload = await apiPost<AssessmentCreateResponse>("assessment", "/assessments", { filing, rule_version_id: ruleVersionId }, user);
+  return payload.assessment;
+}
+
+export async function createClaimFromAssessment(
+  body: {
+    taxpayer_id: string;
+    filing_id: string;
+    tax_period_end: string;
+    assessment_version: number;
+    assessment: Record<string, unknown>;
+  },
+  user?: UserClaims,
+): Promise<Record<string, unknown>> {
+  const payload = await apiPost<ClaimCreateResponse>("claim", "/claims", body, user);
+  return payload.claim;
+}
+
 export async function listAssessments(taxpayerId: string, taxPeriodEnd?: string, user?: UserClaims): Promise<AssessmentEnvelope[]> {
   const suffix = taxPeriodEnd ? `&tax_period_end=${encodeURIComponent(taxPeriodEnd)}` : "";
   const payload = await apiGet<{ assessments: AssessmentEnvelope[] }>("assessment", `/assessments?taxpayer_id=${encodeURIComponent(taxpayerId)}${suffix}`, user);
@@ -197,5 +231,18 @@ export async function amendmentUndo(amendmentId: string, user?: UserClaims): Pro
 
 export async function amendmentRedo(amendmentId: string, user?: UserClaims): Promise<Record<string, unknown>> {
   return apiPost<Record<string, unknown>>("amendment", `/amendments/${encodeURIComponent(amendmentId)}/redo`, {}, user);
+}
+
+export async function submitObligation(
+  obligationId: string,
+  filingId: string,
+  user?: UserClaims,
+): Promise<Record<string, unknown>> {
+  return apiPost<Record<string, unknown>>(
+    "obligation",
+    `/obligations/${encodeURIComponent(obligationId)}/submit`,
+    { filing_id: filingId },
+    user,
+  );
 }
 

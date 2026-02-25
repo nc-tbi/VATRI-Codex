@@ -46,4 +46,13 @@ Notes:
 - `S01-S34` originate from `analysis/07-filing-scenarios-and-claim-outcomes-dk.md` (including ViDA ladder additions).
 - `C14`, `C15`, `C20`, `C21`, `C22` are explicit scenario classes from `analysis/08-scenario-universe-coverage-matrix-dk.md` where additional or manual handling is required.
 
+## Data-Contract Links (Policy and Reproducibility)
+
+| Scenario ID | Required Persistence Contract | Concrete Data Contract Links |
+|---|---|---|
+| S06-S15 | Line-level reproducibility | `filing.line_facts` with required keys: `filing_id`, `line_fact_id`, `calculation_trace_id`, `rule_version_id`, `source_document_ref` |
+| S16-S19 | Effective-dated cadence policy | `obligation_policy.cadence_profiles.cadence_policy_version_id` referenced by obligation generation records |
+| S19-S23 | Statutory time-limit policy | `obligation_policy.statutory_time_limit_profiles.statutory_time_limit_profile_id` referenced by obligation/assessment lifecycle records |
+| S01-S34 | Rule-version legal replay | `rule_catalog.rule_versions.rule_version_id` effective-dated references pinned on filing/assessment/claim records |
+
 

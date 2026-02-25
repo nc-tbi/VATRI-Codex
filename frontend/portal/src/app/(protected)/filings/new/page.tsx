@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { submitFiling } from "@/core/api/tax-core";
+import {
+  createAssessmentFromFiling,
+  createClaimFromAssessment,
+  submitFiling,
+  submitObligation,
+} from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -106,6 +111,18 @@ export default function NewFilingPage() {
         reimbursement_electricity_duty_amount: energyElectricityAmount,
       };
       const result = await submitFiling(payload, user ?? undefined);
+      const assessment = await createAssessmentFromFiling(payload, payload.rule_version_id, user ?? undefined);
+      await createClaimFromAssessment(
+        {
+          taxpayer_id: taxpayerId,
+          filing_id: result.resource_id,
+          tax_period_end: payload.tax_period_end,
+          assessment_version: payload.assessment_version,
+          assessment,
+        },
+        user ?? undefined,
+      );
+      await submitObligation(obligationId, result.resource_id, user ?? undefined);
       const replay = result.status === 200 && result.idempotent;
       setMessage(replay ? t("filings_new.replayed", { id: result.resource_id, trace: result.trace_id }) : t("filings_new.submitted", { id: result.resource_id, trace: result.trace_id }));
     } catch (err) {

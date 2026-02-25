@@ -45,6 +45,16 @@ Define the implementation baseline for the VATRI self-service portal UI and its 
 - `taxpayer`: login, overview, amendment form, submissions, assessments/claims.
 - contextual taxpayer routes: obligations and new filing are opened from overview actions and are not visible in sidebar navigation.
 
+## DK Filing Form UX Constraints
+- Filing form sections must mirror DK portal grouping:
+  - domestic VAT totals
+  - trade-abroad amounts/values
+  - energy-duty reimbursements
+- Split Rubrik B goods inputs are mandatory:
+  - `rubrik_b_goods_eu_sale_value_reportable`
+  - `rubrik_b_goods_eu_sale_value_non_reportable`
+- Signed numeric entry is supported in UI (`-` prefix); parser acceptance is expected, with legal admissibility handled server-side.
+
 ## Accessibility Baseline
 - Keyboard navigation for all controls and data tables.
 - Visible focus states on all interactive elements.

@@ -47,7 +47,12 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 4. Navigate `/overview`
 5. Open an active VAT obligation from overview list
 6. Navigate `/filings/new?obligation_id=...`
-7. Submit filing
+7. Enter filing amounts using DK grouped sections:
+   - domestic VAT totals
+   - trade-abroad values (including split Rubrik B goods reportable/non-reportable)
+   - energy-duty reimbursement fields
+8. Signed amounts are accepted in UI using minus prefix where relevant.
+9. Submit filing
 8. Redirect `/submissions/{filingId}`
 7. Show status chip and latest assessment summary link
 
@@ -74,9 +79,10 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 1. Taxpayer opens `/assessments-claims`
 2. Select period
 3. UI renders:
-  - staged assessment summary
+  - staged assessment summary (`stage_1`..`stage_4`)
   - claim status timeline
   - explanation block (inputs, rules, result type)
+  - claim amount derived from `stage_4_net_vat_amount`
 
 ## Required UI States
 - Filing/amendment:
@@ -91,6 +97,7 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 - `403` forbidden: show role-restricted page with trace reference.
 - `409` conflict (alter/undo/redo): show non-destructive conflict guidance.
 - `422` validation: render summary + field anchors.
+- signed-input policy errors: show explicit reason code/message when legal/rule policy rejects a sign/combination.
 
 ## Accessibility Baseline
 - Keyboard-only completion for all journeys.

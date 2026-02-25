@@ -20,11 +20,16 @@ Consolidate the portal design contract set required before front-end implementat
 - DK overlay is first-class baseline.
 - Role model and route guards explicit (`admin`, `taxpayer`).
 - Accessibility baseline is mandatory (keyboard, focus, readable error summaries).
+- DK filing UI delta incorporated:
+  - split Rubrik B goods fields (`reportable` vs `non_reportable`)
+  - energy-duty reimbursement fields
+  - signed amount UX hint and parser acceptance policy
 
 ## Remaining Readiness Dependencies
 - Runtime/OpenAPI parity for portal-critical deltas (auth/admin/list/transparency).
 - Non-production seeded admin behavior with environment guard.
 - Test gate mapping and execution evidence for blocker-derived features.
+- Legal/rule-level sign admissibility matrices by filing type (regular/zero/amendment) must remain explicit in tests and rule catalog notes.
 
 ## Start Rule
 Front-end implementation should start after DoR signoff from Designer + Architect + Code Builder with test/governance alignment.

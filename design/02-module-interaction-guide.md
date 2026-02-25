@@ -394,7 +394,7 @@ The system is structured in three layers. Modules at each layer may only interac
 | Outbound (synchronous) | Calls `validation-service` with `(filing_id, trace_id)` |
 | Outbound events | `ReturnSubmitted` [CloudEvents] |
 | Outbound API (synchronous) | After validation passes: calls `rule-engine-service` with `(facts, rule_version_id)` |
-| DK VAT schema | DK VAT canonical filing schema applied as overlay (CVR, Rubrik A/B/C, salgsmoms/kÃ¸bsmoms etc.) [DK VAT config] |
+| DK VAT schema | DK VAT canonical filing schema applied as overlay: `output_vat_amount_domestic`, reverse-charge outputs, `input_vat_deductible_amount_total`, split Rubrik B goods fields, energy reimbursement fields [DK VAT config] |
 | Audit evidence | `FilingSnapshot` written immediately on intake |
 
 **Key interactions in order:**
@@ -420,6 +420,9 @@ POST /vat-filings
 - The immutable snapshot is written before any validation or evaluation. Even rejected filings have a complete audit trail.
 - `rule_version_id` is resolved and pinned to the Filing record at intake. Rule changes deployed after intake do not affect in-flight filings.
 - The DK VAT canonical schema is a configuration artifact applied at normalization time. No DK-specific logic lives in filing-service itself.
+- Signed-input policy:
+  - parser accepts signed numeric amounts from portal inputs (minus prefix allowed)
+  - legal admissibility for sign/combination is enforced downstream by validation/rule policy
 - Duplicate `POST /vat-filings` semantics:
   - same `filing_id` + semantically identical payload => `200` idempotent replay, no new domain events
   - same `filing_id` + semantically conflicting payload => `409`, no side effects
@@ -445,7 +448,7 @@ POST /vat-filings
 |---|---|
 | Layer | `[VAT-GENERIC]` |
 | Inbound | Synchronous call from `filing-service`: `validate(filing_id, trace_id)` |
-| Logic (generic) | Schema conformance, period integrity, numeric amount constraints, type consistency |
+| Logic (generic) | Schema conformance, period integrity, finite numeric constraints, type consistency |
 | Logic (DK overlay) | Rubrik A/B/C cross-field consistency, CVR format (8-digit), zero-filing constraint [DK VAT config] |
 | Severity types | `blocking_error` (halts pipeline) / `warning` (flags and continues) |
 | Outbound events | `ReturnValidated` [CloudEvents] â€” payload: `{filing_id, passed: bool, errors[], warnings[]}` |
@@ -455,6 +458,9 @@ POST /vat-filings
 - `validation-service` is called synchronously by `filing-service`. The response drives the pipeline branch: pass â†’ proceed to rule evaluation; block â†’ filing-service returns 422.
 - After responding synchronously, validation-service also emits `ReturnValidated` on Kafka for any async consumers (e.g., compliance signals, audit).
 - DK VAT-specific validation rules are injected as configuration. The validation service itself has no knowledge of ML Â§Â§ or DK law â€” it evaluates rules expressed as field-level constraints.
+- Sign handling rule:
+  - validator accepts signed values at parser/type level for configured filing fields
+  - rule packs decide admissibility by filing type and legal context with explicit reason codes
 - A `warning` does not halt the pipeline. The assessment proceeds, and warnings are included in the response envelope.
 
 **Depends on:**

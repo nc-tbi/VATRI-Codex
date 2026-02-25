@@ -25,6 +25,7 @@ Reference date: 2026-02-25
 ## Primary Source Files
 - `design/01-vat-filing-assessment-solution-design.md`
 - `design/02-module-interaction-guide.md`
+- `design/07-dk-vat-form-ui-design-consequences.md`
 - `design/portal/01-06`
 - `build/openapi/*.yaml`
 - `build/openapi/index.html`

@@ -53,8 +53,8 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
    - energy-duty reimbursement fields
 8. Signed amounts are accepted in UI using minus prefix where relevant.
 9. Submit filing
-8. Redirect `/submissions/{filingId}`
-7. Show status chip and latest assessment summary link
+10. Redirect `/submissions/{filingId}`
+11. Show status chip and latest assessment summary link
 
 ## Journey D - Taxpayer Amendment Submission
 1. Taxpayer opens `/overview`
@@ -64,7 +64,7 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 5. Form opens at `/amendments/new?original_filing_id=...`
 6. Submit amendment
 7. Redirect `/submissions`
-5. Status updates to `submitted` or `superseded` based on resulting chain
+8. Status updates to `submitted` or `superseded` based on resulting chain
 
 ## Journey E - Admin Alter/Undo/Redo
 1. Admin opens `/admin/filings-alter` or `/admin/amendments-alter`

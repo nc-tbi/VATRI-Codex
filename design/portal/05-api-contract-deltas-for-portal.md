@@ -65,6 +65,21 @@ Status summary:
 - Assessment staged values exist.
 - Dedicated explainability/transparency envelope is not yet fully standardized across assessment/claim responses.
 
+## Delta F - DK Filing Form Surface Alignment (Now Mandatory)
+Required canonical request fields for DK filing UI alignment:
+- `output_vat_amount_domestic`
+- `input_vat_deductible_amount_total`
+- `reverse_charge_output_vat_goods_abroad_amount`
+- `reverse_charge_output_vat_services_abroad_amount`
+- `rubrik_b_goods_eu_sale_value_reportable`
+- `rubrik_b_goods_eu_sale_value_non_reportable`
+- `reimbursement_oil_and_bottled_gas_duty_amount`
+- `reimbursement_electricity_duty_amount`
+
+Behavioral requirement:
+- parser accepts signed numeric values for portal-originated filing fields.
+- legal admissibility of sign/combination is enforced in validation/rule policy with explicit reason codes.
+
 ## Delta E - Seeded Admin Bootstrap (Non-Production Only)
 Required behavior:
 - deterministic seeded admin in local/dev:

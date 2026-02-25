@@ -29,6 +29,10 @@ Document the authoritative baseline for the VAT filing and assessment solution d
 - API/event contracts and error envelope policies
 - append-only audit and lineage requirements
 - module interaction patterns and reliability constraints
+- DK portal UI reconciliation delta:
+  - split Rubrik B goods fields
+  - reimbursement field inclusion in canonical filing and staged derivation
+  - signed input acceptance at parser layer with rule-level admissibility
 
 ## Reference Constraints
 - Architecture ADR alignment required (ADR-001 through ADR-010).

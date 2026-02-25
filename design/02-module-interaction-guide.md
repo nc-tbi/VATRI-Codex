@@ -6,6 +6,7 @@
 > **Contract freeze:** `design/03-phase-3-contract-freeze.md` (Phase 3 — event publisher ownership, OpenAPI versions, error codes, UI semantics)
 > **Platform decisions:** `design/recommendations/internal-platform-choices-suggestions.md` (D-01 through D-17)
 > **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/02-component-design-contracts.md`, `architecture/designer/03-nfr-observability-checklist.md`, ADR-001 through ADR-009, `analysis/09-product-scope-and-requirements-alignment.md`
+> **Analysis delta input:** `analysis/10-dk-vat-portal-ui-gap-assessment.md`
 
 ---
 
@@ -426,6 +427,11 @@ POST /vat-filings
 - Duplicate `POST /vat-filings` semantics:
   - same `filing_id` + semantically identical payload => `200` idempotent replay, no new domain events
   - same `filing_id` + semantically conflicting payload => `409`, no side effects
+
+**DK field-alignment consequences (portal-driven):**
+- split Rubrik B goods values are persisted distinctly (`reportable`, `non_reportable`) and must never be merged in canonical storage.
+- reimbursement fields are part of mandatory filing payload for deterministic stage-4 computation.
+- filing UI is obligation-gated; `/filings/new` is opened contextually with `obligation_id`.
 
 **Depends on:**
 - `API Gateway` [PLATFORM] â€” inbound routing

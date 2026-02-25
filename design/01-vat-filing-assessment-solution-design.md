@@ -38,6 +38,7 @@ End-to-end solution design for VAT filing and assessment on Tax Core, including 
 - `analysis/03-vat-flows-obligations.md`
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`
 - `analysis/09-product-scope-and-requirements-alignment.md`
+- `analysis/10-dk-vat-portal-ui-gap-assessment.md`
 
 ## Decisions and Findings
 - The architecture capability backbone remains stable; jurisdiction behavior and ViDA maturity behavior are activation/configuration overlays.

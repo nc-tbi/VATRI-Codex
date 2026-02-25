@@ -28,6 +28,9 @@ This folder is the dedicated working area for solution design outputs derived fr
 - `design/portal/05-api-contract-deltas-for-portal.md`
 - `design/portal/06-local-environment-and-dev-setup.md`
 
+## Additional Alignment Notes
+- `design/07-dk-vat-form-ui-design-consequences.md`
+
 ## Consolidated Designer Documentation
 - `documentation/designer/README.md`
 - `documentation/designer/01-solution-design-baseline.md`

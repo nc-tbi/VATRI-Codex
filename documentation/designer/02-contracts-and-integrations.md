@@ -10,6 +10,10 @@ Capture the implementation-facing contract baseline defined by design.
   - all portal workflows must be executable via public APIs (no DB bypass).
 
 ## Key Contract Semantics
+- DK filing contract includes:
+  - split Rubrik B goods fields (`rubrik_b_goods_eu_sale_value_reportable`, `rubrik_b_goods_eu_sale_value_non_reportable`)
+  - reimbursement fields (`reimbursement_oil_and_bottled_gas_duty_amount`, `reimbursement_electricity_duty_amount`)
+  - signed-input acceptance at parser layer with admissibility enforced by rule policy
 - Filing duplicate semantics:
   - identical payload replay -> deterministic idempotent response
   - conflicting semantic replay -> `409 Conflict`

@@ -40,6 +40,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |   `-- traceability/                # Scenario-to-architecture traceability matrix
 |
 |-- design/                          # Solution design outputs
+|-- database/                        # Database architect workspace (schemas, data models, migrations, runbooks)
 |-- documentation/                   # Consolidated role-owned documentation packs
 |-- build/                           # Self-service portal implementation workspace
 |-- testing/                         # Test strategy and quality-governance outputs
@@ -54,6 +55,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |-- ARCHITECT.md                     # Architect operating contract
 |-- business-analyst.md              # Business analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
+|-- DATABASE_ARCHITECT.md            # Database Architect operating contract
 |-- CRITICAL_REVIEWER.md             # Critical reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding optimizer operating contract
 |-- CODE_BUILDER.md                  # Code builder operating contract
@@ -153,6 +155,7 @@ Role-based contracts define how AI agents must operate in this repository:
 - **[ARCHITECT.md](ARCHITECT.md)** - Solution Architect role.
 - **[business-analyst.md](business-analyst.md)** - Business Analyst role.
 - **[DESIGNER.md](DESIGNER.md)** - Solution Designer role.
+- **[DATABASE_ARCHITECT.md](DATABASE_ARCHITECT.md)** - Database Architect role.
 - **[CRITICAL_REVIEWER.md](CRITICAL_REVIEWER.md)** - Critical Reviewer role.
 - **[CODING_OPTIMIZER.md](CODING_OPTIMIZER.md)** - Coding Optimizer role.
 - **[CODE_BUILDER.md](CODE_BUILDER.md)** - Code Builder role.

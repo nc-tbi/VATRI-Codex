@@ -45,10 +45,14 @@ export interface FilingAmounts {
   readonly input_vat_deductible_amount_total: number;
   // Adjustments (can be positive or negative)
   readonly adjustments_amount: number;
+  // Energy-duty reimbursement inputs from Danish VAT portal.
+  readonly reimbursement_oil_and_bottled_gas_duty_amount: number;
+  readonly reimbursement_electricity_duty_amount: number;
   // International value boxes (excl. VAT) — must be non-negative
   readonly rubrik_a_goods_eu_purchase_value: number;
   readonly rubrik_a_services_eu_purchase_value: number;
-  readonly rubrik_b_goods_eu_sale_value: number;
+  readonly rubrik_b_goods_eu_sale_value_reportable: number;
+  readonly rubrik_b_goods_eu_sale_value_non_reportable: number;
   readonly rubrik_b_services_eu_sale_value: number;
   readonly rubrik_c_other_vat_exempt_supplies_value: number;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { listAmendments, listFilings } from "@/core/api/tax-core";
@@ -47,7 +48,10 @@ export default function SubmissionsPage() {
           <ul className="mt-2 space-y-2 text-sm">
             {(filingsQuery.data ?? []).map((f) => (
               <li key={String(f.filing_id)} className="rounded border p-3">
-                {String(f.filing_id)} - {typeof f.state === "string" ? statusLabel(f.state) : t("shared.unknown")}
+                <Link className="underline" href={`/submissions/${encodeURIComponent(String(f.filing_id))}`}>
+                  {String(f.filing_id)}
+                </Link>{" "}
+                - {typeof f.state === "string" ? statusLabel(f.state) : t("shared.unknown")}
               </li>
             ))}
           </ul>

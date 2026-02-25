@@ -40,3 +40,6 @@ This folder is the dedicated working area for solution design outputs derived fr
 
 ## Output Rule
 All new designer deliverables should be stored in `design/`.
+
+## Cross-Role Alignment Notes
+- `design/06-role-instructions-dk-vat-portal-ui-alignment.md` (Danish VAT portal field delta handoff for BA/Architect/Designer/Code Builder/Test roles)

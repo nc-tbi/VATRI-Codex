@@ -95,11 +95,17 @@ components:
           type: number
         adjustments_amount:
           type: number
+        reimbursement_oil_and_bottled_gas_duty_amount:
+          type: number
+        reimbursement_electricity_duty_amount:
+          type: number
         rubrik_a_goods_eu_purchase_value:
           type: number
         rubrik_a_services_eu_purchase_value:
           type: number
-        rubrik_b_goods_eu_sale_value:
+        rubrik_b_goods_eu_sale_value_reportable:
+          type: number
+        rubrik_b_goods_eu_sale_value_non_reportable:
           type: number
         rubrik_b_services_eu_sale_value:
           type: number
@@ -146,3 +152,4 @@ components:
           type: string
         trace_id:
           type: string
+

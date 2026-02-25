@@ -777,7 +777,7 @@ Governance: new rule requires `legal_reference` and `effective_from`; `effective
 `output_vat_amount` (salgsmoms), `input_vat_deductible_amount` (kÃ¸bsmoms), `vat_on_goods_purchases_abroad_amount`, `vat_on_services_purchases_abroad_amount`, `adjustments_amount`
 
 **DK VAT international value boxes:**
-`rubrik_a_goods_eu_purchase_value`, `rubrik_a_services_eu_purchase_value`, `rubrik_b_goods_eu_sale_value`, `rubrik_b_services_eu_sale_value`, `rubrik_c_other_vat_exempt_supplies_value`
+`rubrik_a_goods_eu_purchase_value`, `rubrik_a_services_eu_purchase_value`, `rubrik_b_goods_eu_sale_value_reportable`, `rubrik_b_goods_eu_sale_value_non_reportable`, `rubrik_b_services_eu_sale_value`, `rubrik_c_other_vat_exempt_supplies_value`, `reimbursement_oil_and_bottled_gas_duty_amount`, `reimbursement_electricity_duty_amount`
 
 **DK VAT identifiers:**
 `cvr_number` (8-digit Danish CVR), `contact_reference`
@@ -820,9 +820,12 @@ All portal workflows â€” registration, obligation viewing, filing submissio
   "adjustments_amount": 0.00,
   "rubrik_a_goods_eu_purchase_value": 20000.00,
   "rubrik_a_services_eu_purchase_value": 8000.00,
-  "rubrik_b_goods_eu_sale_value": 0.00,
+  "rubrik_b_goods_eu_sale_value_reportable": 0.00,
+  "rubrik_b_goods_eu_sale_value_non_reportable": 0.00,
   "rubrik_b_services_eu_sale_value": 0.00,
   "rubrik_c_other_vat_exempt_supplies_value": 0.00,
+  "reimbursement_oil_and_bottled_gas_duty_amount": 0.00,
+  "reimbursement_electricity_duty_amount": 0.00,
   "contact_reference": "ref-2024-001"
 }
 ```
@@ -1023,9 +1026,12 @@ DK VAT overlay fields:
 - `adjustments_amount` (DK VAT)
 - `rubrik_a_goods_eu_purchase_value` (DK VAT)
 - `rubrik_a_services_eu_purchase_value` (DK VAT)
-- `rubrik_b_goods_eu_sale_value` (DK VAT)
+- `rubrik_b_goods_eu_sale_value_reportable` (DK VAT)
+- `rubrik_b_goods_eu_sale_value_non_reportable` (DK VAT)
 - `rubrik_b_services_eu_sale_value` (DK VAT)
 - `rubrik_c_other_vat_exempt_supplies_value` (DK VAT)
+- `reimbursement_oil_and_bottled_gas_duty_amount` (DK VAT)
+- `reimbursement_electricity_duty_amount` (DK VAT)
 - `contact_reference` (DK VAT)
 
 **Assessment (append-only)** `[VAT-GENERIC]`
@@ -1638,6 +1644,25 @@ Supersession behavior:
 
 Configuration hook:
 - `preliminary_claim_trigger_policy_id` controls optional threshold conditions without changing core orchestration logic.
+
+### 11.14 Danish VAT Portal UI Alignment Delta
+
+Source: provided Danish self-service VAT filing UI screenshot (2026-02-25 session context).
+
+Confirmed field-level deltas:
+- Portal has two Rubrik B goods fields:
+  - reportable in EU-sales-without-VAT channel
+  - non-reportable in EU-sales-without-VAT channel
+- Portal has energy-duty reimbursement fields:
+  - oil and bottled-gas duty reimbursement
+  - electricity duty reimbursement
+- Portal explicitly states negative amount input is allowed (minus prefix).
+
+Design implications:
+- Canonical filing schema must represent both Rubrik B goods fields separately.
+- Canonical filing schema must include both energy-duty reimbursement fields.
+- Input parser must accept signed amounts for portal filing fields; legal constraints are enforced by rule policies and filing-type context.
+- Validation and assessment evidence must preserve original sign and transformed calculation values.
 
 ---
 

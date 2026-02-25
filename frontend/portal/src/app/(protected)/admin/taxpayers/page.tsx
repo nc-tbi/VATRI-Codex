@@ -5,6 +5,14 @@ import { getRegistration } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
+function readString(value: unknown): string {
+  return typeof value === "string" ? value : "";
+}
+
+function readRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
+}
+
 export default function AdminTaxpayersPage() {
   const { user } = useAuth();
   const { t } = useOverlayI18n();
@@ -24,6 +32,10 @@ export default function AdminTaxpayersPage() {
     }
   };
 
+  const businessProfile = readRecord(result?.business_profile);
+  const contact = readRecord(result?.contact);
+  const address = readRecord(result?.address);
+
   return (
     <section>
       <h2 className="text-2xl font-semibold">{t("admin.taxpayers.title")}</h2>
@@ -34,13 +46,92 @@ export default function AdminTaxpayersPage() {
           value={registrationId}
           onChange={(e) => setRegistrationId(e.target.value)}
           placeholder={t("admin.taxpayers.lookup_placeholder")}
+          required
         />
         <button className="rounded bg-action px-4 py-2 text-white" type="submit">
           {t("admin.taxpayers.lookup")}
         </button>
       </form>
       {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
-      {result ? <pre className="mt-4 overflow-auto rounded border bg-slate-50 p-3 text-xs">{JSON.stringify(result, null, 2)}</pre> : null}
+      {result ? (
+        <div className="mt-6 space-y-4">
+          <article className="rounded border border-[var(--border)] p-4">
+            <h3 className="font-medium">{t("admin.taxpayers.summary")}</h3>
+            <dl className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+              <div>
+                <dt className="text-[var(--muted)]">{t("shared.taxpayer_id")}</dt>
+                <dd>{readString(result.taxpayer_id) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">CVR</dt>
+                <dd>{readString(result.cvr_number) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.turnover")}</dt>
+                <dd>{String(result.annual_turnover_dkk ?? "-")}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.effective_date")}</dt>
+                <dd>{readString(businessProfile?.effective_date) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.status")}</dt>
+                <dd>{readString(businessProfile?.status) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.legal_name")}</dt>
+                <dd>{readString(businessProfile?.legal_name) || "-"}</dd>
+              </div>
+            </dl>
+          </article>
+          <article className="rounded border border-[var(--border)] p-4">
+            <h3 className="font-medium">{t("admin.taxpayers.contact")}</h3>
+            <dl className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.contact_name")}</dt>
+                <dd>{readString(contact?.name) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.contact_email")}</dt>
+                <dd>{readString(contact?.email) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.contact_phone")}</dt>
+                <dd>{readString(contact?.phone) || "-"}</dd>
+              </div>
+            </dl>
+          </article>
+          <article className="rounded border border-[var(--border)] p-4">
+            <h3 className="font-medium">{t("admin.taxpayers.address")}</h3>
+            <dl className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.address_line_1")}</dt>
+                <dd>{readString(address?.line1) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.address_line_2")}</dt>
+                <dd>{readString(address?.line2) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.postal_code")}</dt>
+                <dd>{readString(address?.postal_code) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.city")}</dt>
+                <dd>{readString(address?.city) || "-"}</dd>
+              </div>
+              <div>
+                <dt className="text-[var(--muted)]">{t("admin.taxpayers_new.country_code")}</dt>
+                <dd>{readString(address?.country_code) || "-"}</dd>
+              </div>
+            </dl>
+          </article>
+          <details className="rounded border border-[var(--border)] p-4">
+            <summary className="cursor-pointer font-medium">{t("admin.taxpayers.raw_payload")}</summary>
+            <pre className="mt-4 overflow-auto rounded border bg-slate-50 p-3 text-xs">{JSON.stringify(result, null, 2)}</pre>
+          </details>
+        </div>
+      ) : null}
     </section>
   );
 }

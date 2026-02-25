@@ -14,6 +14,12 @@ Current artifacts:
 - `testing/03-sprint-1-detailed-test-cases.md`
 - `testing/04-gate-a-ci-spec.md`
 - `testing/05-gate-a-defect-remediation-tracker.md`
+- `documentation/01-dk-vat-calculation-coverage-matrix.md` (implemented vs partial vs missing calculation coverage baseline)
+
+Portal e2e implementation references:
+- `frontend/portal/tests/e2e/login.spec.ts`
+- `frontend/portal/tests/e2e/taxpayer-flow.spec.ts`
+- `frontend/portal/tests/e2e/utils/session-mocks.ts`
 
 Primary role contract:
 - `TEST_MANAGER.md`

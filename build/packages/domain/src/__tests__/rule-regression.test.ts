@@ -32,9 +32,12 @@ function makeFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFiling {
     reverse_charge_output_vat_services_abroad_amount: 0,
     input_vat_deductible_amount_total: 0,
     adjustments_amount: 0,
+    reimbursement_oil_and_bottled_gas_duty_amount: 0,
+    reimbursement_electricity_duty_amount: 0,
     rubrik_a_goods_eu_purchase_value: 0,
     rubrik_a_services_eu_purchase_value: 0,
-    rubrik_b_goods_eu_sale_value: 0,
+    rubrik_b_goods_eu_sale_value_reportable: 0,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
     rubrik_b_services_eu_sale_value: 0,
     rubrik_c_other_vat_exempt_supplies_value: 0,
     ...overrides,
@@ -134,7 +137,7 @@ describe("TB-S2-01: Rule effective-dating regression suite", () => {
 
   describe("S08 — EU B2B sale, no DK VAT (zero-rated)", () => {
     it("DK-VAT-005 applied when Rubrik B > 0", () => {
-      const filing = makeFiling({ rubrik_b_goods_eu_sale_value: 200000 });
+      const filing = makeFiling({ rubrik_b_goods_eu_sale_value_reportable: 200000 });
       const output = evaluateRules({ filing, evaluated_at: EFFECTIVE_FROM });
       const result = output.results.find((r) => r.rule_id === "DK-VAT-005");
       expect(result?.applied).toBe(true);
@@ -240,7 +243,8 @@ describe("TB-S2-01: Rule effective-dating regression suite", () => {
       const filing = makeFiling({
         output_vat_amount_domestic: 0,
         input_vat_deductible_amount_total: 12000,
-        rubrik_b_goods_eu_sale_value: 0,
+        rubrik_b_goods_eu_sale_value_reportable: 0,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
         rubrik_b_services_eu_sale_value: 0,
         rubrik_c_other_vat_exempt_supplies_value: 0,
       });

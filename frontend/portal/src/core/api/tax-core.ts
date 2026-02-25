@@ -48,6 +48,36 @@ export interface ClaimRecord extends Record<string, unknown> {
   next_retry_at?: string | null;
 }
 
+export interface RegistrationAddress {
+  line1: string;
+  line2?: string;
+  postal_code: string;
+  city: string;
+  country_code: string;
+}
+
+export interface RegistrationContact {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface RegistrationBusinessProfile {
+  legal_name: string;
+  trade_name?: string;
+  effective_date: string;
+  status: "active" | "pending" | "inactive";
+}
+
+export interface RegistrationPayload {
+  taxpayer_id: string;
+  cvr_number: string;
+  annual_turnover_dkk: number;
+  business_profile: RegistrationBusinessProfile;
+  contact: RegistrationContact;
+  address: RegistrationAddress;
+}
+
 export interface SubmissionResult {
   status: 200 | 201;
   idempotent: boolean;
@@ -133,7 +163,7 @@ export async function listClaims(taxpayerId: string, taxPeriodEnd?: string, user
   return payload.claims ?? [];
 }
 
-export async function createRegistration(body: { taxpayer_id: string; cvr_number: string; annual_turnover_dkk: number }, user?: UserClaims): Promise<Record<string, unknown>> {
+export async function createRegistration(body: RegistrationPayload, user?: UserClaims): Promise<Record<string, unknown>> {
   return apiPost<Record<string, unknown>>("registration", "/registrations", body, user);
 }
 

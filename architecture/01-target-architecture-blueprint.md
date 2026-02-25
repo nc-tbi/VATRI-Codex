@@ -184,12 +184,26 @@ Canonical filing contract (return-level monetary fields):
 - `reverse_charge_output_vat_services_abroad_amount`
 - `input_vat_deductible_amount_total`
 - `adjustments_amount`
+- `reimbursement_oil_and_bottled_gas_duty_amount`
+- `reimbursement_electricity_duty_amount`
+
+Canonical international value boxes (excl. VAT):
+- `rubrik_a_goods_eu_purchase_value`
+- `rubrik_a_services_eu_purchase_value`
+- `rubrik_b_goods_eu_sale_value_reportable`
+- `rubrik_b_goods_eu_sale_value_non_reportable`
+- `rubrik_b_services_eu_sale_value`
+- `rubrik_c_other_vat_exempt_supplies_value`
+
+Input-sign policy:
+- Danish VAT portal inputs support signed amounts at intake (`-` prefix for negatives).
+- Sign-related admissibility constraints are enforced by rule validation policy, not generic parser rejection.
 
 Deterministic staged derivation contract:
 - `stage_1_gross_output_vat_amount = output_vat_amount_domestic + reverse_charge_output_vat_goods_abroad_amount + reverse_charge_output_vat_services_abroad_amount`
 - `stage_2_total_deductible_input_vat_amount = input_vat_deductible_amount_total`
 - `stage_3_pre_adjustment_net_vat_amount = stage_1_gross_output_vat_amount - stage_2_total_deductible_input_vat_amount`
-- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount`
+- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount - reimbursement_oil_and_bottled_gas_duty_amount - reimbursement_electricity_duty_amount`
 - `result_type` and `claim_amount` derive only from `stage_4_net_vat_amount`.
 
 Return-level vs line-level data boundary:

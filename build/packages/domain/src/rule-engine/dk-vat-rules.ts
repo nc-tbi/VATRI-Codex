@@ -23,6 +23,13 @@ function makeResult(
   };
 }
 
+function rubrikBGoodsTotal(filing: RuleFacts["filing"]): number {
+  return (
+    filing.rubrik_b_goods_eu_sale_value_reportable +
+    filing.rubrik_b_goods_eu_sale_value_non_reportable
+  );
+}
+
 // ---------------------------------------------------------------------------
 // DK-VAT-001: Domestic taxable supply — output VAT at 25%
 // ML § 4 stk. 1: taxable supplies in Denmark are subject to 25% VAT.
@@ -137,7 +144,7 @@ export const DK_VAT_005: RuleCatalogEntry = {
   effective_from: EFFECTIVE_FROM,
   effective_to: null,
   apply(facts: RuleFacts): RuleEvaluationResult {
-    const rubrikBGoods = facts.filing.rubrik_b_goods_eu_sale_value;
+    const rubrikBGoods = rubrikBGoodsTotal(facts.filing);
     const rubrikBServices = facts.filing.rubrik_b_services_eu_sale_value;
     const totalRubrikB = rubrikBGoods + rubrikBServices;
     const applied = totalRubrikB > 0;
@@ -333,7 +340,7 @@ export const DK_VAT_012: RuleCatalogEntry = {
     // Export (zero-rated, non-exempt) is signalled by zero domestic output VAT,
     // no EU Rubrik B sales, but deductible input VAT present.
     const domestic = facts.filing.output_vat_amount_domestic;
-    const rubrikB = facts.filing.rubrik_b_goods_eu_sale_value + facts.filing.rubrik_b_services_eu_sale_value;
+    const rubrikB = rubrikBGoodsTotal(facts.filing) + facts.filing.rubrik_b_services_eu_sale_value;
     const input = facts.filing.input_vat_deductible_amount_total;
     const exempt = facts.filing.rubrik_c_other_vat_exempt_supplies_value;
     const applied = domestic === 0 && rubrikB === 0 && input > 0 && exempt === 0;

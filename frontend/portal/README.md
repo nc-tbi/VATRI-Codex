@@ -50,7 +50,8 @@ Admin endpoints requiring enforcement are called with:
 
 ## Route Surface
 - Shared: `/login`, `/overview`
-- Taxpayer: `/obligations`, `/filings/new`, `/amendments/new`, `/submissions`, `/assessments-claims`
+- Taxpayer: `/amendments/new`, `/submissions`, `/submissions/[filingId]`, `/assessments-claims`
+- Taxpayer contextual-only routes (not shown in sidebar): `/obligations`, `/filings/new`
 - Admin: `/admin/taxpayers/new`, `/admin/taxpayers`, `/admin/cadence`, `/admin/filings-alter`, `/admin/amendments-alter`
 
 ## Environment
@@ -84,6 +85,22 @@ E2E starter (requires app running on `http://localhost:3000`):
 ```bash
 npm run test:e2e
 ```
+
+## Playwright Coverage
+Current e2e coverage includes:
+- login page rendering and credential form visibility
+- taxpayer sidebar route visibility (obligations/new filing hidden from sidebar)
+- overview -> open VAT obligation -> contextual new filing flow
+- submission payload assertion that `obligation_id` is sent for new filings
+- submitted filing detail behavior:
+  - original filing is immutable/read-only
+  - amendment starts with `original_filing_id` route context
+
+Implementation notes:
+- e2e API dependencies are mocked in `tests/e2e/utils/session-mocks.ts`.
+- main scenario specs are:
+  - `tests/e2e/login.spec.ts`
+  - `tests/e2e/taxpayer-flow.spec.ts`
 
 ## Implementation Notes
 - Client-side route guards are UX control and defense-in-depth.

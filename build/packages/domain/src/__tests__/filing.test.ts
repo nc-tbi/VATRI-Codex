@@ -31,9 +31,12 @@ function makeBaseFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFili
     reverse_charge_output_vat_services_abroad_amount: 0,
     input_vat_deductible_amount_total: 3000,
     adjustments_amount: 0,
+    reimbursement_oil_and_bottled_gas_duty_amount: 0,
+    reimbursement_electricity_duty_amount: 0,
     rubrik_a_goods_eu_purchase_value: 0,
     rubrik_a_services_eu_purchase_value: 0,
-    rubrik_b_goods_eu_sale_value: 0,
+    rubrik_b_goods_eu_sale_value_reportable: 0,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
     rubrik_b_services_eu_sale_value: 0,
     rubrik_c_other_vat_exempt_supplies_value: 0,
     ...overrides,
@@ -193,7 +196,8 @@ describe("S08 — EU B2B sale without DK VAT (Rubrik B)", () => {
   it("completes pipeline with zero domestic output VAT and Rubrik B declared", () => {
     const filing = makeBaseFiling({
       output_vat_amount_domestic: 0,
-      rubrik_b_goods_eu_sale_value: 100000,
+      rubrik_b_goods_eu_sale_value_reportable: 100000,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
       input_vat_deductible_amount_total: 0,
     });
     // processFiling will raise a warning (CST-007) but still be valid
@@ -343,6 +347,8 @@ describe("S11-S15 — Domestic and cross-border field variations", () => {
       output_vat_amount_domestic: 10000,
       input_vat_deductible_amount_total: 3000,
       adjustments_amount: -2000,
+    reimbursement_oil_and_bottled_gas_duty_amount: 0,
+    reimbursement_electricity_duty_amount: 0,
     });
     const { context } = processFiling(filing, { taxpayer_id: "tp-001" });
     // Stage4 = (10000 - 3000) + (-2000) = 5000

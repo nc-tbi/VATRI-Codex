@@ -42,7 +42,8 @@ Define the implementation baseline for the VATRI self-service portal UI and its 
 
 ## Route Surface (high-level)
 - `admin`: login, taxpayer registration, taxpayer management, cadence edit, filing/amendment alter/undo/redo.
-- `taxpayer`: login, overview, obligations, filing form, amendment form, submissions, assessments/claims.
+- `taxpayer`: login, overview, amendment form, submissions, assessments/claims.
+- contextual taxpayer routes: obligations and new filing are opened from overview actions and are not visible in sidebar navigation.
 
 ## Accessibility Baseline
 - Keyboard navigation for all controls and data tables.

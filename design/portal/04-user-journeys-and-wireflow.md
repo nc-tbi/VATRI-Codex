@@ -12,11 +12,11 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 - `/overview`
 
 ### Taxpayer
-- `/obligations`
-- `/filings/new`
 - `/amendments/new`
 - `/submissions`
+- `/submissions/{filingId}`
 - `/assessments-claims`
+- contextual-only (not in sidebar): `/obligations`, `/filings/new`
 
 ### Admin
 - `/admin/taxpayers/new`
@@ -40,20 +40,25 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 4. Submit cadence update
 5. Show updated schedule and audit reference
 
-## Journey C - Taxpayer Filing Submission
+## Journey C - Taxpayer Filing Submission (Obligation-Gated)
 1. `GET /login`
 2. `POST /auth/login`
 3. `GET /auth/me` -> role `taxpayer`
-4. Navigate `/filings/new`
-5. Submit filing
-6. Redirect `/submissions`
+4. Navigate `/overview`
+5. Open an active VAT obligation from overview list
+6. Navigate `/filings/new?obligation_id=...`
+7. Submit filing
+8. Redirect `/submissions/{filingId}`
 7. Show status chip and latest assessment summary link
 
 ## Journey D - Taxpayer Amendment Submission
-1. Taxpayer opens `/amendments/new`
-2. Select prior filing and enter amendment values
-3. Submit amendment
-4. Redirect `/submissions`
+1. Taxpayer opens `/overview`
+2. Opens a submitted filing from the submissions list on overview
+3. In filing detail, original filing is shown as immutable in first column
+4. User selects `Create amendment` in the separate amendment column
+5. Form opens at `/amendments/new?original_filing_id=...`
+6. Submit amendment
+7. Redirect `/submissions`
 5. Status updates to `submitted` or `superseded` based on resulting chain
 
 ## Journey E - Admin Alter/Undo/Redo

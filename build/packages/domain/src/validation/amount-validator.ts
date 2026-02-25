@@ -9,6 +9,8 @@ const MONETARY_FIELDS: ReadonlyArray<keyof CanonicalFiling> = [
   "reverse_charge_output_vat_services_abroad_amount",
   "input_vat_deductible_amount_total",
   "adjustments_amount",
+  "reimbursement_oil_and_bottled_gas_duty_amount",
+  "reimbursement_electricity_duty_amount",
 ];
 
 /** International value fields must be non-negative.
@@ -16,7 +18,8 @@ const MONETARY_FIELDS: ReadonlyArray<keyof CanonicalFiling> = [
 const NON_NEGATIVE_FIELDS: ReadonlyArray<keyof CanonicalFiling> = [
   "rubrik_a_goods_eu_purchase_value",
   "rubrik_a_services_eu_purchase_value",
-  "rubrik_b_goods_eu_sale_value",
+  "rubrik_b_goods_eu_sale_value_reportable",
+  "rubrik_b_goods_eu_sale_value_non_reportable",
   "rubrik_b_services_eu_sale_value",
   "rubrik_c_other_vat_exempt_supplies_value",
 ];

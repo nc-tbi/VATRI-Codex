@@ -84,7 +84,8 @@ Context-scope best practice:
 - `validate_dk_vat_filing` checks:
   - CVR format
   - date validity and period order
-  - non-negative value constraints for VAT/rubrik fields
+  - finite numeric value constraints for VAT/rubrik/reimbursement fields (signed values supported)
+  - Rubrik B goods split handling (`reportable` + `non_reportable`)
   - zero filing consistency
   - cross-field warnings (for example, abroad VAT with empty Rubrik A)
   - derived `netVatAmount`, `resultType`, `claimAmount`

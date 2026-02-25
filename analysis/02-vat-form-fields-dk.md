@@ -34,15 +34,20 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 ### Canonical International Value Boxes (Excl. VAT)
 - `rubrik_a_goods_eu_purchase_value`
 - `rubrik_a_services_eu_purchase_value`
-- `rubrik_b_goods_eu_sale_value`
+- `rubrik_b_goods_eu_sale_value_reportable` (also reported in EU-sales-without-VAT channel)
+- `rubrik_b_goods_eu_sale_value_non_reportable` (not reported in EU-sales-without-VAT channel)
 - `rubrik_b_services_eu_sale_value`
 - `rubrik_c_other_vat_exempt_supplies_value`
+
+### Canonical Reimbursement Fields (Energy Taxes)
+- `reimbursement_oil_and_bottled_gas_duty_amount`
+- `reimbursement_electricity_duty_amount`
 
 ### Deterministic Derived Fields (Staged)
 - `stage_1_gross_output_vat_amount = output_vat_amount_domestic + reverse_charge_output_vat_goods_abroad_amount + reverse_charge_output_vat_services_abroad_amount`
 - `stage_2_total_deductible_input_vat_amount = input_vat_deductible_amount_total`
 - `stage_3_pre_adjustment_net_vat_amount = stage_1_gross_output_vat_amount - stage_2_total_deductible_input_vat_amount`
-- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount`
+- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount - reimbursement_oil_and_bottled_gas_duty_amount - reimbursement_electricity_duty_amount`
 - `result_type`:
   - `payable` if `stage_4_net_vat_amount > 0`
   - `refund` if `stage_4_net_vat_amount < 0`
@@ -58,7 +63,9 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 
 2. Amount integrity:
 - All monetary/value fields must be finite numeric values.
-- International value fields must be non-negative.
+- [confirmed] Portal UI instructs users to provide negative amounts with minus sign.
+- Signed amounts are therefore allowed at intake for filing fields shown in the Danish VAT portal.
+- [assumed] Some negative values may still be rejected by downstream legal/business rules depending on filing type and context; enforce this by rule pack rather than generic parser rejection.
 - Currency normalization to `DKK` with explicit rounding policy.
 
 3. Filing-type consistency:
@@ -116,4 +123,12 @@ Define the canonical Danish VAT filing schema and deterministic assessment deriv
 - SKAT - Cross-border reporting boxes: https://skat.dk/erhverv/moms/moms-ved-handel-med-udlandet/indberet-din-handel-med-udlandet
 - SKAT - File VAT: https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-indberetter-du-moms
 - SKAT - Correct filed VAT (canonical): https://skat.dk/erhverv/moms/moms-saadan-goer-du/saadan-retter-du-din-momsindberetning-eller-betaling
+
+## Portal UI Reconciliation (Danish VAT Screenshot)
+- [confirmed] UI includes two distinct Rubrik B goods inputs (reportable vs non-reportable in EU-sales-without-VAT channel).
+- [confirmed] UI includes energy-duty reimbursement inputs:
+  - oil and bottled-gas duty
+  - electricity duty
+- [confirmed] UI explicitly allows negative amounts by prefixing minus (`-`).
+- [assumed] If legal constraints require non-negative behavior for selected lines in specific contexts, this must be modeled in effective-dated rule validation, not hard-coded parser constraints.
 

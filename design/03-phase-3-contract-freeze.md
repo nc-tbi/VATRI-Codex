@@ -461,9 +461,12 @@ filing:
     - adjustments_amount
     - rubrik_a_goods_eu_purchase_value
     - rubrik_a_services_eu_purchase_value
-    - rubrik_b_goods_eu_sale_value
+    - rubrik_b_goods_eu_sale_value_reportable
+    - rubrik_b_goods_eu_sale_value_non_reportable
     - rubrik_b_services_eu_sale_value
     - rubrik_c_other_vat_exempt_supplies_value
+    - reimbursement_oil_and_bottled_gas_duty_amount
+    - reimbursement_electricity_duty_amount
   description: Canonical filing (CanonicalFiling shape — see filing-service.yaml for field definitions)
 ```
 

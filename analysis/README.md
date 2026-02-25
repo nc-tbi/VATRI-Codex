@@ -12,6 +12,7 @@ As of **February 24, 2026**, this folder contains architecture-oriented business
 - `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`: end-to-end filing and assessment scenarios.
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`: scenario universe checklist and coverage status.
 - `analysis/09-product-scope-and-requirements-alignment.md`: GTM scope alignment (product-first strategy, boundaries, TA3.0 and AI constraints).
+- `analysis/10-dk-vat-portal-ui-gap-assessment.md`: UI-to-canonical field delta assessment from Danish self-service portal evidence.
 - `analysis/architecture/README.md`: architect-focused documentation pack index.
 
 ## Intended Use

@@ -260,9 +260,12 @@ components:
         - reverse_charge_output_vat_services_abroad_amount
         - input_vat_deductible_amount_total
         - adjustments_amount
+        - reimbursement_oil_and_bottled_gas_duty_amount
+        - reimbursement_electricity_duty_amount
         - rubrik_a_goods_eu_purchase_value
         - rubrik_a_services_eu_purchase_value
-        - rubrik_b_goods_eu_sale_value
+        - rubrik_b_goods_eu_sale_value_reportable
+        - rubrik_b_goods_eu_sale_value_non_reportable
         - rubrik_b_services_eu_sale_value
         - rubrik_c_other_vat_exempt_supplies_value
       properties:
@@ -310,11 +313,17 @@ components:
           type: number
         adjustments_amount:
           type: number
+        reimbursement_oil_and_bottled_gas_duty_amount:
+          type: number
+        reimbursement_electricity_duty_amount:
+          type: number
         rubrik_a_goods_eu_purchase_value:
           type: number
         rubrik_a_services_eu_purchase_value:
           type: number
-        rubrik_b_goods_eu_sale_value:
+        rubrik_b_goods_eu_sale_value_reportable:
+          type: number
+        rubrik_b_goods_eu_sale_value_non_reportable:
           type: number
         rubrik_b_services_eu_sale_value:
           type: number
@@ -422,9 +431,12 @@ components:
         - reverse_charge_output_vat_services_abroad_amount
         - input_vat_deductible_amount_total
         - adjustments_amount
+        - reimbursement_oil_and_bottled_gas_duty_amount
+        - reimbursement_electricity_duty_amount
         - rubrik_a_goods_eu_purchase_value
         - rubrik_a_services_eu_purchase_value
-        - rubrik_b_goods_eu_sale_value
+        - rubrik_b_goods_eu_sale_value_reportable
+        - rubrik_b_goods_eu_sale_value_non_reportable
         - rubrik_b_services_eu_sale_value
         - rubrik_c_other_vat_exempt_supplies_value
       properties:
@@ -475,11 +487,17 @@ components:
           type: number
         adjustments_amount:
           type: number
+        reimbursement_oil_and_bottled_gas_duty_amount:
+          type: number
+        reimbursement_electricity_duty_amount:
+          type: number
         rubrik_a_goods_eu_purchase_value:
           type: number
         rubrik_a_services_eu_purchase_value:
           type: number
-        rubrik_b_goods_eu_sale_value:
+        rubrik_b_goods_eu_sale_value_reportable:
+          type: number
+        rubrik_b_goods_eu_sale_value_non_reportable:
           type: number
         rubrik_b_services_eu_sale_value:
           type: number
@@ -565,3 +583,4 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
+

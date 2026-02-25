@@ -26,7 +26,7 @@ function classifyResult(stage4: number): AssessmentResultType {
  * Stage 1: gross output VAT = domestic + reverse-charge goods + reverse-charge services
  * Stage 2: total deductible input VAT
  * Stage 3: pre-adjustment net VAT = stage1 - stage2
- * Stage 4: final net VAT = stage3 + adjustments
+ * Stage 4: final net VAT = stage3 + adjustments - reimbursements
  *
  * result_type: "payable" | "refund" | "zero"
  * claim_amount: Math.abs(stage4)
@@ -52,10 +52,13 @@ export function computeStagedAssessment(
   const stage3_pre_adjustment_net_vat =
     stage1_gross_output_vat - stage2_total_deductible_input_vat;
 
-  // Stage 4: final net VAT (includes positive or negative adjustments)
+  // Stage 4: final net VAT (includes adjustments and reimbursement reductions)
   // Source: analysis/02-vat-form-fields-dk.md — stage_4_net_vat_amount
   const stage4_net_vat =
-    stage3_pre_adjustment_net_vat + filing.adjustments_amount;
+    stage3_pre_adjustment_net_vat +
+    filing.adjustments_amount -
+    filing.reimbursement_oil_and_bottled_gas_duty_amount -
+    filing.reimbursement_electricity_duty_amount;
 
   const result_type = classifyResult(stage4_net_vat);
   const claim_amount = Math.abs(stage4_net_vat);
@@ -75,3 +78,6 @@ export function computeStagedAssessment(
     claim_amount,
   };
 }
+
+
+

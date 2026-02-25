@@ -1,10 +1,17 @@
-// validation/consistency-validator.ts — Cross-field consistency validation
-// Source: analysis/02-vat-form-fields-dk.md §Field Validation Catalog (cross-field checks)
+// validation/consistency-validator.ts - Cross-field consistency validation
+// Source: analysis/02-vat-form-fields-dk.md section Field Validation Catalog (cross-field checks)
 
 import type { CanonicalFiling, ValidationIssue } from "../shared/types.js";
 
+function rubrikBGoodsTotal(filing: CanonicalFiling): number {
+  return (
+    filing.rubrik_b_goods_eu_sale_value_reportable +
+    filing.rubrik_b_goods_eu_sale_value_non_reportable
+  );
+}
+
 /** Zero filing must not contain positive VAT amounts.
- *  Source: analysis/02-vat-form-fields-dk.md §Filing-type consistency */
+ *  Source: analysis/02-vat-form-fields-dk.md section Filing-type consistency */
 function validateZeroFilingConsistency(filing: CanonicalFiling): ValidationIssue[] {
   if (filing.filing_type !== "zero") return [];
   const issues: ValidationIssue[] = [];
@@ -31,8 +38,8 @@ function validateZeroFilingConsistency(filing: CanonicalFiling): ValidationIssue
   return issues;
 }
 
-/** Reverse-charge output VAT declared without corresponding Rubrik A value — warning.
- *  Source: analysis/02-vat-form-fields-dk.md §Cross-field checks */
+/** Reverse-charge output VAT declared without corresponding Rubrik A value - warning.
+ *  Source: analysis/02-vat-form-fields-dk.md section Cross-field checks */
 function validateReverseChargeRubrikA(filing: CanonicalFiling): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
 
@@ -65,19 +72,37 @@ function validateReverseChargeRubrikA(filing: CanonicalFiling): ValidationIssue[
   return issues;
 }
 
-/** Rubrik B sales with zero domestic output VAT — classification warning.
- *  Source: analysis/02-vat-form-fields-dk.md §Cross-field checks */
+/** Rubrik B sales with zero domestic output VAT - classification warning.
+ *  Source: analysis/02-vat-form-fields-dk.md section Cross-field checks */
 function validateRubrikBWithZeroDomesticOutput(filing: CanonicalFiling): ValidationIssue[] {
-  const rubrikB =
-    filing.rubrik_b_goods_eu_sale_value +
-    filing.rubrik_b_services_eu_sale_value;
+  const rubrikB = rubrikBGoodsTotal(filing) + filing.rubrik_b_services_eu_sale_value;
   if (rubrikB > 0 && filing.output_vat_amount_domestic === 0) {
     return [
       {
         code: "CST-007",
-        field: "rubrik_b_goods_eu_sale_value",
+        field: "rubrik_b_goods_eu_sale_value_reportable",
         message:
-          "Rubrik B EU sale values declared with zero domestic output VAT. Verify EU B2B zero-rating classification (ML § 34 stk. 1 nr. 1).",
+          "Rubrik B EU sale values declared with zero domestic output VAT. Verify EU B2B zero-rating classification (ML section 34 subsection 1 no. 1).",
+        severity: "warning",
+      },
+    ];
+  }
+  return [];
+}
+
+/** Transitional warning to prevent duplicate reimbursement effect through both adjustments and dedicated fields. */
+function validateReimbursementAdjustmentOverlap(filing: CanonicalFiling): ValidationIssue[] {
+  const reimbursementTotal =
+    Math.abs(filing.reimbursement_oil_and_bottled_gas_duty_amount) +
+    Math.abs(filing.reimbursement_electricity_duty_amount);
+
+  if (reimbursementTotal > 0 && filing.adjustments_amount < 0) {
+    return [
+      {
+        code: "CST-008",
+        field: "adjustments_amount",
+        message:
+          "Negative adjustments are present together with reimbursement fields. Verify amounts are not encoded twice.",
         severity: "warning",
       },
     ];
@@ -90,5 +115,6 @@ export function validateConsistency(filing: CanonicalFiling): ValidationIssue[] 
     ...validateZeroFilingConsistency(filing),
     ...validateReverseChargeRubrikA(filing),
     ...validateRubrikBWithZeroDomesticOutput(filing),
+    ...validateReimbursementAdjustmentOverlap(filing),
   ];
 }

@@ -25,9 +25,12 @@ function makeFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFiling {
     reverse_charge_output_vat_services_abroad_amount: 0,
     input_vat_deductible_amount_total: 0,
     adjustments_amount: 0,
+    reimbursement_oil_and_bottled_gas_duty_amount: 0,
+    reimbursement_electricity_duty_amount: 0,
     rubrik_a_goods_eu_purchase_value: 0,
     rubrik_a_services_eu_purchase_value: 0,
-    rubrik_b_goods_eu_sale_value: 0,
+    rubrik_b_goods_eu_sale_value_reportable: 0,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
     rubrik_b_services_eu_sale_value: 0,
     rubrik_c_other_vat_exempt_supplies_value: 0,
     ...overrides,
@@ -64,11 +67,23 @@ describe("Stage derivation — formula correctness", () => {
     expect(result.stage3_pre_adjustment_net_vat).toBe(6000);
   });
 
-  it("Stage 4 = stage3 + adjustments", () => {
+  it("Stage 4 = stage3 + adjustments - reimbursements", () => {
     const filing = makeFiling({
       output_vat_amount_domestic: 10000,
       input_vat_deductible_amount_total: 4000,
       adjustments_amount: -500,
+    });
+    const result = computeStagedAssessment(filing);
+    expect(result.stage4_net_vat).toBe(5500);
+  });
+
+  it("Stage 4 decreases when reimbursement fields are present", () => {
+    const filing = makeFiling({
+      output_vat_amount_domestic: 10000,
+      input_vat_deductible_amount_total: 4000,
+      adjustments_amount: 0,
+      reimbursement_oil_and_bottled_gas_duty_amount: 300,
+      reimbursement_electricity_duty_amount: 200,
     });
     const result = computeStagedAssessment(filing);
     expect(result.stage4_net_vat).toBe(5500);

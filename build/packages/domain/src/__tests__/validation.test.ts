@@ -1,6 +1,6 @@
-// validation.test.ts — Validation module tests
+// validation.test.ts - Validation module tests
 // Scenario coverage: S01-S08 (core filing outcomes + reverse charge and cross-border)
-// Source: analysis/07-filing-scenarios-and-claim-outcomes-dk.md §Scenario Sets A and B
+// Source: analysis/07-filing-scenarios-and-claim-outcomes-dk.md section Scenario Sets A and B
 
 import { describe, it, expect } from "vitest";
 import { validateFiling, validateIdentity, validateAmounts, validateConsistency } from "../validation/index.js";
@@ -29,9 +29,12 @@ function makeBaseFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFili
     reverse_charge_output_vat_services_abroad_amount: 0,
     input_vat_deductible_amount_total: 3000,
     adjustments_amount: 0,
+    reimbursement_oil_and_bottled_gas_duty_amount: 0,
+    reimbursement_electricity_duty_amount: 0,
     rubrik_a_goods_eu_purchase_value: 0,
     rubrik_a_services_eu_purchase_value: 0,
-    rubrik_b_goods_eu_sale_value: 0,
+    rubrik_b_goods_eu_sale_value_reportable: 0,
+    rubrik_b_goods_eu_sale_value_non_reportable: 0,
     rubrik_b_services_eu_sale_value: 0,
     rubrik_c_other_vat_exempt_supplies_value: 0,
     ...overrides,
@@ -43,7 +46,7 @@ function makeBaseFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFili
 // ---------------------------------------------------------------------------
 
 describe("Identity validation", () => {
-  it("S01 — passes for a valid 8-digit CVR number", () => {
+  it("S01 - passes for a valid 8-digit CVR number", () => {
     const result = validateIdentity(makeBaseFiling({ cvr_number: "12345678" }));
     expect(result.filter((i) => i.code === "ID-001")).toHaveLength(0);
   });
@@ -90,7 +93,7 @@ describe("Identity validation", () => {
     expect(result.some((i) => i.code === "ID-005")).toBe(true);
   });
 
-  it("S04 — passes for amendment filing with prior_filing_id", () => {
+  it("S04 - passes for amendment filing with prior_filing_id", () => {
     const result = validateIdentity(
       makeBaseFiling({
         filing_type: "amendment",
@@ -106,7 +109,7 @@ describe("Identity validation", () => {
 // ---------------------------------------------------------------------------
 
 describe("Amount validation", () => {
-  it("S01 — passes when all amounts are finite numbers", () => {
+  it("S01 - passes when all amounts are finite numbers", () => {
     const result = validateAmounts(makeBaseFiling());
     expect(result.filter((i) => i.severity === "error")).toHaveLength(0);
   });
@@ -125,14 +128,14 @@ describe("Amount validation", () => {
     expect(result.some((i) => i.code === "AMT-001")).toBe(true);
   });
 
-  it("S08 — fails when Rubrik B is negative", () => {
+  it("S08 - fails when Rubrik B is negative", () => {
     const result = validateAmounts(
-      makeBaseFiling({ rubrik_b_goods_eu_sale_value: -100 }),
+      makeBaseFiling({ rubrik_b_goods_eu_sale_value_reportable: -100 }),
     );
     expect(result.some((i) => i.code === "AMT-002")).toBe(true);
   });
 
-  it("S07 — passes when Rubrik A service value is zero (no EU service purchases)", () => {
+  it("S07 - passes when Rubrik A service value is zero (no EU service purchases)", () => {
     const result = validateAmounts(
       makeBaseFiling({ rubrik_a_services_eu_purchase_value: 0 }),
     );
@@ -141,11 +144,11 @@ describe("Amount validation", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Consistency validation — zero filing
+// Consistency validation - zero filing
 // ---------------------------------------------------------------------------
 
-describe("Consistency validation — zero filing (S03)", () => {
-  it("S03 — passes for a valid zero filing with all-zero amounts", () => {
+describe("Consistency validation - zero filing (S03)", () => {
+  it("S03 - passes for a valid zero filing with all-zero amounts", () => {
     const result = validateConsistency(
       makeBaseFiling({
         filing_type: "zero",
@@ -181,11 +184,11 @@ describe("Consistency validation — zero filing (S03)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Consistency validation — reverse charge warnings (S06, S07)
+// Consistency validation - reverse charge warnings (S06, S07)
 // ---------------------------------------------------------------------------
 
-describe("Consistency validation — reverse charge (S06, S07)", () => {
-  it("S06 — warns when reverse-charge goods VAT declared without Rubrik A goods value", () => {
+describe("Consistency validation - reverse charge (S06, S07)", () => {
+  it("S06 - warns when reverse-charge goods VAT declared without Rubrik A goods value", () => {
     const result = validateConsistency(
       makeBaseFiling({
         reverse_charge_output_vat_goods_abroad_amount: 2000,
@@ -195,7 +198,7 @@ describe("Consistency validation — reverse charge (S06, S07)", () => {
     expect(result.some((i) => i.code === "CST-005" && i.severity === "warning")).toBe(true);
   });
 
-  it("S07 — warns when reverse-charge services VAT declared without Rubrik A services value", () => {
+  it("S07 - warns when reverse-charge services VAT declared without Rubrik A services value", () => {
     const result = validateConsistency(
       makeBaseFiling({
         reverse_charge_output_vat_services_abroad_amount: 1000,
@@ -215,14 +218,25 @@ describe("Consistency validation — reverse charge (S06, S07)", () => {
     expect(result.some((i) => i.code === "CST-005")).toBe(false);
   });
 
-  it("S08 — warns when Rubrik B declared with zero domestic output VAT", () => {
+  it("S08 - warns when Rubrik B declared with zero domestic output VAT", () => {
     const result = validateConsistency(
       makeBaseFiling({
         output_vat_amount_domestic: 0,
-        rubrik_b_goods_eu_sale_value: 50000,
+        rubrik_b_goods_eu_sale_value_reportable: 50000,
       }),
     );
     expect(result.some((i) => i.code === "CST-007" && i.severity === "warning")).toBe(true);
+  });
+
+  it("warns when reimbursements and negative adjustments overlap", () => {
+    const result = validateConsistency(
+      makeBaseFiling({
+        adjustments_amount: -500,
+        reimbursement_oil_and_bottled_gas_duty_amount: 300,
+        reimbursement_electricity_duty_amount: 200,
+      }),
+    );
+    expect(result.some((i) => i.code === "CST-008" && i.severity === "warning")).toBe(true);
   });
 });
 
@@ -230,8 +244,8 @@ describe("Consistency validation — reverse charge (S06, S07)", () => {
 // Full validateFiling
 // ---------------------------------------------------------------------------
 
-describe("validateFiling — full pipeline", () => {
-  it("S01 — returns valid for a clean regular filing", () => {
+describe("validateFiling - full pipeline", () => {
+  it("S01 - returns valid for a clean regular filing", () => {
     const result = validateFiling(makeBaseFiling());
     expect(result.valid).toBe(true);
     expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);

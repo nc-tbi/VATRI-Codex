@@ -527,9 +527,12 @@ server.tool(
     vatOnServicesPurchasesAbroadAmount: z.number().default(0),
     rubrikAGoodsEuPurchaseValue: z.number().default(0),
     rubrikAServicesEuPurchaseValue: z.number().default(0),
-    rubrikBGoodsEuSaleValue: z.number().default(0),
+    rubrikBGoodsEuSaleValueReportable: z.number().default(0),
+    rubrikBGoodsEuSaleValueNonReportable: z.number().default(0),
     rubrikBServicesEuSaleValue: z.number().default(0),
     rubrikCOtherVatExemptSuppliesValue: z.number().default(0),
+    reimbursementOilAndBottledGasDutyAmount: z.number().default(0),
+    reimbursementElectricityDutyAmount: z.number().default(0),
     adjustments: z.number().default(0)
   },
   async ({
@@ -544,9 +547,12 @@ server.tool(
     vatOnServicesPurchasesAbroadAmount,
     rubrikAGoodsEuPurchaseValue,
     rubrikAServicesEuPurchaseValue,
-    rubrikBGoodsEuSaleValue,
+    rubrikBGoodsEuSaleValueReportable,
+    rubrikBGoodsEuSaleValueNonReportable,
     rubrikBServicesEuSaleValue,
     rubrikCOtherVatExemptSuppliesValue,
+    reimbursementOilAndBottledGasDutyAmount,
+    reimbursementElectricityDutyAmount,
     adjustments
   }) => {
     const errors: string[] = [];
@@ -571,25 +577,24 @@ server.tool(
       errors.push("taxPeriodStart must be before or equal to taxPeriodEnd.");
     }
 
-    const nonNegativeFields: Array<[string, number]> = [
+    const finiteValidatedFields: Array<[string, number]> = [
       ["outputVatAmount", outputVatAmount],
       ["inputVatDeductibleAmount", inputVatDeductibleAmount],
       ["vatOnGoodsPurchasesAbroadAmount", vatOnGoodsPurchasesAbroadAmount],
       ["vatOnServicesPurchasesAbroadAmount", vatOnServicesPurchasesAbroadAmount],
       ["rubrikAGoodsEuPurchaseValue", rubrikAGoodsEuPurchaseValue],
       ["rubrikAServicesEuPurchaseValue", rubrikAServicesEuPurchaseValue],
-      ["rubrikBGoodsEuSaleValue", rubrikBGoodsEuSaleValue],
+      ["rubrikBGoodsEuSaleValueReportable", rubrikBGoodsEuSaleValueReportable],
+      ["rubrikBGoodsEuSaleValueNonReportable", rubrikBGoodsEuSaleValueNonReportable],
       ["rubrikBServicesEuSaleValue", rubrikBServicesEuSaleValue],
-      ["rubrikCOtherVatExemptSuppliesValue", rubrikCOtherVatExemptSuppliesValue]
+      ["rubrikCOtherVatExemptSuppliesValue", rubrikCOtherVatExemptSuppliesValue],
+      ["reimbursementOilAndBottledGasDutyAmount", reimbursementOilAndBottledGasDutyAmount],
+      ["reimbursementElectricityDutyAmount", reimbursementElectricityDutyAmount]
     ];
 
-    for (const [name, value] of nonNegativeFields) {
+    for (const [name, value] of finiteValidatedFields) {
       if (!Number.isFinite(value)) {
         errors.push(`${name} must be a finite number.`);
-      }
-
-      if (value < 0) {
-        errors.push(`${name} cannot be negative.`);
       }
     }
 
@@ -602,12 +607,15 @@ server.tool(
       inputVatDeductibleAmount +
       vatOnGoodsPurchasesAbroadAmount +
       vatOnServicesPurchasesAbroadAmount +
+      Math.abs(reimbursementOilAndBottledGasDutyAmount) +
+      Math.abs(reimbursementElectricityDutyAmount) +
       Math.abs(adjustments);
 
     const internationalValueTotal =
       rubrikAGoodsEuPurchaseValue +
       rubrikAServicesEuPurchaseValue +
-      rubrikBGoodsEuSaleValue +
+      rubrikBGoodsEuSaleValueReportable +
+      rubrikBGoodsEuSaleValueNonReportable +
       rubrikBServicesEuSaleValue +
       rubrikCOtherVatExemptSuppliesValue;
 
@@ -642,13 +650,22 @@ server.tool(
     }
 
     if (
-      (rubrikBGoodsEuSaleValue > 0 || rubrikBServicesEuSaleValue > 0) &&
+      (
+        rubrikBGoodsEuSaleValueReportable > 0 ||
+        rubrikBGoodsEuSaleValueNonReportable > 0 ||
+        rubrikBServicesEuSaleValue > 0
+      ) &&
       isZero(outputVatAmount)
     ) {
       warnings.push("Rubrik B values exist while outputVatAmount is zero. Confirm domestic/exempt treatment.");
     }
 
-    const netVatAmount = outputVatAmount - inputVatDeductibleAmount + adjustments;
+    const netVatAmount =
+      outputVatAmount -
+      inputVatDeductibleAmount +
+      adjustments -
+      reimbursementOilAndBottledGasDutyAmount -
+      reimbursementElectricityDutyAmount;
     const resultType = netVatAmount > 0 ? "payable" : netVatAmount < 0 ? "refund" : "zero";
 
     const periodDays =

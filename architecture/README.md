@@ -35,6 +35,10 @@ This folder contains architecture outputs derived from the business analysis pac
 - `analysis/08-scenario-universe-coverage-matrix-dk.md`
 - `analysis/09-product-scope-and-requirements-alignment.md`
 
+## Cross-Role Coverage Artifact
+- `documentation/01-dk-vat-calculation-coverage-matrix.md`
+  - Shared architect/test-manager view of implemented vs partial vs missing VAT calculation coverage.
+
 ## Capability-Configuration Contract
 - Core architecture is capability-complete for VAT filing/assessment lifecycle.
 - ViDA maturity-step behavior is enabled by configuration and policy activation, not component replacement.

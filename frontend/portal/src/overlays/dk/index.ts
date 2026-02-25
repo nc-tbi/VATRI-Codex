@@ -46,4 +46,3 @@ export const dkOverlay: OverlayContract = {
   ],
   allowsRole: (pathname, role) => canAccess(pathname, role),
 };
-

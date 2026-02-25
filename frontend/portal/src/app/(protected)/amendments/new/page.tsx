@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import { submitAmendment } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
+import { useOverlayI18n } from "@/overlays/common/i18n";
 
 export default function NewAmendmentPage() {
   const { user } = useAuth();
+  const { t } = useOverlayI18n();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
   const [originalFilingId, setOriginalFilingId] = useState("");
   const [newNet, setNewNet] = useState("0");
@@ -43,39 +45,41 @@ export default function NewAmendmentPage() {
       };
       const result = await submitAmendment(body, user ?? undefined);
       const replay = result.status === 200 && result.idempotent;
-      setMessage(
-        replay
-          ? `AEndring var allerede indsendt. Eksisterende amendment: ${result.resource_id} (trace_id: ${result.trace_id})`
-          : `AEndring indsendt. Amendment ID: ${result.resource_id} (trace_id: ${result.trace_id})`
-      );
+      setMessage(replay ? t("amendments_new.replayed", { id: result.resource_id, trace: result.trace_id }) : t("amendments_new.submitted", { id: result.resource_id, trace: result.trace_id }));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         if (err.code === "IDEMPOTENCY_CONFLICT") {
-          setError("Konflikt: samme noegle findes med andet amendment-indhold.");
+          setError(t("amendments_new.conflict_idempotency"));
           return;
         }
         if (err.code === "STATE_ERROR") {
-          setError(`Tilstandsfejl: ${err.message}`);
+          setError(t("amendments_new.conflict_state", { message: err.message }));
           return;
         }
       }
-      setError(err instanceof Error ? err.message : "Indsendelse fejlede.");
+      setError(err instanceof Error ? err.message : t("amendments_new.submit_error"));
     }
   };
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold">Ny Ã¦ndringsangivelse</h2>
-      <p className="mt-2 text-[var(--muted)]">VÃ¦lg tidligere indsendelse og indtast korrektioner.</p>
+      <h2 className="text-2xl font-semibold">{t("amendments_new.title")}</h2>
+      <p className="mt-2 text-[var(--muted)]">{t("amendments_new.description")}</p>
       {message ? <p className="mt-4 rounded border border-success bg-green-50 p-3 text-sm text-success">{message}</p> : null}
       {error ? <p className="mt-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</p> : null}
       <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={(e) => void onSubmit(e)}>
-        <label className="block"><span className="mb-1 block text-sm">Original filing ID</span><input className="w-full rounded border px-3 py-2" value={originalFilingId} onChange={(e) => setOriginalFilingId(e.target.value)} required /></label>
-        <label className="block"><span className="mb-1 block text-sm">Nyt nettoresultat (DKK)</span><input className="w-full rounded border px-3 py-2" value={newNet} onChange={(e) => setNewNet(e.target.value)} /></label>
-        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">Indsend Ã¦ndring</button>
+        <label className="block">
+          <span className="mb-1 block text-sm">{t("amendments_new.original_filing_id")}</span>
+          <input className="w-full rounded border px-3 py-2" value={originalFilingId} onChange={(e) => setOriginalFilingId(e.target.value)} required />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm">{t("amendments_new.new_net_result")}</span>
+          <input className="w-full rounded border px-3 py-2" value={newNet} onChange={(e) => setNewNet(e.target.value)} />
+        </label>
+        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">
+          {t("amendments_new.submit")}
+        </button>
       </form>
     </section>
   );
 }
-
-

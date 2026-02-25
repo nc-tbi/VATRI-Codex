@@ -25,6 +25,7 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Architect: `architecture/`
 - Business Analyst: `analysis/`
 - Designer: `design/`
+- Database Architect: `database/`
 - Critical Reviewer: `critical-review/`
 - Coding Optimizer: `optimization/`
 - Code Builder: `mcp-server/`
@@ -57,18 +58,40 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Secondary (only when needed): selected `analysis/*.md` for rule details
 - Standards policy: keep standards and technology options open unless explicitly constrained by approved architecture scope.
 
+### Database Architect
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `ARCHITECT.md`, `DATABASE_ARCHITECT.md`
+  - architecture inputs:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/adr/ADR-001-bounded-contexts-and-events.md`
+    - `architecture/adr/ADR-002-effective-dated-rule-catalog.md`
+    - `architecture/adr/ADR-003-append-only-audit-evidence.md`
+    - `architecture/adr/ADR-005-versioned-amendments.md`
+    - `architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`
+    - `architecture/adr/ADR-008-open-source-only-technology-policy.md`
+    - `architecture/designer/02-component-design-contracts.md`
+  - database workspace artifacts: `database/**/*.md`, `database/**/*.sql`
+- Secondary (only when needed):
+  - `architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`
+  - `architecture/designer/03-nfr-observability-checklist.md`
+  - `design/*.md` and `design/**/*.md` for service-level persistence contracts
+  - `build/services/<name>/src/db/` for existing implementation schema reference
+  - selected `analysis/*.md` for legal/domain field semantics and retention obligations
+- Standards policy: enforce open-source-only technology choices (ADR-008); enforce append-only and effective-dating constraints (ADR-002, ADR-003); do not expose raw tables as cross-context integration surfaces.
+
 ### Critical Reviewer
 - Primary:
   - reviewed artifacts under `analysis/**/*.md`, `architecture/**/*.md`, `design/**/*.md`, and `testing/**/*.md`
   - `critical-review/*.md` and `critical-review/**/*.md`
-  - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
+  - role contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `DATABASE_ARCHITECT.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
   - workspace policy: `ROLE_CONTEXT_POLICY.md`
 - Secondary (only when needed): selected `README.md` or `mcp-server/README.md` when reviewing process or tooling claims
 - Standards policy: perform evidence-first quality checks; do not expand scope beyond requested review targets.
 
 ### Coding Optimizer
 - Primary:
-  - role/governance contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
+  - role/governance contracts: `ARCHITECT.md`, `business-analyst.md`, `DESIGNER.md`, `DATABASE_ARCHITECT.md`, `CRITICAL_REVIEWER.md`, `CODING_OPTIMIZER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`, `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`
   - optimization artifacts: `optimization/*.md` and `optimization/**/*.md`
   - review artifacts when relevant: `critical-review/*.md` and `critical-review/**/*.md`
 - Secondary (only when needed): selected `analysis/**/*.md`, `architecture/**/*.md`, `design/**/*.md`, and `testing/**/*.md` to validate optimization opportunities against real workflow outputs
@@ -164,6 +187,9 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - Use `get_business_analyst_context_bundle` with explicit `paths` when possible
 - Designer:
   - Use `get_role_context_bundle` with `role=designer` and explicit `paths` when possible
+- Database Architect:
+  - Use `get_role_context_bundle` with `role=database_architect` and explicit `paths` when possible
+  - Use `get_role_context_bundle` with `role=architect` for targeted ADR files when needed
 - Critical Reviewer:
   - Use `get_role_context_bundle` with `role=critical_reviewer` and explicit `paths` when possible
 - Coding Optimizer:

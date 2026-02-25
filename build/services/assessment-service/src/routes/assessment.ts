@@ -53,7 +53,7 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
     const { assessment_id } = req.params;
     const record = await repo.findAssessment(assessment_id);
     if (!record) {
-      return reply.status(404).send({ error: "NOT_FOUND", assessment_id, trace_id: req.id });
+      return reply.status(404).send({ error: "NOT_FOUND", trace_id: req.id });
     }
     return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(record) });
   });
@@ -63,7 +63,7 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
     const { filing_id } = req.params;
     const record = await repo.findAssessmentByFilingId(filing_id);
     if (!record) {
-      return reply.status(404).send({ error: "NOT_FOUND", filing_id, trace_id: req.id });
+      return reply.status(404).send({ error: "NOT_FOUND", trace_id: req.id });
     }
     return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(record) });
   });

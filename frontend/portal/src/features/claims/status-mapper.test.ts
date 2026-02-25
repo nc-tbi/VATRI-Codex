@@ -8,9 +8,9 @@ describe("claimStatusToUi", () => {
       retry_count: 1,
       next_retry_at: "2026-03-01T10:00:00Z",
     });
-    expect(result.label).toBe("Dispatch failed (retry in progress)");
+    expect(result.labelKey).toBe("status.dispatch_failed_retrying");
     expect(result.tone).toBe("warning");
-    expect(result.detail).toContain("Retry scheduled for");
+    expect(result.detailKey).toBe("claims.retry_scheduled");
   });
 
   it("maps dead_letter to terminal failure", () => {
@@ -18,7 +18,7 @@ describe("claimStatusToUi", () => {
       status: "dead_letter",
       retry_count: 3,
     });
-    expect(result.label).toBe("Requires intervention");
+    expect(result.labelKey).toBe("status.requires_intervention");
     expect(result.tone).toBe("danger");
   });
 });

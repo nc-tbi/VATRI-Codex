@@ -65,6 +65,8 @@ export function computeStagedAssessment(
     trace_id: filing.trace_id,
     rule_version_id: filing.rule_version_id,
     assessed_at: (assessedAt ?? new Date()).toISOString(),
+    assessment_version: filing.assessment_version, // Phase 3: carried from CanonicalFiling
+    assessment_type: "regular",                    // Phase 3: default; overridden for preliminary (future)
     stage1_gross_output_vat,
     stage2_total_deductible_input_vat,
     stage3_pre_adjustment_net_vat,

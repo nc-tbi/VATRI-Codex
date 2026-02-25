@@ -69,6 +69,8 @@ export interface StagedAssessment {
   readonly trace_id: string;
   readonly rule_version_id: string;
   readonly assessed_at: string; // ISO 8601 datetime
+  readonly assessment_version: number; // Phase 3: carried from CanonicalFiling.assessment_version
+  readonly assessment_type?: "regular" | "preliminary" | "final"; // Phase 3: default "regular"
 
   // Stage 1: gross output VAT
   readonly stage1_gross_output_vat: number;
@@ -114,7 +116,8 @@ export type ClaimStatus =
   | "sent"
   | "acked"
   | "failed"
-  | "dead_letter";
+  | "dead_letter"
+  | "superseded"; // Phase 3: D-17 preliminary claim replaced by filed return (terminal)
 
 /** Idempotency key format: `{taxpayer_id}:{period_end}:{assessment_version}` */
 export type IdempotencyKey = string;
@@ -135,6 +138,7 @@ export interface ClaimIntent {
   retry_count: number;
   readonly created_at: string;
   last_attempted_at?: string;
+  next_retry_at?: string | null; // Phase 3: scheduled next retry; null when terminal (acked/dead_letter/superseded)
 }
 
 // ---------------------------------------------------------------------------

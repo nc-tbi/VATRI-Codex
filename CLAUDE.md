@@ -22,6 +22,7 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 /
 |-- analysis/                        # Authoritative business/domain analysis
 |-- architecture/                    # Architecture outputs (blueprint, principles, ADRs, delivery, traceability)
+|-- database/                        # Database architect workspace (schemas, data models, migrations, runbooks)
 |-- design/                          # Designer working folder and solution design outputs
 |-- build/                           # Front-end developer workspace (self-service portal)
 |-- testing/                         # Test manager strategy and quality-governance outputs
@@ -31,6 +32,7 @@ The platform scope supports the VAT lifecycle: registration, periodic filing, as
 |-- ARCHITECT.md                     # Architect operating contract
 |-- business-analyst.md              # Business Analyst operating contract
 |-- DESIGNER.md                      # Designer operating contract
+|-- DATABASE_ARCHITECT.md            # Database Architect operating contract
 |-- CRITICAL_REVIEWER.md             # Critical Reviewer operating contract
 |-- CODING_OPTIMIZER.md              # Coding Optimizer operating contract
 |-- CODE_BUILDER.md                  # Code Builder operating contract
@@ -53,6 +55,7 @@ Always read the relevant role contract before domain work.
 | `ARCHITECT.md` | Solution Architect | `architecture/**/*.md` |
 | `business-analyst.md` | Business Analyst | `analysis/*.md` |
 | `DESIGNER.md` | Solution Designer | `architecture/**` + `design/**` |
+| `DATABASE_ARCHITECT.md` | Database Architect | `architecture/**` + `design/**` + `database/**` |
 | `CRITICAL_REVIEWER.md` | Critical Reviewer | Review targets in `analysis/**`, `architecture/**`, `design/**` + governing role contracts |
 | `CODING_OPTIMIZER.md` | Coding Optimizer | Role contracts, workspace governance docs, and targeted delivery artifacts for optimization |
 | `CODE_BUILDER.md` | Code Builder | `architecture/**` + `design/**` + implementation workspace artifacts |
@@ -76,6 +79,7 @@ Role standards policy:
 - Designer role keeps standards/technology choices open unless explicitly constrained by approved architecture scope.
 - Critical Reviewer role performs evidence-first quality checks and does not expand review scope unless requested.
 - Coding Optimizer role improves role/process/token efficiency while preserving compliance and quality guardrails.
+- Database Architect role owns the persistence layer, data model, schema management, and database documentation across all bounded contexts.
 - Code Builder role implements approved architecture/design contracts with deterministic and auditable behavior.
 - Front-End Developer role implements the self-service portal UX and front-end behavior, complementing Code Builder backend ownership.
 - DevOps role owns deployment, environment resourcing, and CI/CD gate enforcement for solution promotion readiness.

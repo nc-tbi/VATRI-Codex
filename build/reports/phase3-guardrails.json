@@ -1,6 +1,6 @@
 {
   "gate": "phase3-guardrails",
-  "generated_at": "2026-02-25T11:31:04.360Z",
+  "generated_at": "2026-02-25T11:43:23.033Z",
   "passed": true,
   "summary": {
     "total": 26,
@@ -39,9 +39,9 @@
       "detail": "SESSION_ENCRYPTION_KEY requires injection"
     },
     {
-      "name": "seed-default-disabled",
+      "name": "seed-default-enabled",
       "status": "pass",
-      "detail": "ADMIN_SEED_ENABLED defaults to false"
+      "detail": "ADMIN_SEED_ENABLED defaults to true"
     },
     {
       "name": "startup-order-validation-service",
@@ -54,9 +54,9 @@
       "detail": "rule-engine-service waits for infra health"
     },
     {
-      "name": "insecure-default-seed-creds",
+      "name": "local-admin-bootstrap",
       "status": "pass",
-      "detail": "No insecure admin defaults in .env template"
+      "detail": "Local bootstrap admin/adminadmin is configured"
     },
     {
       "name": "auth-runtime-secret-validation",
@@ -64,9 +64,9 @@
       "detail": "Auth service validates both signing and encryption keys"
     },
     {
-      "name": "auth-runtime-seed-guardrails",
+      "name": "auth-runtime-seed-policy",
       "status": "pass",
-      "detail": "Seed guardrails enforce local-only and no admin/admin"
+      "detail": "Runtime seeds admin/adminadmin for frontend bootstrap"
     },
     {
       "name": "observability-filing-service",

@@ -219,6 +219,8 @@ function makeClaimAssessment(overrides: Partial<StagedAssessment> = {}): StagedA
     trace_id: "trace-claim-001",
     rule_version_id: "v1",
     assessed_at: "2026-02-24T00:00:00Z",
+    assessment_version: 1,
+    assessment_type: "regular",
     stage1_gross_output_vat: 10000,
     stage2_total_deductible_input_vat: 5000,
     stage3_pre_adjustment_net_vat: 5000,
@@ -245,8 +247,10 @@ describe("[scenario:S01][gate:A][backlog:TB-S1-05] filing duplicate behavior", (
     expect(first.statusCode).toBe(201);
     expect([200, 409]).toContain(second.statusCode);
     expect(filingPublisherMock.publishFilingReceived).toHaveBeenCalledTimes(1);
-    expect(filingPublisherMock.publishFilingAssessed).toHaveBeenCalledTimes(1);
-    expect(filingPublisherMock.publishClaimCreated).toHaveBeenCalledTimes(1);
+    // Phase 3: filing-service no longer publishes filing.assessed or claim.created
+    // (sole publishers: assessment-service and claim-orchestrator — design/03-phase-3-contract-freeze.md §7.1)
+    expect(filingPublisherMock.publishFilingAssessed).toHaveBeenCalledTimes(0);
+    expect(filingPublisherMock.publishClaimCreated).toHaveBeenCalledTimes(0);
 
     await app.close();
   });

@@ -1,7 +1,9 @@
 // filing-service/src/events/publisher.ts — KafkaJS CloudEvents publisher (ADR-001, ADR-006)
-// Topics: tax-core.filing.received, tax-core.filing.assessed, tax-core.claim.created
+// Topic: tax-core.filing.received (sole publisher per Phase 3 freeze — design/03-phase-3-contract-freeze.md §7.1)
+// Retired in Phase 3: tax-core.filing.assessed (now owned by assessment-service)
+//                     tax-core.claim.created   (now owned by claim-orchestrator)
 import type { Kafka } from "kafkajs";
-import type { CanonicalFiling, StagedAssessment, ClaimIntent } from "@tax-core/domain";
+import type { CanonicalFiling } from "@tax-core/domain";
 
 function cloudEvent<T>(type: string, source: string, traceId: string, data: T): string {
   return JSON.stringify({
@@ -56,34 +58,6 @@ export class FilingEventPublisher {
         filing_type: filing.filing_type,
         tax_period_end: filing.tax_period_end,
         rule_version_id: filing.rule_version_id,
-      })
-    );
-  }
-
-  async publishFilingAssessed(assessment: StagedAssessment, traceId: string): Promise<void> {
-    await this.send(
-      "tax-core.filing.assessed",
-      assessment.filing_id,
-      cloudEvent("tax-core.filing.assessed", "/filing-service", traceId, {
-        filing_id: assessment.filing_id,
-        result_type: assessment.result_type,
-        stage4_net_vat: assessment.stage4_net_vat,
-        claim_amount: assessment.claim_amount,
-        rule_version_id: assessment.rule_version_id,
-      })
-    );
-  }
-
-  async publishClaimCreated(claim: ClaimIntent, traceId: string): Promise<void> {
-    await this.send(
-      "tax-core.claim.created",
-      claim.claim_id,
-      cloudEvent("tax-core.claim.created", "/filing-service", traceId, {
-        claim_id: claim.claim_id,
-        filing_id: claim.filing_id,
-        taxpayer_id: claim.taxpayer_id,
-        result_type: claim.result_type,
-        claim_amount: claim.claim_amount,
       })
     );
   }

@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import { submitFiling } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
+import { useOverlayI18n } from "@/overlays/common/i18n";
 
 function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
@@ -11,6 +12,7 @@ function uuid(): string {
 
 export default function NewFilingPage() {
   const { user } = useAuth();
+  const { t } = useOverlayI18n();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
   const [outputVat, setOutputVat] = useState("0");
   const [inputVat, setInputVat] = useState("0");
@@ -49,39 +51,41 @@ export default function NewFilingPage() {
       };
       const result = await submitFiling(payload, user ?? undefined);
       const replay = result.status === 200 && result.idempotent;
-      setMessage(
-        replay
-          ? `Allerede indsendt. Eksisterende filing: ${result.resource_id} (trace_id: ${result.trace_id})`
-          : `Indsendt. Filing ID: ${result.resource_id} (trace_id: ${result.trace_id})`
-      );
+      setMessage(replay ? t("filings_new.replayed", { id: result.resource_id, trace: result.trace_id }) : t("filings_new.submitted", { id: result.resource_id, trace: result.trace_id }));
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         if (err.code === "DUPLICATE_FILING") {
-          setError("Konflikt: denne filing_id findes allerede med andet indhold.");
+          setError(t("filings_new.conflict_duplicate"));
           return;
         }
         if (err.code === "STATE_ERROR") {
-          setError(`Tilstandsfejl: ${err.message}`);
+          setError(t("filings_new.conflict_state", { message: err.message }));
           return;
         }
       }
-      setError(err instanceof Error ? err.message : "Indsendelse fejlede.");
+      setError(err instanceof Error ? err.message : t("filings_new.submit_error"));
     }
   };
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold">Ny momsangivelse</h2>
-      <p className="mt-2 text-[var(--muted)]">DK overlay formular med indsendelse til filing-service.</p>
+      <h2 className="text-2xl font-semibold">{t("filings_new.title")}</h2>
+      <p className="mt-2 text-[var(--muted)]">{t("filings_new.description")}</p>
       {message ? <p className="mt-4 rounded border border-success bg-green-50 p-3 text-sm text-success">{message}</p> : null}
       {error ? <p className="mt-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</p> : null}
       <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={(e) => void onSubmit(e)}>
-        <label className="block"><span className="mb-1 block text-sm">Output VAT (DKK)</span><input className="w-full rounded border px-3 py-2" value={outputVat} onChange={(e) => setOutputVat(e.target.value)} /></label>
-        <label className="block"><span className="mb-1 block text-sm">Input VAT deductible (DKK)</span><input className="w-full rounded border px-3 py-2" value={inputVat} onChange={(e) => setInputVat(e.target.value)} /></label>
-        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">Indsend</button>
+        <label className="block">
+          <span className="mb-1 block text-sm">{t("filings_new.output_vat")}</span>
+          <input className="w-full rounded border px-3 py-2" value={outputVat} onChange={(e) => setOutputVat(e.target.value)} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm">{t("filings_new.input_vat")}</span>
+          <input className="w-full rounded border px-3 py-2" value={inputVat} onChange={(e) => setInputVat(e.target.value)} />
+        </label>
+        <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">
+          {t("filings_new.submit")}
+        </button>
       </form>
     </section>
   );
 }
-
-

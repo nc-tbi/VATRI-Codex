@@ -50,6 +50,8 @@ function makeAssessment(overrides: Partial<StagedAssessment> = {}): StagedAssess
     trace_id: "trace-amend-001",
     rule_version_id: "v1",
     assessed_at: "2026-02-24T00:00:00Z",
+    assessment_version: 1,
+    assessment_type: "regular",
     stage1_gross_output_vat: 12000,
     stage2_total_deductible_input_vat: 2000,
     stage3_pre_adjustment_net_vat: 10000,

@@ -90,18 +90,17 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
       const ctx = result.context;
       const inserted = await repo.saveFiling(ctx.filing, ctx.assessment!, ctx.claim_intent!);
       if (inserted === false) {
-        const duplicate = await repo.findFiling(ctx.filing.filing_id);
         return reply.status(409).send({
           error: "DUPLICATE_FILING",
-          filing_id: ctx.filing.filing_id,
+          message: `Filing ${ctx.filing.filing_id} already exists with conflicting payload`,
           trace_id: traceId,
-          filing: duplicate,
         });
       }
 
       await publisher.publishFilingReceived(ctx.filing, traceId);
-      if (ctx.assessment) await publisher.publishFilingAssessed(ctx.assessment, traceId);
-      if (ctx.claim_intent) await publisher.publishClaimCreated(ctx.claim_intent, traceId);
+      // Phase 3: tax-core.filing.assessed and tax-core.claim.created are no longer published here.
+      // Sole publishers: assessment-service and claim-orchestrator respectively
+      // (design/03-phase-3-contract-freeze.md §7.1).
 
       const response = {
         filing_id: ctx.filing.filing_id,
@@ -137,7 +136,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
     const { filing_id } = req.params;
     const record = await repo.findFiling(filing_id);
     if (!record) {
-      return reply.status(404).send({ error: "NOT_FOUND", filing_id, trace_id: req.id });
+      return reply.status(404).send({ error: "NOT_FOUND", trace_id: req.id });
     }
     const history = await repo.findAlterEvents(filing_id);
     const states = deriveAlterStates(history);
@@ -159,7 +158,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
       }
 
       const base = await repo.findFiling(filing_id);
-      if (!base) return reply.status(404).send({ error: "NOT_FOUND", filing_id, trace_id: traceId });
+      if (!base) return reply.status(404).send({ error: "NOT_FOUND", trace_id: traceId });
 
       const events = await repo.findAlterEvents(filing_id);
       const beforeState = applyAlters(base, deriveAlterStates(events));
@@ -191,13 +190,13 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
     const { filing_id } = req.params;
     const traceId = req.id;
     const base = await repo.findFiling(filing_id);
-    if (!base) return reply.status(404).send({ error: "NOT_FOUND", filing_id, trace_id: traceId });
+    if (!base) return reply.status(404).send({ error: "NOT_FOUND", trace_id: traceId });
 
     const events = await repo.findAlterEvents(filing_id);
     const currentStates = deriveAlterStates(events);
     const lastApplied = [...currentStates].reverse().find((entry) => entry.status === "applied");
     if (!lastApplied) {
-      return reply.status(409).send({ error: "NOTHING_TO_UNDO", filing_id, trace_id: traceId });
+      return reply.status(409).send({ error: "NOTHING_TO_UNDO", trace_id: traceId });
     }
 
     const beforeState = applyAlters(base, currentStates);
@@ -235,13 +234,13 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
     const { filing_id } = req.params;
     const traceId = req.id;
     const base = await repo.findFiling(filing_id);
-    if (!base) return reply.status(404).send({ error: "NOT_FOUND", filing_id, trace_id: traceId });
+    if (!base) return reply.status(404).send({ error: "NOT_FOUND", trace_id: traceId });
 
     const events = await repo.findAlterEvents(filing_id);
     const currentStates = deriveAlterStates(events);
     const lastUndone = [...currentStates].reverse().find((entry) => entry.status === "undone");
     if (!lastUndone) {
-      return reply.status(409).send({ error: "NOTHING_TO_REDO", filing_id, trace_id: traceId });
+      return reply.status(409).send({ error: "NOTHING_TO_REDO", trace_id: traceId });
     }
 
     const beforeState = applyAlters(base, currentStates);

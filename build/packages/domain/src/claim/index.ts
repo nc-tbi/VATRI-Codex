@@ -13,6 +13,7 @@ export {
   getPendingClaims,
   snapshotOutbox,
   getClaimDeliveryMetrics,
+  markSuperseded,
   _clearOutbox,
   MAX_RETRY_COUNT,
 } from "./outbox.js";

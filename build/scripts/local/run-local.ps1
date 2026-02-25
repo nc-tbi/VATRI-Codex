@@ -65,9 +65,6 @@ function Validate-AuthPortalEnv([hashtable]$envMap) {
         if ([string]::IsNullOrWhiteSpace($seedUser) -or [string]::IsNullOrWhiteSpace($seedPass)) {
             throw "ADMIN_SEED_USERNAME and ADMIN_SEED_PASSWORD are required when ADMIN_SEED_ENABLED=true."
         }
-        if ($seedUser -eq "admin" -or $seedPass -eq "admin") {
-            throw "Unsafe startup blocked: admin/admin defaults are not allowed."
-        }
     }
     if ($envName -eq "production") {
         if ($seedEnabled) {

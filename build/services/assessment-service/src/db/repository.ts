@@ -11,12 +11,15 @@ export class AssessmentRepository {
     const rows = await this.sql`
       INSERT INTO assessment.assessments (
         assessment_id, filing_id, rule_version_id, trace_id,
+        assessment_version, assessment_type,
         stage1_gross_output_vat, stage2_total_deductible_input_vat,
         stage3_pre_adjustment_net_vat, stage4_net_vat,
         result_type, claim_amount, assessed_at
       ) VALUES (
         ${assessmentId}, ${assessment.filing_id}, ${assessment.rule_version_id},
         ${assessment.trace_id},
+        ${assessment.assessment_version ?? 1},
+        ${assessment.assessment_type ?? "regular"},
         ${assessment.stage1_gross_output_vat},
         ${assessment.stage2_total_deductible_input_vat},
         ${assessment.stage3_pre_adjustment_net_vat},
@@ -24,6 +27,8 @@ export class AssessmentRepository {
         ${assessment.result_type}, ${assessment.claim_amount}, ${assessment.assessed_at}
       )
       ON CONFLICT (filing_id) DO UPDATE SET
+        assessment_version = EXCLUDED.assessment_version,
+        assessment_type = EXCLUDED.assessment_type,
         stage1_gross_output_vat = EXCLUDED.stage1_gross_output_vat,
         stage2_total_deductible_input_vat = EXCLUDED.stage2_total_deductible_input_vat,
         stage3_pre_adjustment_net_vat = EXCLUDED.stage3_pre_adjustment_net_vat,

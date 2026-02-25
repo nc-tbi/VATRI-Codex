@@ -22,6 +22,7 @@ function makeAssessment(overrides: Partial<StagedAssessment> = {}): StagedAssess
     trace_id: "trace-001",
     rule_version_id: "DK-VAT-001|DK-VAT-004",
     assessed_at: "2024-04-10T12:00:00Z",
+    assessment_version: 1,
     stage1_gross_output_vat: 10000,
     stage2_total_deductible_input_vat: 3000,
     stage3_pre_adjustment_net_vat: 7000,

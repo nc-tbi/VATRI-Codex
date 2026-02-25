@@ -21,6 +21,7 @@ export interface ClaimDeliveryMetrics {
   readonly acked: number;
   readonly failed: number;
   readonly dead_letter: number;
+  readonly superseded: number; // Phase 3: D-17 preliminary claims replaced by filed returns
   readonly retry_total: number;
 }
 
@@ -98,6 +99,16 @@ export function markAcked(key: IdempotencyKey): ClaimIntent {
 }
 
 /**
+ * Mark a preliminary claim as superseded by a filed return. Terminal state — D-17 path.
+ * ADR-004: once superseded, the preliminary claim is no longer dispatched.
+ */
+export function markSuperseded(key: IdempotencyKey): ClaimIntent {
+  const intent = getOrThrow(key);
+  intent.status = "superseded";
+  return intent;
+}
+
+/**
  * Mark a claim dispatch attempt as failed.
  * ADR-004: after MAX_RETRY_COUNT failures the claim moves to dead_letter.
  */
@@ -151,6 +162,7 @@ export function getClaimDeliveryMetrics(): ClaimDeliveryMetrics {
     acked: snapshot.filter((c) => c.status === "acked").length,
     failed: snapshot.filter((c) => c.status === "failed").length,
     dead_letter: snapshot.filter((c) => c.status === "dead_letter").length,
+    superseded: snapshot.filter((c) => c.status === "superseded").length,
     retry_total: snapshot.reduce((sum, claim) => sum + claim.retry_count, 0),
   };
 }

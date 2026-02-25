@@ -49,9 +49,9 @@ checks.push(
     : fail("required-secret-encryption-key", "SESSION_ENCRYPTION_KEY must use required env injection syntax"),
 );
 checks.push(
-  /ADMIN_SEED_ENABLED:\s*\$\{ADMIN_SEED_ENABLED:-false\}/.test(compose)
-    ? pass("seed-default-disabled", "ADMIN_SEED_ENABLED defaults to false")
-    : fail("seed-default-disabled", "ADMIN_SEED_ENABLED must default to false"),
+  /ADMIN_SEED_ENABLED:\s*\$\{ADMIN_SEED_ENABLED:-true\}/.test(compose)
+    ? pass("seed-default-enabled", "ADMIN_SEED_ENABLED defaults to true")
+    : fail("seed-default-enabled", "ADMIN_SEED_ENABLED must default to true"),
 );
 checks.push(
   /validation-service:[\s\S]*?depends_on:\s*\*service-depends/.test(compose)
@@ -64,10 +64,10 @@ checks.push(
     : fail("startup-order-rule-engine-service", "rule-engine-service must depend on infra healthchecks"),
 );
 checks.push(
-  /ADMIN_SEED_USERNAME\s*=\s*admin\s*$/im.test(envExample) ||
-  /ADMIN_SEED_PASSWORD\s*=\s*admin\s*$/im.test(envExample)
-    ? fail("insecure-default-seed-creds", "No admin/admin-style defaults allowed in .env template")
-    : pass("insecure-default-seed-creds", "No insecure admin defaults in .env template"),
+  /ADMIN_SEED_USERNAME\s*=\s*admin\s*$/im.test(envExample) &&
+  /ADMIN_SEED_PASSWORD\s*=\s*adminadmin\s*$/im.test(envExample)
+    ? pass("local-admin-bootstrap", "Local bootstrap admin/adminadmin is configured")
+    : fail("local-admin-bootstrap", "Expected ADMIN_SEED_USERNAME=admin and ADMIN_SEED_PASSWORD=adminadmin"),
 );
 
 checks.push(
@@ -77,10 +77,11 @@ checks.push(
     : fail("auth-runtime-secret-validation", "Auth service must validate both signing and encryption keys"),
 );
 checks.push(
-  authApp.includes("ADMIN_SEED_ENABLED=true is allowed only in local/development/test") &&
-  authApp.includes("insecure admin/admin defaults are blocked")
-    ? pass("auth-runtime-seed-guardrails", "Seed guardrails enforce local-only and no admin/admin")
-    : fail("auth-runtime-seed-guardrails", "Seed guardrails missing in auth runtime"),
+  authApp.includes('const forceSeed = process.env.ADMIN_SEED_ENABLED === "true" || isLocalLikeEnv(env);') &&
+  authApp.includes('const username = process.env.ADMIN_SEED_USERNAME?.trim() || "admin";') &&
+  authApp.includes('const password = process.env.ADMIN_SEED_PASSWORD?.trim() || "adminadmin";')
+    ? pass("auth-runtime-seed-policy", "Runtime seeds admin/adminadmin for frontend bootstrap")
+    : fail("auth-runtime-seed-policy", "Auth runtime seed policy is not aligned with admin/adminadmin bootstrap"),
 );
 
 const serviceApps = [

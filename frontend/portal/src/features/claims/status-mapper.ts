@@ -1,7 +1,8 @@
 export type ClaimUiModel = {
-  label: string;
+  labelKey: string;
   tone: "info" | "warning" | "success" | "danger";
-  detail: string | null;
+  detailKey: string | null;
+  detailVars?: Record<string, string>;
 };
 
 export function claimStatusToUi(claim: Record<string, unknown>): ClaimUiModel {
@@ -13,35 +14,37 @@ export function claimStatusToUi(claim: Record<string, unknown>): ClaimUiModel {
   if (status === "failed") {
     if (retryCount < 3) {
       return {
-        label: "Dispatch failed (retry in progress)",
+        labelKey: "status.dispatch_failed_retrying",
         tone: "warning",
-        detail: nextRetryAt ? `Retry scheduled for ${nextRetryAt}` : "Retry pending",
+        detailKey: nextRetryAt ? "claims.retry_scheduled" : "claims.retry_pending",
+        detailVars: nextRetryAt ? { time: nextRetryAt } : undefined,
       };
     }
     return {
-      label: "Dispatch failed (terminal)",
+      labelKey: "status.dispatch_failed_terminal",
       tone: "danger",
-      detail: "Max retries reached.",
+      detailKey: "claims.max_retries",
     };
   }
   if (status === "dead_letter") {
-    return { label: "Requires intervention", tone: "danger", detail: "Max retries reached." };
+    return { labelKey: "status.requires_intervention", tone: "danger", detailKey: "claims.max_retries" };
   }
   if (status === "queued") {
-    return { label: "Pending dispatch", tone: "info", detail: null };
+    return { labelKey: "status.pending_dispatch", tone: "info", detailKey: null };
   }
   if (status === "sent") {
     return {
-      label: "Dispatched",
+      labelKey: "status.dispatched",
       tone: "info",
-      detail: lastAttemptedAt ? `Last dispatch attempt: ${lastAttemptedAt}` : null,
+      detailKey: lastAttemptedAt ? "claims.last_attempt" : null,
+      detailVars: lastAttemptedAt ? { time: lastAttemptedAt } : undefined,
     };
   }
   if (status === "acked") {
-    return { label: "Confirmed", tone: "success", detail: null };
+    return { labelKey: "status.confirmed", tone: "success", detailKey: null };
   }
   if (status === "superseded") {
-    return { label: "Superseded by return", tone: "success", detail: null };
+    return { labelKey: "status.superseded", tone: "success", detailKey: null };
   }
-  return { label: status || "Unknown", tone: "warning", detail: null };
+  return { labelKey: "shared.unknown", tone: "warning", detailKey: null };
 }

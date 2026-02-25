@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import { FormEvent, useState } from "react";
 import { filingAlter, filingRedo, filingUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
+import { useOverlayI18n } from "@/overlays/common/i18n";
 
 export default function AdminFilingsAlterPage() {
   const { user } = useAuth();
+  const { t } = useOverlayI18n();
   const [filingId, setFilingId] = useState("");
   const [field, setField] = useState("contact_reference");
   const [value, setValue] = useState("admin-adjusted");
@@ -18,7 +20,7 @@ export default function AdminFilingsAlterPage() {
     setResult(null);
     setError(null);
     if (user?.role !== "admin") {
-      setError("Adgang naegtet: rollen er ikke admin.");
+      setError(t("admin.shared.not_admin"));
       return;
     }
     try {
@@ -32,35 +34,41 @@ export default function AdminFilingsAlterPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 403 || err.code === "FORBIDDEN") {
-          setError("Adgang naegtet: kun admin maa aendre/undo/redo filings.");
+          setError(t("admin.shared.forbidden"));
           return;
         }
         if (err.status === 409) {
           if (err.code === "STATE_ERROR") {
-            setError(`Tilstandsfejl: ${err.message}`);
+            setError(t("admin.shared.state_error", { message: err.message }));
             return;
           }
           if (err.code === "DUPLICATE_FILING" || err.code === "IDEMPOTENCY_CONFLICT") {
-            setError("Konflikt: handlingen kunne ikke gennemfoeres pga. modstridende data.");
+            setError(t("admin.shared.conflict"));
             return;
           }
         }
       }
-      setError(err instanceof Error ? err.message : "Handling fejlede");
+      setError(err instanceof Error ? err.message : t("admin.shared.action_failed"));
     }
   };
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold">Admin: Filing alter/undo/redo</h2>
+      <h2 className="text-2xl font-semibold">{t("admin.filings_alter.title")}</h2>
       <form className="mt-4 grid gap-3 md:grid-cols-2">
-        <input className="rounded border px-3 py-2" placeholder="filing_id" value={filingId} onChange={(e) => setFilingId(e.target.value)} />
-        <input className="rounded border px-3 py-2" placeholder="field" value={field} onChange={(e) => setField(e.target.value)} />
-        <input className="rounded border px-3 py-2" placeholder="value" value={value} onChange={(e) => setValue(e.target.value)} />
+        <input className="rounded border px-3 py-2" placeholder={t("admin.shared.filing_id")} value={filingId} onChange={(e) => setFilingId(e.target.value)} />
+        <input className="rounded border px-3 py-2" placeholder={t("admin.shared.field")} value={field} onChange={(e) => setField(e.target.value)} />
+        <input className="rounded border px-3 py-2" placeholder={t("admin.shared.value")} value={value} onChange={(e) => setValue(e.target.value)} />
         <div className="col-span-full flex gap-2">
-          <button className="rounded bg-action px-4 py-2 text-white" onClick={(e) => void run("alter", e)}>Alter</button>
-          <button className="rounded bg-slate-700 px-4 py-2 text-white" onClick={(e) => void run("undo", e)}>Undo</button>
-          <button className="rounded bg-slate-700 px-4 py-2 text-white" onClick={(e) => void run("redo", e)}>Redo</button>
+          <button className="rounded bg-action px-4 py-2 text-white" onClick={(e) => void run("alter", e)}>
+            {t("admin.shared.action_alter")}
+          </button>
+          <button className="rounded bg-slate-700 px-4 py-2 text-white" onClick={(e) => void run("undo", e)}>
+            {t("admin.shared.action_undo")}
+          </button>
+          <button className="rounded bg-slate-700 px-4 py-2 text-white" onClick={(e) => void run("redo", e)}>
+            {t("admin.shared.action_redo")}
+          </button>
         </div>
       </form>
       {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
@@ -68,5 +76,3 @@ export default function AdminFilingsAlterPage() {
     </section>
   );
 }
-
-

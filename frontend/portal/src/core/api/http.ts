@@ -32,21 +32,86 @@ function buildHeaders(user?: UserClaims): HeadersInit {
   return headers;
 }
 
+export type ApiErrorCode =
+  | "VALIDATION_FAILED"
+  | "IDEMPOTENCY_CONFLICT"
+  | "DUPLICATE_FILING"
+  | "STATE_ERROR"
+  | "NOT_FOUND"
+  | "FORBIDDEN"
+  | "BAD_REQUEST"
+  | "INTERNAL_ERROR";
+
+export interface ApiErrorBody {
+  error: ApiErrorCode;
+  trace_id: string;
+  message?: string;
+}
+
+export class ApiError extends Error {
+  status: number;
+  code?: ApiErrorCode;
+  traceId?: string;
+  body?: unknown;
+
+  constructor(status: number, message: string, options?: { code?: ApiErrorCode; traceId?: string; body?: unknown }) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = options?.code;
+    this.traceId = options?.traceId;
+    this.body = options?.body;
+  }
+}
+
+async function parseJsonSafe(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return undefined;
+  }
+}
+
+function buildErrorMessage(status: number, fallback: string, body?: Partial<ApiErrorBody>): string {
+  if (body?.message && body.trace_id) return `${body.message} (trace_id: ${body.trace_id})`;
+  if (body?.message) return body.message;
+  if (body?.trace_id) return `${fallback} (trace_id: ${body.trace_id})`;
+  return fallback || `Request failed with ${status}`;
+}
+
 export async function apiGet<T>(service: ServiceName, path: string, user?: UserClaims): Promise<T> {
   const res = await fetch(`${serviceBaseUrl(service)}${path}`, { headers: buildHeaders(user), cache: "no-store" });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `GET ${path} failed with ${res.status}`);
+    const parsed = (await parseJsonSafe(res)) as Partial<ApiErrorBody> | undefined;
+    const text = parsed ? undefined : await res.text();
+    throw new ApiError(
+      res.status,
+      buildErrorMessage(res.status, text || `GET ${path} failed with ${res.status}`, parsed),
+      parsed ? { code: parsed.error, traceId: parsed.trace_id, body: parsed } : undefined
+    );
   }
   return (await res.json()) as T;
 }
 
 export async function apiPost<T>(service: ServiceName, path: string, body: unknown, user?: UserClaims): Promise<T> {
+  const response = await apiPostWithMeta<T>(service, path, body, user);
+  return response.data;
+}
+
+export async function apiPostWithMeta<T>(service: ServiceName, path: string, body: unknown, user?: UserClaims): Promise<{ status: number; data: T }> {
   const res = await fetch(`${serviceBaseUrl(service)}${path}`, { method: "POST", headers: buildHeaders(user), body: JSON.stringify(body) });
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `POST ${path} failed with ${res.status}`);
+    const parsed = (await parseJsonSafe(res)) as Partial<ApiErrorBody> | undefined;
+    const text = parsed ? undefined : await res.text();
+    throw new ApiError(
+      res.status,
+      buildErrorMessage(res.status, text || `POST ${path} failed with ${res.status}`, parsed),
+      parsed ? { code: parsed.error, traceId: parsed.trace_id, body: parsed } : undefined
+    );
   }
-  return (await res.json()) as T;
+  return {
+    status: res.status,
+    data: (await res.json()) as T,
+  };
 }
 

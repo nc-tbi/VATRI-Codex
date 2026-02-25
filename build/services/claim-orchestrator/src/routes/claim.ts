@@ -26,12 +26,35 @@ interface ClaimBody {
   assessment: StagedAssessment;
 }
 
+function isClaimBody(input: unknown): input is ClaimBody {
+  if (!input || typeof input !== "object") return false;
+  const body = input as Record<string, unknown>;
+  const assessment = body.assessment;
+  return (
+    typeof body.taxpayer_id === "string" &&
+    typeof body.filing_id === "string" &&
+    typeof body.tax_period_end === "string" &&
+    typeof body.assessment_version === "number" &&
+    !!assessment &&
+    typeof assessment === "object"
+  );
+}
+
 export async function claimRoutes(app: FastifyInstance, opts: RouteOptions): Promise<void> {
   const repo = new ClaimRepository(opts.sql);
   const publisher = new ClaimEventPublisher(opts.kafka);
 
   // POST /claims
   app.post<{ Body: ClaimBody }>("/", async (req, reply) => {
+    if (!isClaimBody(req.body)) {
+      return reply.status(422).send({
+        error: "VALIDATION_FAILED",
+        message:
+          "required fields: taxpayer_id, filing_id, tax_period_end, assessment_version, assessment",
+        trace_id: req.id,
+      });
+    }
+
     const { taxpayer_id, assessment, tax_period_end, assessment_version } = req.body;
     const traceId = req.id;
 
@@ -62,6 +85,19 @@ export async function claimRoutes(app: FastifyInstance, opts: RouteOptions): Pro
       return reply.status(500).send({ error: "INTERNAL_ERROR", trace_id: traceId });
     }
   });
+
+  // GET /claims?taxpayer_id={id}&tax_period_end={date?} — list claims by taxpayer
+  app.get<{ Querystring: { taxpayer_id?: string; tax_period_end?: string } }>(
+    "/",
+    async (req, reply) => {
+      const { taxpayer_id, tax_period_end } = req.query;
+      if (!taxpayer_id) {
+        return reply.status(400).send({ error: "BAD_REQUEST", message: "taxpayer_id is required", trace_id: req.id });
+      }
+      const claims = await repo.findByTaxpayerId(taxpayer_id, tax_period_end);
+      return reply.send({ trace_id: req.id, taxpayer_id, claims });
+    }
+  );
 
   // GET /claims/:claim_id
   app.get<{ Params: { claim_id: string } }>("/:claim_id", async (req, reply) => {

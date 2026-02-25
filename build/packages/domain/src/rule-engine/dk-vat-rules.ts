@@ -208,7 +208,146 @@ export const DK_VAT_007: RuleCatalogEntry = {
   },
 };
 
-/** All canonical DK VAT rules for Phase 1 (S01-S19 scenario coverage). */
+// ---------------------------------------------------------------------------
+// DK-VAT-008: Non-EU goods import — acquisition VAT (S09)
+// ML § 12 stk. 1: VAT on goods imported from non-EU countries is declared by the
+// importer. The VAT base is the customs value including customs duty.
+// ---------------------------------------------------------------------------
+export const DK_VAT_008: RuleCatalogEntry = {
+  rule_id: "DK-VAT-008",
+  rule_name: "Non-EU Goods Import — Acquisition VAT",
+  legal_ref: "ML § 12 stk. 1",
+  effective_from: EFFECTIVE_FROM,
+  effective_to: null,
+  apply(facts: RuleFacts): RuleEvaluationResult {
+    // Non-EU goods imports are signalled by reverse-charge output VAT on goods
+    // where there is no corresponding EU Rubrik A goods purchase value.
+    const rcGoods = facts.filing.reverse_charge_output_vat_goods_abroad_amount;
+    const rubrikA = facts.filing.rubrik_a_goods_eu_purchase_value;
+    const applied = rcGoods > 0 && rubrikA === 0;
+    return makeResult(
+      this,
+      applied,
+      applied
+        ? `Non-EU goods import acquisition VAT of ${rcGoods} DKK declared (no Rubrik A offset).`
+        : "No non-EU goods import acquisition VAT pattern detected.",
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// DK-VAT-009: Non-EU services purchase — import VAT (S10)
+// ML § 16 stk. 1: services purchased from non-EU suppliers where the Danish
+// business is the taxable person are subject to reverse-charge VAT.
+// ---------------------------------------------------------------------------
+export const DK_VAT_009: RuleCatalogEntry = {
+  rule_id: "DK-VAT-009",
+  rule_name: "Non-EU Services Purchase — Import VAT",
+  legal_ref: "ML § 16 stk. 1",
+  effective_from: EFFECTIVE_FROM,
+  effective_to: null,
+  apply(facts: RuleFacts): RuleEvaluationResult {
+    // Non-EU service imports signalled by reverse-charge on services with no
+    // corresponding EU Rubrik A services value.
+    const rcServices = facts.filing.reverse_charge_output_vat_services_abroad_amount;
+    const rubrikAServices = facts.filing.rubrik_a_services_eu_purchase_value;
+    const applied = rcServices > 0 && rubrikAServices === 0;
+    return makeResult(
+      this,
+      applied,
+      applied
+        ? `Non-EU services import VAT of ${rcServices} DKK declared (no Rubrik A services offset).`
+        : "No non-EU services import VAT pattern detected.",
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// DK-VAT-010: Domestic reverse charge — scrap/construction (S11)
+// ML § 46 stk. 1 nr. 1: certain domestic supplies (scrap metal, construction
+// services, emission allowances) are subject to domestic reverse charge.
+// ---------------------------------------------------------------------------
+export const DK_VAT_010: RuleCatalogEntry = {
+  rule_id: "DK-VAT-010",
+  rule_name: "Domestic Reverse Charge — Scrap/Construction",
+  legal_ref: "ML § 46 stk. 1 nr. 1",
+  effective_from: EFFECTIVE_FROM,
+  effective_to: null,
+  apply(facts: RuleFacts): RuleEvaluationResult {
+    // Domestic reverse charge is signalled by zero output VAT domestic but positive
+    // input VAT, where no EU/non-EU cross-border amounts are declared.
+    const domestic = facts.filing.output_vat_amount_domestic;
+    const input = facts.filing.input_vat_deductible_amount_total;
+    const rcGoods = facts.filing.reverse_charge_output_vat_goods_abroad_amount;
+    const rcServices = facts.filing.reverse_charge_output_vat_services_abroad_amount;
+    const applied = domestic === 0 && input > 0 && rcGoods === 0 && rcServices === 0;
+    return makeResult(
+      this,
+      applied,
+      applied
+        ? `Domestic reverse charge pattern detected: zero output VAT with ${input} DKK input VAT, no cross-border reverse charge.`
+        : "No domestic reverse charge pattern detected.",
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// DK-VAT-011: Partial deduction — mixed activity (S14)
+// ML § 38 stk. 1: businesses with both taxable and exempt activities may only
+// deduct a pro-rata proportion of input VAT.
+// ---------------------------------------------------------------------------
+export const DK_VAT_011: RuleCatalogEntry = {
+  rule_id: "DK-VAT-011",
+  rule_name: "Partial Deduction — Mixed Activity",
+  legal_ref: "ML § 38 stk. 1",
+  effective_from: EFFECTIVE_FROM,
+  effective_to: null,
+  apply(facts: RuleFacts): RuleEvaluationResult {
+    // Mixed activity is signalled by both domestic output VAT and exempt supplies.
+    const domestic = facts.filing.output_vat_amount_domestic;
+    const exempt = facts.filing.rubrik_c_other_vat_exempt_supplies_value;
+    const input = facts.filing.input_vat_deductible_amount_total;
+    const applied = domestic > 0 && exempt > 0 && input > 0;
+    return makeResult(
+      this,
+      applied,
+      applied
+        ? `Mixed activity detected: domestic output VAT ${domestic} DKK + exempt supplies ${exempt} DKK. Partial deduction rule applies.`
+        : "No mixed activity (partial deduction) pattern detected.",
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// DK-VAT-012: Export / zero-rated supply (S15)
+// ML § 34 stk. 1: exports to non-EU countries are zero-rated. The supply is
+// not exempt — input VAT deduction is preserved.
+// ---------------------------------------------------------------------------
+export const DK_VAT_012: RuleCatalogEntry = {
+  rule_id: "DK-VAT-012",
+  rule_name: "Export / Zero-Rated Supply",
+  legal_ref: "ML § 34 stk. 1",
+  effective_from: EFFECTIVE_FROM,
+  effective_to: null,
+  apply(facts: RuleFacts): RuleEvaluationResult {
+    // Export (zero-rated, non-exempt) is signalled by zero domestic output VAT,
+    // no EU Rubrik B sales, but deductible input VAT present.
+    const domestic = facts.filing.output_vat_amount_domestic;
+    const rubrikB = facts.filing.rubrik_b_goods_eu_sale_value + facts.filing.rubrik_b_services_eu_sale_value;
+    const input = facts.filing.input_vat_deductible_amount_total;
+    const exempt = facts.filing.rubrik_c_other_vat_exempt_supplies_value;
+    const applied = domestic === 0 && rubrikB === 0 && input > 0 && exempt === 0;
+    return makeResult(
+      this,
+      applied,
+      applied
+        ? `Export/zero-rated supply pattern: zero domestic output VAT, deductible input VAT ${input} DKK preserved.`
+        : "No export/zero-rated supply pattern detected.",
+    );
+  },
+};
+
+/** All canonical DK VAT rules for Phase 1 + Phase 2 (S01-S19 scenario coverage). */
 export const DK_VAT_RULES: readonly RuleCatalogEntry[] = [
   DK_VAT_001,
   DK_VAT_002,
@@ -217,4 +356,10 @@ export const DK_VAT_RULES: readonly RuleCatalogEntry[] = [
   DK_VAT_005,
   DK_VAT_006,
   DK_VAT_007,
+  // Phase 2 — S09-S15
+  DK_VAT_008,
+  DK_VAT_009,
+  DK_VAT_010,
+  DK_VAT_011,
+  DK_VAT_012,
 ];

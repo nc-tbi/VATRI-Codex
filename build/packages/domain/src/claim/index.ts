@@ -12,6 +12,7 @@ export {
   buildIdempotencyKey,
   getPendingClaims,
   snapshotOutbox,
+  getClaimDeliveryMetrics,
   _clearOutbox,
   MAX_RETRY_COUNT,
 } from "./outbox.js";

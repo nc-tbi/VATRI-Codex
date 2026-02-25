@@ -178,3 +178,26 @@ Reporting:
 - Verification baseline: both Gate A phases pass (`105/105` tests, workspace typecheck `0 errors` across 7 workspaces).
 - Evidence source: `testing/05-gate-a-defect-remediation-tracker.md` (`GA-RUN-004`).
 
+## 11. Service Integration Lane (Phase 1 Mandatory)
+Purpose:
+- Add an explicit service-level lane for `build/services/**` that validates API + DB + eventing interactions per service.
+
+Minimum smoke matrix:
+| Service | API Smoke | DB Smoke | Eventing Smoke | Owner | Gate | Backlog ID |
+|---|---|---|---|---|---|---|
+| Filing Service | `POST /vat-filings` happy path + duplicate path | filing persistence and duplicate side-effect safety | filing submission event behavior under duplicate/retry | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-01` |
+| Assessment Service | `POST /assessments`, `GET /assessments/{assessment_id}` | assessment persistence + retrieval consistency | `VatAssessmentCalculated` emission semantics | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-02` |
+| Amendment Service | amendment create/read workflow | amendment lineage persistence checks | `VatReturnCorrected`/amendment event semantics | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-03` |
+| Claim Orchestrator | claim create request contract parity | idempotency key persistence and dedupe behavior | claim created/dispatch event side effects | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-04` |
+| Validation Service | validation route and error envelope parity | validation result persistence/evidence path | validation outcome event semantics | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-05` |
+| Rule-Engine Service | rule eval route contract parity | rule resolution/evaluation persistence/evidence path | rule evaluated event semantics | Code Builder + Tester | `Gate A-SVC` | `TB-S1-SVC-06` |
+
+Explicit high-risk quality gates:
+- Idempotency Gate: duplicate filing/claim behavior must be side-effect safe.
+- Contract Gate: OpenAPI required fields and runtime payload handling must match.
+- Audit Gate: evidence must be durably persisted; memory-only behavior is non-compliant.
+
+Failure policy:
+- `blocker`: contract mismatch, idempotency side-effect defect, audit durability defect, or service smoke test failure on required paths.
+- `non-blocker`: observability/reporting enhancement gaps with approved waiver, owner, and due date.
+

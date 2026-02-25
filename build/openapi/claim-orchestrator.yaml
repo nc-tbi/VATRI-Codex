@@ -1,11 +1,14 @@
 openapi: "3.1.0"
 info:
   title: Claim Orchestrator API
-  version: "1.0.0"
+  version: "1.1.0"
   description: |
-    Tax Core claim orchestrator — idempotent claim dispatch with outbox pattern (ADR-004, ADR-006).
-    Bounded context: Claim. Idempotency key: {taxpayer_id}:{period_end}:{rule_version_id}.
+    Tax Core claim orchestrator - idempotent claim dispatch with outbox pattern (ADR-004, ADR-006).
+    Bounded context: Claim. Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
     Max 3 retries before dead_letter. Publishes to tax-core.claim.created.
+    Sole authoritative publisher of tax-core.claim.created (Phase 3 freeze — design/03-phase-3-contract-freeze.md).
+    v1.1.0: added superseded status (D-17); removed duplicate root filing_id from ClaimRequest;
+    added idempotent:false on 201; added next_retry_at field.
 
 servers:
   - url: http://localhost:3006
@@ -26,13 +29,56 @@ paths:
                 $ref: "#/components/schemas/HealthResponse"
 
   /claims:
+    get:
+      operationId: listClaims
+      summary: List claims by taxpayer
+      tags: [Claims]
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tax_period_end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Claims for the taxpayer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  claims:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ClaimIntent"
+        "400":
+          description: Missing taxpayer_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     post:
       operationId: createClaim
       summary: Create or retrieve a claim intent
       description: |
-        Creates a claim intent for a refund assessment. Idempotent — if a claim already
+        Creates a claim intent for a refund assessment. Idempotent - if a claim already
         exists for the same taxpayer/period/version, returns the existing record.
-        Status lifecycle: queued → sent → acked | failed → dead_letter (after 3 failures).
+        Status lifecycle: queued -> sent -> acked | failed -> dead_letter (after 3 failures).
+        Status-code policy:
+        - 201: new claim intent created
+        - 200: idempotent replay (existing claim returned)
+        - 409: same idempotency key with semantic payload conflict
+        - 422: request shape/required field validation failure
       tags: [Claims]
       requestBody:
         required: true
@@ -46,15 +92,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ClaimResponse"
+                $ref: "#/components/schemas/ClaimCreatedResponse"
         "200":
-          description: Existing claim returned (idempotent)
+          description: Existing claim returned (idempotent replay)
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ClaimResponse"
+                $ref: "#/components/schemas/ClaimReplayResponse"
         "409":
-          description: Idempotency conflict
+          description: Idempotency conflict (same idempotency key, different semantic payload)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation failure (required fields or contract shape)
           content:
             application/json:
               schema:
@@ -105,33 +157,26 @@ components:
 
     ClaimRequest:
       type: object
-      required: [taxpayer_id, filing_id, assessment]
+      required: [taxpayer_id, tax_period_end, assessment_version, assessment]
+      description: |
+        Frozen (v1.1.0) claim creation request. Root filing_id is deprecated (removed from required);
+        filing_id is carried inside the assessment object. Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
       properties:
         taxpayer_id:
           type: string
         filing_id:
           type: string
           format: uuid
+          deprecated: true
+          description: Deprecated — filing_id is already inside assessment.filing_id. Ignored by service.
+        tax_period_end:
+          type: string
+          format: date
+        assessment_version:
+          type: integer
+          minimum: 1
         assessment:
-          type: object
-          required: [filing_id, rule_version_id, result_type, claim_amount, stage4_net_vat]
-          properties:
-            filing_id:
-              type: string
-            rule_version_id:
-              type: string
-            result_type:
-              type: string
-              enum: [payable, refund, zero]
-            claim_amount:
-              type: number
-            stage4_net_vat:
-              type: number
-            tax_period_end:
-              type: string
-              format: date
-            assessment_version:
-              type: integer
+          $ref: "#/components/schemas/ClaimAssessmentInput"
 
     ClaimIntent:
       type: object
@@ -155,7 +200,7 @@ components:
           format: uuid
         idempotency_key:
           type: string
-          description: "{taxpayer_id}:{period_end}:{rule_version_id}"
+          description: "{taxpayer_id}:{tax_period_end}:{assessment_version}"
         taxpayer_id:
           type: string
         tax_period_end:
@@ -178,7 +223,10 @@ components:
           type: string
         status:
           type: string
-          enum: [queued, sent, acked, failed, dead_letter]
+          enum: [queued, sent, acked, failed, dead_letter, superseded]
+          description: |
+            Claim lifecycle status. Terminal states: acked (resolved), dead_letter (failed — manual intervention),
+            superseded (preliminary claim replaced by filed return — D-17).
         retry_count:
           type: integer
           minimum: 0
@@ -189,6 +237,11 @@ components:
           type: string
           format: date-time
           nullable: true
+        next_retry_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Scheduled next retry timestamp. Null when status is acked, dead_letter, or superseded.
 
     ClaimResponse:
       type: object
@@ -199,6 +252,52 @@ components:
         idempotent:
           type: boolean
           description: True when an existing claim was returned
+        claim:
+          $ref: "#/components/schemas/ClaimIntent"
+
+    ClaimAssessmentInput:
+      type: object
+      required: [filing_id, rule_version_id, result_type, claim_amount, stage4_net_vat]
+      description: Assessment snapshot carried in a claim creation request.
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        rule_version_id:
+          type: string
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+        stage4_net_vat:
+          type: number
+
+    ClaimCreatedResponse:
+      type: object
+      description: Response schema for first-time claim creation (201).
+      required: [trace_id, idempotent, claim]
+      properties:
+        trace_id:
+          type: string
+        idempotent:
+          type: boolean
+          enum: [false]
+          description: Always false for first-time creation. Parity field with 200 ClaimReplayResponse.
+        claim:
+          $ref: "#/components/schemas/ClaimIntent"
+
+    ClaimReplayResponse:
+      type: object
+      description: Response schema for idempotent replay (200).
+      required: [trace_id, idempotent, claim]
+      properties:
+        trace_id:
+          type: string
+        idempotent:
+          type: boolean
+          enum: [true]
         claim:
           $ref: "#/components/schemas/ClaimIntent"
 

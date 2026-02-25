@@ -1,0 +1,24 @@
+{
+  "name": "@tax-core/registration-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fastify/sensible": "^6.0.4",
+    "@tax-core/domain": "*",
+    "fastify": "^5.7.4",
+    "kafkajs": "^2.2.4",
+    "postgres": "^3.4.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  }
+}

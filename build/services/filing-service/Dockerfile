@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Copy workspace manifests
 COPY package.json package-lock.json* ./
+COPY tsconfig.json ./
 COPY packages/domain/package.json ./packages/domain/
 COPY services/filing-service/package.json ./services/filing-service/
 

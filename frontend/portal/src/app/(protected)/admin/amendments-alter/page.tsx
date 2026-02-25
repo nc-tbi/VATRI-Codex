@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { amendmentAlter, amendmentRedo, amendmentUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { ApiError } from "@/core/api/http";
 
 export default function AdminAmendmentsAlterPage() {
   const { user } = useAuth();
@@ -16,6 +17,10 @@ export default function AdminAmendmentsAlterPage() {
     e.preventDefault();
     setResult(null);
     setError(null);
+    if (user?.role !== "admin") {
+      setError("Adgang naegtet: rollen er ikke admin.");
+      return;
+    }
     try {
       const payload =
         action === "alter"
@@ -25,6 +30,22 @@ export default function AdminAmendmentsAlterPage() {
             : await amendmentRedo(amendmentId, user ?? undefined);
       setResult(payload);
     } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 403 || err.code === "FORBIDDEN") {
+          setError("Adgang naegtet: kun admin maa aendre/undo/redo amendments.");
+          return;
+        }
+        if (err.status === 409) {
+          if (err.code === "STATE_ERROR") {
+            setError(`Tilstandsfejl: ${err.message}`);
+            return;
+          }
+          if (err.code === "IDEMPOTENCY_CONFLICT") {
+            setError("Konflikt: samme idempotency-noegle peger paa andet indhold.");
+            return;
+          }
+        }
+      }
       setError(err instanceof Error ? err.message : "Handling fejlede");
     }
   };

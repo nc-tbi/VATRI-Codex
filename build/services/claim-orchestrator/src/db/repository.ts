@@ -47,4 +47,19 @@ export class ClaimRepository {
       WHERE claim_id = ${claimId}
     `;
   }
+
+  async findByTaxpayerId(taxpayer_id: string, tax_period_end?: string): Promise<Record<string, unknown>[]> {
+    const rows = tax_period_end
+      ? await this.sql`
+          SELECT * FROM claim.claim_intents
+          WHERE taxpayer_id = ${taxpayer_id} AND tax_period_end = ${tax_period_end}
+          ORDER BY created_at DESC
+        `
+      : await this.sql`
+          SELECT * FROM claim.claim_intents
+          WHERE taxpayer_id = ${taxpayer_id}
+          ORDER BY created_at DESC
+        `;
+    return rows as Record<string, unknown>[];
+  }
 }

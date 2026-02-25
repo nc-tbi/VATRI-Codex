@@ -14,6 +14,16 @@ import { IdempotencyConflictError } from "../shared/errors.js";
 
 export const MAX_RETRY_COUNT = 3;
 
+export interface ClaimDeliveryMetrics {
+  readonly total: number;
+  readonly queued: number;
+  readonly sent: number;
+  readonly acked: number;
+  readonly failed: number;
+  readonly dead_letter: number;
+  readonly retry_total: number;
+}
+
 /** In-memory outbox — keyed by idempotency_key.
  *  ADR-004: each entry is written once; status is updated in-place (mutable claim record). */
 const outbox = new Map<IdempotencyKey, ClaimIntent>();
@@ -130,6 +140,19 @@ export function getPendingClaims(): ClaimIntent[] {
 /** Return snapshot of entire outbox (for testing). */
 export function snapshotOutbox(): ClaimIntent[] {
   return Array.from(outbox.values());
+}
+
+export function getClaimDeliveryMetrics(): ClaimDeliveryMetrics {
+  const snapshot = snapshotOutbox();
+  return {
+    total: snapshot.length,
+    queued: snapshot.filter((c) => c.status === "queued").length,
+    sent: snapshot.filter((c) => c.status === "sent").length,
+    acked: snapshot.filter((c) => c.status === "acked").length,
+    failed: snapshot.filter((c) => c.status === "failed").length,
+    dead_letter: snapshot.filter((c) => c.status === "dead_letter").length,
+    retry_total: snapshot.reduce((sum, claim) => sum + claim.retry_count, 0),
+  };
 }
 
 /** Clear outbox — for test isolation only. */

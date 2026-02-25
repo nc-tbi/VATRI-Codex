@@ -18,15 +18,32 @@ function cloudEvent<T>(type: string, source: string, traceId: string, data: T): 
 
 export class AssessmentEventPublisher {
   private readonly producer;
+  private connected = false;
+  private connectPromise: Promise<void> | null = null;
 
   constructor(kafka: Kafka) {
     this.producer = kafka.producer();
   }
 
+  private async ensureConnected(): Promise<void> {
+    if (this.connected) return;
+    if (!this.connectPromise) {
+      this.connectPromise = this.producer.connect().then(() => {
+        this.connected = true;
+      });
+    }
+    await this.connectPromise;
+  }
+
   private async send(topic: string, key: string, value: string): Promise<void> {
-    await this.producer.connect();
-    await this.producer.send({ topic, messages: [{ key, value }] });
-    await this.producer.disconnect();
+    await this.ensureConnected();
+    try {
+      await this.producer.send({ topic, messages: [{ key, value }] });
+    } catch (err) {
+      this.connected = false;
+      this.connectPromise = null;
+      throw err;
+    }
   }
 
   async publishAssessed(assessment: StagedAssessment, traceId: string): Promise<void> {

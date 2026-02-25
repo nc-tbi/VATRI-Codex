@@ -1,0 +1,132 @@
+name: Gate C - Phase 3
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  phase3-integration:
+    name: phase3-integration
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Phase 3 integration lane
+        run: node scripts/ci/run-phase3-gate.mjs --lane integration --no-guardrails
+
+      - name: Upload integration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-integration-report
+          path: build/reports/phase3-integration-vitest.json
+
+  phase3-resilience:
+    name: phase3-resilience
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Phase 3 resilience lane
+        run: node scripts/ci/run-phase3-gate.mjs --lane resilience --no-guardrails
+
+      - name: Upload resilience report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-resilience-report
+          path: build/reports/phase3-resilience-vitest.json
+
+  phase3-observability:
+    name: phase3-observability-guardrails
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run observability and guardrails lane
+        run: node scripts/ci/run-phase3-gate.mjs --lane observability --guardrails
+
+      - name: Upload observability and guardrails reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-observability-report
+          path: |
+            build/reports/phase3-observability-vitest.json
+            build/reports/phase3-guardrails.json
+
+  phase3-artifacts:
+    name: phase3-artifact-publication
+    runs-on: ubuntu-latest
+    needs:
+      - phase3-integration
+      - phase3-resilience
+      - phase3-observability
+    steps:
+      - name: Download integration report
+        uses: actions/download-artifact@v4
+        with:
+          name: phase3-integration-report
+          path: phase3-artifacts/integration
+
+      - name: Download resilience report
+        uses: actions/download-artifact@v4
+        with:
+          name: phase3-resilience-report
+          path: phase3-artifacts/resilience
+
+      - name: Download observability report
+        uses: actions/download-artifact@v4
+        with:
+          name: phase3-observability-report
+          path: phase3-artifacts/observability
+
+      - name: Publish consolidated phase3 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-gate-c-artifacts
+          path: phase3-artifacts

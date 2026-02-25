@@ -97,6 +97,43 @@ Services start in this order: postgres + redpanda (healthchecked) → all 6 Tax 
 
 ---
 
+## Unified API Docs Page
+
+All service OpenAPI specs are available in one Swagger-style page (offline-capable):
+
+- `build/openapi/index.html`
+
+Install docs UI assets locally:
+
+```powershell
+cd build
+npm install
+```
+
+Run a static server from `build` (so local `node_modules` assets are served), then open:
+
+- `http://localhost:8080/openapi/index.html`
+
+Example:
+
+```powershell
+cd build
+python -m http.server 8080
+```
+
+The page includes a selector for:
+- Auth Service
+- Registration Service
+- Obligation Service
+- Filing Service
+- Validation Service
+- Rule Engine Service
+- Assessment Service
+- Amendment Service
+- Claim Orchestrator
+
+---
+
 ## Smoke Test (end-to-end filing)
 
 ```bash
@@ -226,6 +263,32 @@ npm test -w @tax-core/domain   # run domain tests only (no Docker required)
 
 ---
 
+## Phase 3 Gate (local + CI)
+
+One command for deterministic Phase 3 validation and artifacts:
+
+```bash
+cd build
+npm run ci:phase3
+```
+
+What it runs:
+- guardrail enforcement (`scripts/ci/validate-guardrails.mjs`)
+- Phase 3 integration lane
+- Phase 3 resilience lane
+- Phase 3 observability lane
+
+Artifacts are written to `build/reports/`:
+- `phase3-guardrails.json`
+- `phase3-integration-vitest.json`
+- `phase3-resilience-vitest.json`
+- `phase3-observability-vitest.json`
+
+CI workflow:
+- `.github/workflows/gate-c-phase3.yml`
+
+---
+
 ## Dev Scripts (PowerShell)
 
 ```powershell
@@ -243,13 +306,65 @@ npm test -w @tax-core/domain   # run domain tests only (no Docker required)
 
 - **Determinism**: VAT calculations are pure functions; no random or time-based branching in domain logic.
 - **Append-only audit**: `EvidenceWriter` never mutates or deletes records (ADR-003).
-- **Idempotency**: Claim outbox keyed by `taxpayer_id:period_end:rule_version_id` (ADR-004).
+- **Idempotency**: Claim outbox keyed by `taxpayer_id:tax_period_end:assessment_version` (ADR-004).
 - **No AI in assessment path**: All outcomes from rule evaluation + deterministic arithmetic.
 - **Open source only**: Fastify, postgres, KafkaJS, Zod, Vitest (ADR-008).
 - **Contract-first**: OpenAPI 3.1 specs in `openapi/` govern all HTTP interfaces (ADR-006).
 
 ---
 
+## API Parity Notes (Portal Blocker Pack, 2026-02-25)
+
+OpenAPI and runtime parity updates delivered for portal-critical scope:
+
+- `auth-service` introduced (port `3009`):
+  - `POST /auth/login`
+  - `POST /auth/logout`
+  - `POST /auth/refresh`
+  - `GET /auth/me`
+- Admin control actions implemented for lifecycle corrections:
+  - filing alter/undo/redo
+  - amendment alter/undo/redo
+- Portal list/query support added for tab workloads:
+  - obligations by `taxpayer_id`
+  - filings by `taxpayer_id` (+ period filters where applicable)
+  - amendments by `taxpayer_id` (+ period filters where applicable)
+  - assessments and claims by `taxpayer_id` (+ period filters where applicable)
+- Transparency payload aligned for taxpayer-facing assessment/claim views:
+  - staged calculation fields
+  - result classification and claim amount
+  - trace context for supportability
+
+Guardrails:
+- Seeded admin bootstrap (`admin`/`admin`) is non-production only and environment-gated.
+- Default seed behavior is blocked for production mode.
+- Conflict/idempotency semantics are documented in endpoint contracts for repeat/admin action flows.
+- Admin mutate endpoints (`alter/undo/redo`) enforce runtime admin role checks and return `403` for non-admin callers.
+- Filing/amendment alter histories are persisted as append-only DB events (no in-memory history stacks).
+- Refresh token rotation/revocation is persisted and restart-stable.
+
+Verification baseline:
+- `cd build && npm install`
+- `cd build && npm run typecheck --workspaces --if-present`
+
+---
+## Remediation Addendum (Auth/Admin Controls, 2026-02-25)
+
+- Auth service runtime contract:
+  - container listens on `SERVICE_PORT=3000`
+  - host exposure remains `http://localhost:3009`
+  - startup fails when `SESSION_SIGNING_KEY` is missing
+- Auth persistence:
+  - users and refresh tokens stored in PostgreSQL (`auth.users`, `auth.refresh_tokens`)
+  - seeded local/dev admin persists across restart
+  - refresh token rotation/revocation is restart-safe
+- Admin mutate controls:
+  - filing/amendment `alter/undo/redo` now enforce runtime admin checks (`403` on non-admin)
+  - history is persisted as append-only events with actor/role/timestamp/trace and before/after snapshot hashes
+  - amendment mutate identity is canonical by `amendment_id`
+
+---
 ## Out of Scope (Phase 1)
 
 Portal BFF, Kong Gateway, registration/obligation services, ViDA Step 1-3 (S26-S34), special schemes (Phase 5) — all Phase 2+.
+

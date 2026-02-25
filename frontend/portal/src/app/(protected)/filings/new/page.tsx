@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { submitFiling } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { ApiError } from "@/core/api/http";
 
 function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
@@ -47,8 +48,23 @@ export default function NewFilingPage() {
         rubrik_c_other_vat_exempt_supplies_value: 0,
       };
       const result = await submitFiling(payload, user ?? undefined);
-      setMessage(`Indsendt. Filing ID: ${String(result.filing_id ?? "ukendt")}`);
+      const replay = result.status === 200 && result.idempotent;
+      setMessage(
+        replay
+          ? `Allerede indsendt. Eksisterende filing: ${result.resource_id} (trace_id: ${result.trace_id})`
+          : `Indsendt. Filing ID: ${result.resource_id} (trace_id: ${result.trace_id})`
+      );
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        if (err.code === "DUPLICATE_FILING") {
+          setError("Konflikt: denne filing_id findes allerede med andet indhold.");
+          return;
+        }
+        if (err.code === "STATE_ERROR") {
+          setError(`Tilstandsfejl: ${err.message}`);
+          return;
+        }
+      }
       setError(err instanceof Error ? err.message : "Indsendelse fejlede.");
     }
   };

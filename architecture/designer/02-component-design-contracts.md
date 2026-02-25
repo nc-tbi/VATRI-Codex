@@ -37,9 +37,14 @@ Output:
 - `trace_id`
 - validation summary
 - assessment summary
+- `idempotent` flag on replay responses
 
 State transitions:
 - `received` -> `validated` -> `assessed` -> `claim_created`
+
+Duplicate submission semantics:
+- same `filing_id` + semantically identical payload => `200` idempotent replay, no new events, no new assessment/claim side effects
+- same `filing_id` + semantically different payload => `409` conflict, no side effects
 
 ## Rule Engine Contract
 Input:
@@ -69,14 +74,38 @@ Output:
 - delta classification (`increase`, `decrease`, `neutral`)
 - lineage pointer to prior version
 
+Vocabulary rule:
+- canonical domain term is `amendment`
+- `correction` is legacy alias only, allowed for compatibility through September 30, 2026
+
 ## Claim Orchestrator Contract
 Input:
 - accepted assessment
+- required request fields on `POST /claims`: `taxpayer_id`, `filing_id`, `tax_period_end`, `assessment_version`, `assessment`
 
 Output:
 - claim intent record
 - dispatch job with idempotency key
 - status updates (`queued`, `sent`, `acked`, `failed`, `dead_letter`)
+
+Canonical idempotency key:
+- `taxpayer_id + tax_period_end + assessment_version`
+- `rule_version_id` is not an idempotency dimension
+
+Idempotency behavior:
+- duplicate claim intent with same key and semantic payload => return existing claim (`200`, `idempotent=true`)
+- same key with conflicting payload => `409`
+- request contract/required field violations => `422`
+
+## Assessment Retrieval Contract
+Endpoints:
+- `GET /assessments/by-filing/{filing_id}` (primary operational lookup)
+- `GET /assessments/{assessment_id}` (audit/deep-link lookup)
+
+Requirements:
+- `POST /assessments` response includes both `assessment_id` and `filing_id`
+- `POST /assessments` success schema: `trace_id`, `assessment_id`, `filing_id`, `assessment`
+- `GET /assessments/by-filing/{filing_id}` must be implemented in runtime before implementation freeze
 
 Integration standards:
 - synchronous and asynchronous contract standards must be explicitly documented and versioned

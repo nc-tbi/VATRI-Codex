@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VATRI API Reference</title>
+    <link rel="stylesheet" href="../node_modules/swagger-ui-dist/swagger-ui.css" />
+    <style>
+      body {
+        margin: 0;
+        background: #f7f9fb;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+      .topbar {
+        padding: 14px 20px;
+        background: #0f172a;
+        color: #fff;
+      }
+      .topbar h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .topbar p {
+        margin: 4px 0 0;
+        font-size: 13px;
+        opacity: 0.9;
+      }
+      #swagger-ui {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <h1>VATRI Unified API Reference</h1>
+      <p>Single-page API explorer for all Tax Core service OpenAPI specs.</p>
+    </div>
+    <div id="swagger-ui"></div>
+
+    <script src="../node_modules/swagger-ui-dist/swagger-ui-bundle.js"></script>
+    <script src="../node_modules/swagger-ui-dist/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.onload = function () {
+        if (typeof SwaggerUIBundle === "undefined") {
+          document.getElementById("swagger-ui").innerHTML =
+            "<div style='padding:24px;color:#b00020;font-weight:600'>Swagger UI assets not found. Run <code>cd build; npm install</code> and reload this page.</div>";
+          return;
+        }
+        const ui = SwaggerUIBundle({
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          docExpansion: "list",
+          filter: true,
+          persistAuthorization: true,
+          defaultModelsExpandDepth: 1,
+          urls: [
+            { name: "Auth Service", url: "./auth-service.yaml" },
+            { name: "Registration Service", url: "./registration-service.yaml" },
+            { name: "Obligation Service", url: "./obligation-service.yaml" },
+            { name: "Filing Service", url: "./filing-service.yaml" },
+            { name: "Validation Service", url: "./validation-service.yaml" },
+            { name: "Rule Engine Service", url: "./rule-engine-service.yaml" },
+            { name: "Assessment Service", url: "./assessment-service.yaml" },
+            { name: "Amendment Service", url: "./amendment-service.yaml" },
+            { name: "Claim Orchestrator", url: "./claim-orchestrator.yaml" }
+          ],
+          "urls.primaryName": "Auth Service",
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          layout: "StandaloneLayout"
+        });
+        window.ui = ui;
+      };
+    </script>
+  </body>
+</html>

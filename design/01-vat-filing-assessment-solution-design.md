@@ -62,6 +62,7 @@ End-to-end solution design for VAT filing and assessment on Tax Core, including 
 - Scenario coverage and tests include `S26-S34`.
 - API/event names align with architecture source terminology.
 - Out-of-scope statements do not conflict with Step-3 settlement scope.
+- API contract deltas between OpenAPI and runtime are explicitly documented with a freeze gate for Code Builder.
 
 ## 0. Building Block Taxonomy
 
@@ -491,8 +492,8 @@ sequenceDiagram
     CS->>CS: load prior assessment (immutable)
     CS->>CS: compute delta (increase / decrease / neutral) [VAT-GENERIC]
     CS->>AS: new assessment_version (linked)
-    AS->>AE: CorrectionAssessmentEvidence
-    CS->>AE: CorrectionLineageEvidence
+    AS->>AE: AmendmentAssessmentEvidence
+    CS->>AE: AmendmentLineageEvidence
     alt delta != neutral
         AS->>CO: ReturnCorrected to adjustment claim [CloudEvents]
         CO->>AE: AdjustmentClaimEvidence
@@ -699,7 +700,7 @@ These services contain VAT lifecycle logic but are configurable for any jurisdic
 |---|---|
 | Input | `AssessmentCalculated` or `ReturnCorrected` events |
 | Builds | Generic claim payload (domain fields injected via overlay) |
-| Idempotency key | `taxpayer_id + period_end + assessment_version` |
+| Idempotency key | `taxpayer_id + tax_period_end + assessment_version` |
 | Publishes | Claim intent to outbox transactionally with assessment write |
 | Tracks | `queued` â†’ `sent` â†’ `acked` / `failed` â†’ `dead_letter` |
 
@@ -795,6 +796,13 @@ Governance: new rule requires `legal_reference` and `effective_from`; `effective
 ### 4.1 API Coverage Rule (from `architecture/designer/02`)
 All portal workflows â€” registration, obligation viewing, filing submission, amendment submission, status retrieval â€” must be fully supported by public Tax Core APIs. The portal-bff must achieve 100% functional coverage via these APIs without direct database access or bypass.
 
+### 4.1.1 Unified API Explorer
+- Consolidated API reference page: `build/openapi/index.html`
+- Purpose: single-page inspection of all service OpenAPI contracts during design, implementation, and test alignment.
+- Local offline-capable usage:
+  - run static server from `build/`
+  - open `http://localhost:8080/openapi/index.html`
+
 ### 4.2 POST /vat-filings (OpenAPI 3.1) â€” DK VAT schema
 
 **Request:**
@@ -819,20 +827,51 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 }
 ```
 
-**201 Created (VAT-GENERIC response envelope):**
+### 4.3 Duplicate Filing Submission Contract
+- Duplicate `POST /vat-filings` with identical semantic payload for the same `filing_id` returns `200` idempotent replay.
+- Duplicate `POST /vat-filings` with conflicting semantic payload for the same `filing_id` returns `409`.
+- Duplicate replay is side-effect safe: no new `VatReturnSubmitted`, `VatAssessmentCalculated`, or `ClaimCreated` emission.
+
+### 4.4 Assessment Retrieval Contract
+- Primary operational lookup is `GET /assessments/by-filing/{filing_id}`.
+- Audit/deep-link lookup remains `GET /assessments/{assessment_id}`.
+- `POST /assessments` returns `assessment_id` and `filing_id` to support both retrieval modes.
+
+**201 Created (assessment-service response envelope):**
 ```json
 {
-  "filing_id": "fil_01J...",
   "trace_id": "trc_01J...",
-  "status": "claim_created",
-  "result_type": "payable",
-  "net_vat_amount": 77000.00,
-  "assessment_version": 1,
-  "claim_id": "clm_01J...",
-  "rule_version_id": "rv_2024H1",
-  "submitted_at": "2024-07-05T10:32:00Z"
+  "assessment_id": "asm_01J...",
+  "filing_id": "fil_01J...",
+  "assessment": {
+    "assessment_id": "asm_01J...",
+    "filing_id": "fil_01J...",
+    "result_type": "payable",
+    "claim_amount": 77000.00,
+    "stage4_net_vat": 77000.00
+  }
 }
 ```
+
+### 4.4.1 Contract Delta Log (2026-02-24)
+
+| Contract area | OpenAPI contract (target) | Runtime behavior (current) | Delta classification | Freeze requirement |
+|---|---|---|---|---|
+| `POST /assessments` response | Returns `trace_id`, top-level `assessment_id`, top-level `filing_id`, and `assessment` payload | Returns `trace_id` and `assessment` only | Contract mismatch | Runtime must return top-level `assessment_id` and `filing_id` before implementation freeze |
+| `GET /assessments/by-filing/{filing_id}` | Primary operational retrieval endpoint | Not implemented in assessment-service runtime yet | Missing endpoint | Runtime route and tests required before freeze |
+| `POST /claims` request shape | Required: `taxpayer_id`, `filing_id`, `tax_period_end`, `assessment_version`, `assessment` (with required assessment summary fields) | Runtime consumes these fields; validation semantics are not yet consistently enforced at edge | Validation-policy gap | Add/confirm 422 validation behavior and required-field enforcement before freeze |
+| `POST /claims` idempotency semantics | `201` create, `200` idempotent replay, `409` semantic conflict | Runtime already returns `201`/`200`/`409` with no side-effect replay | Aligned | Keep behavior and prove via automated tests |
+
+### 4.4.2 Status-Code Policy (Idempotency and Conflict)
+
+- `POST /claims`
+  - `201 Created`: new claim intent persisted and outbox publish scheduled.
+  - `200 OK`: idempotent replay for same key and semantic payload, no new side effects.
+  - `409 Conflict`: same key with semantic payload conflict, no side effects.
+  - `422 Unprocessable Entity`: required fields/contract shape violation.
+- `POST /assessments`
+  - `201 Created`: assessment persisted and retrieval identifiers returned.
+  - `422 Unprocessable Entity`: required fields/contract shape violation.
 
 **422 Unprocessable (VAT-GENERIC error envelope):**
 ```json
@@ -851,7 +890,7 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 }
 ```
 
-### 4.3 Portal BFF API Surface (VAT-GENERIC)
+### 4.5 Portal BFF API Surface (VAT-GENERIC)
 
 | Endpoint | Backing Tax Core API | Notes |
 |---|---|---|
@@ -863,7 +902,7 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 | `POST /portal/amendments` | `POST /vat-filings` (filing_type=amendment) | Ensures prior reference |
 | `GET /portal/filings/{id}` | `GET /vat-filings/{id}` | Direct pass-through with UX shaping |
 
-### 4.4 System S Integration Contracts (authoritative subset)
+### 4.6 System S Integration Contracts (authoritative subset)
 
 | Integration area | System S endpoint | Usage in this solution | Contract notes |
 |---|---|---|---|
@@ -875,7 +914,7 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 | Accounting events | `GET /taxpayer-accounting/payment-events` | Settlement/reconciliation ingestion | Support `segmentId` filtering/correlation |
 | Accounting segments | `GET /taxpayer-accounting/payment-segments` | Segment-level status reconciliation | Support `segmentId` filtering/correlation |
 
-#### 4.4.1 Party-Type Additional Information Policy
+#### 4.6.1 Party-Type Additional Information Policy
 
 For this solution scope, party-type `additionalInfo` is not used.
 
@@ -885,7 +924,7 @@ Policy:
 - system-s-registration-adapter forwards registration without `additionalInfo` unless mandated by a future change request.
 - Any future use of `additionalInfo` requires a new design decision and test expansion.
 
-### 4.5 Outbound POST /claims to System S [DK VAT adapter]
+### 4.7 Outbound POST /claims to System S [DK VAT adapter]
 
 ```json
 {
@@ -904,7 +943,7 @@ Policy:
 }
 ```
 
-### 4.6 ViDA Step 1-3 API Contracts (configuration-driven)
+### 4.8 ViDA Step 1-3 API Contracts (configuration-driven)
 
 | ViDA Step | Endpoint | Purpose | Guardrail |
 |---|---|---|---|
@@ -916,7 +955,7 @@ Policy:
 | Step 3 | `GET /vat-balance/{taxpayer_id}` | Read ongoing VAT balance projection | Balance is projection/evidence-backed, not legal override |
 | Step 3 | `POST /settlements/requests` | Submit taxpayer-initiated settlement request | Must link to active balance snapshot and policy context |
 
-### 4.7 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
+### 4.9 Domain Events (CloudEvents envelope, Avro/Protobuf, Schema Registry)
 
 | Event | Layer | Publisher | Consumers | Key Fields |
 |---|---|---|---|---|
@@ -1588,7 +1627,7 @@ To close the preliminary-claim ambiguity, Tax Core uses a deterministic trigger 
   - `assessment_type=preliminary`
   - `result_type=payable`
   - `claim_amount > 0`
-  - no active preliminary claim exists for the same `taxpayer_id + period_end` idempotency key
+  - no active preliminary claim exists for the same `taxpayer_id + tax_period_end` idempotency key
 - A preliminary claim intent is suppressed when:
   - `result_type in (refund, zero)` or `claim_amount <= 0`
   - trigger policy blocks issuance (for example de-minimis threshold profile)

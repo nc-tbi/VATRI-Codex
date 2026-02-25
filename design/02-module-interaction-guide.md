@@ -1,8 +1,9 @@
 ﻿# Module Interaction Guide: Tax Core â€” VAT Filing and Assessment
 
-> **Status:** Draft v1.4
+> **Status:** Draft v1.5
 > **Designer:** Solution Designer (DESIGNER.md contract)
 > **Companion document:** `design/01-vat-filing-assessment-solution-design.md`
+> **Contract freeze:** `design/03-phase-3-contract-freeze.md` (Phase 3 — event publisher ownership, OpenAPI versions, error codes, UI semantics)
 > **Platform decisions:** `design/recommendations/internal-platform-choices-suggestions.md` (D-01 through D-17)
 > **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/02-component-design-contracts.md`, `architecture/designer/03-nfr-observability-checklist.md`, ADR-001 through ADR-009, `analysis/09-product-scope-and-requirements-alignment.md`
 
@@ -48,6 +49,7 @@ Module-level responsibilities and interaction contracts for Tax Core VAT capabil
 - Module responsibilities include the ViDA Step 1-3 contracts in architecture.
 - Cross-cutting governance explicitly enforces capability core + configuration overlay.
 - Open questions reflect unresolved ViDA/settlement integration decisions.
+- Contract freeze criteria for claim and assessment APIs are explicit and testable by Code Builder.
 
 ## Purpose
 
@@ -124,8 +126,8 @@ The system is structured in three layers. Modules at each layer may only interac
 | `ValidationEvidence` | validation-service |
 | `RuleEvaluationEvidence` | rule-engine-service |
 | `AssessmentEvidence` | assessment-service |
-| `CorrectionAssessmentEvidence` | assessment-service (amendment path) |
-| `CorrectionLineageEvidence` | amendment-service |
+| `AmendmentAssessmentEvidence` | assessment-service (amendment path) |
+| `AmendmentLineageEvidence` | amendment-service |
 | `ClaimIntentEvidence` | claim-orchestrator |
 | `DispatchAttemptFailed` | system-s-connector |
 | `DispatchOutcomeEvidence` | claim-orchestrator (on ack from connector) |
@@ -418,6 +420,9 @@ POST /vat-filings
 - The immutable snapshot is written before any validation or evaluation. Even rejected filings have a complete audit trail.
 - `rule_version_id` is resolved and pinned to the Filing record at intake. Rule changes deployed after intake do not affect in-flight filings.
 - The DK VAT canonical schema is a configuration artifact applied at normalization time. No DK-specific logic lives in filing-service itself.
+- Duplicate `POST /vat-filings` semantics:
+  - same `filing_id` + semantically identical payload => `200` idempotent replay, no new domain events
+  - same `filing_id` + semantically conflicting payload => `409`, no side effects
 
 **Depends on:**
 - `API Gateway` [PLATFORM] â€” inbound routing
@@ -483,6 +488,11 @@ POST /vat-filings
 - `VatAssessmentCalculated` (and `FinalAssessmentCalculatedFromFiledReturn`) are the triggers for `claim-orchestrator` to create a claim intent.
 - assessment-service applies `rounding_policy_version_id` at claim amount finalization; stores both pre-round and rounded amounts.
 - assessment-service does not contain Danish tax law. The formula and result typing are jurisdiction-agnostic.
+- Retrieval contract:
+  - primary operational lookup: `GET /assessments/by-filing/{filing_id}`
+  - audit/deep-link lookup: `GET /assessments/{assessment_id}`
+  - `POST /assessments` returns both `assessment_id` and `filing_id`
+  - freeze gate: runtime must implement `GET /assessments/by-filing/{filing_id}` and return top-level `assessment_id` + `filing_id` on `POST /assessments`
 
 **Depends on:**
 - `rule-engine-service` [DK VAT] â€” upstream, via `EvaluatedFacts`
@@ -506,7 +516,7 @@ POST /vat-filings
 | Computes | Delta: `increase` / `decrease` / `neutral` [VAT-GENERIC logic] |
 | Calls | `assessment-service` to create new assessment version with lineage pointer |
 | Outbound events | `ReturnCorrected` / `VatReturnCorrected` [CloudEvents] |
-| Audit evidence | `CorrectionLineageEvidence` to `audit-evidence` |
+| Audit evidence | `AmendmentLineageEvidence` to `audit-evidence` |
 | DK overlay | Amendments > 3 years old â†’ manual/legal routing [DK VAT config] |
 
 **Amendment processing flow:**
@@ -516,9 +526,9 @@ correct(prior_filing_id, corrected_facts)
   1. Load prior assessment (immutable read)
   2. Apply DK VAT age gate [DK VAT config]: >3 years â†’ route to manual/legal
   3. Compute delta (increase / decrease / neutral)
-  4. Call assessment-service: createCorrectionVersion(corrected_facts, delta_type, prior_assessment_id)
+  4. Call assessment-service: createAmendmentVersion(corrected_facts, delta_type, prior_assessment_id)
   5. Emit ReturnCorrected [CloudEvents]
-  6. Write CorrectionLineageEvidence to audit-evidence
+  6. Write AmendmentLineageEvidence to audit-evidence
 ```
 
 **Interaction rules:**
@@ -546,7 +556,7 @@ correct(prior_filing_id, corrected_facts)
 |---|---|
 | Layer | `[VAT-GENERIC]` |
 | Inbound events | `AssessmentCalculated` (regular and final assessment), `PreliminaryAssessmentIssued` (preliminary path — D-17 trigger policy applied), `ReturnCorrected` (amendment with non-neutral delta) |
-| Idempotency key | `taxpayer_id + period_end + assessment_version` |
+| Idempotency key | `taxpayer_id + tax_period_end + assessment_version` |
 | Transactional write | Claim intent + outbox record written in single ACID transaction |
 | Dispatch states | `queued` â†’ `sent` â†’ `acked` / `failed` â†’ `dead_letter` |
 | Inbound events (from connector) | `ClaimDispatched` (ack), `ClaimDispatchFailed` (failure / dead letter) |
@@ -688,7 +698,7 @@ correct(prior_filing_id, corrected_facts)
 | Outbound | `POST /claims` to System S External Claims System |
 | Adaptation | Generic claim payload â†’ System S contract format (DK VAT System S API) |
 | Currency | Enforces `DKK` denomination and DK rounding rules |
-| Idempotency | System S call includes `idempotency_key` = `taxpayer_id + period_end + assessment_version` |
+| Idempotency | System S call includes `idempotency_key` = `taxpayer_id + tax_period_end + assessment_version` |
 | Retry policy | Exponential backoff, max 5 attempts |
 | Dead letter | After 5 failures â†’ DLQ + `ClaimDispatchFailed (dead_letter=true)` event |
 | Audit evidence | `DispatchAttemptFailed` on each failed attempt; `ClaimDispatched` on success |
@@ -997,8 +1007,20 @@ RBAC is enforced at the API Gateway. Downstream services trust the asserted iden
 |---|---|
 | `filing-service` | `filing_id` generation is idempotent per `(cvr, period, filing_type)` |
 | `assessment-service` | Append-only versioning; duplicate events produce no new records |
-| `claim-orchestrator` | Idempotency key `taxpayer_id + period_end + assessment_version` |
+| `claim-orchestrator` | Idempotency key `taxpayer_id + tax_period_end + assessment_version` |
 | `system-s-connector` | Idempotency key forwarded in System S call |
+
+### 6.3.1 Contract Status-Code Policy (Freeze Baseline)
+
+| API | 201 | 200 | 409 | 422 |
+|---|---|---|---|---|
+| `POST /claims` | New claim intent created | Idempotent replay (existing claim returned; no new side effects) | Same idempotency key with semantic payload conflict | Required fields/contract shape validation failure |
+| `POST /assessments` | New assessment created; response includes `assessment_id` and `filing_id` | Not used | Not used | Required fields/contract shape validation failure |
+
+Code Builder freeze acceptance checks:
+- OpenAPI response schemas distinguish claim create (`201`) from idempotent replay (`200`).
+- Runtime behavior matches the status-code policy table above.
+- Automated tests verify no side effects on `200` replay and `409` conflict paths.
 
 ### 6.4 Technology Policy (ADR-008)
 

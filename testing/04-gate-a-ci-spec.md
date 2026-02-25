@@ -67,28 +67,110 @@ npm run test:gate-a
 | Workspace typecheck (`npm run typecheck --workspaces --if-present`) | Pass | 0 errors across all 7 workspaces; GA-TS-* defects remain resolved |
 | Gate A overall verdict | **Pass** | Rerun evidence: `GA-RUN-008` in `05-gate-a-defect-remediation-tracker.md` |
 
-## Gate A-SVC Extension (Required from Review 004)
+## Gate A-SVC Extension (Implemented)
 Purpose:
-- Add explicit service-level quality gates for `build/services/**` risk paths.
+- Enforce explicit service-level quality gates for `build/services/**` risk paths.
 
-Required gates:
+Implemented gates:
 1. Idempotency gate:
    - duplicate filing/claim submissions do not create inconsistent DB/event side effects.
 2. Contract parity gate:
    - OpenAPI required fields and runtime handler expectations are aligned for request/response payloads.
 3. Audit durability gate:
-   - evidence is durably persisted and queryable from persistent storage; memory-only behavior fails the gate.
+   - evidence durability behavior is asserted; memory-only behavior fails the test lane.
+4. Service parity smoke gate:
+   - amendment/validation/rule-engine route behavior is covered with dedicated `TC-S1-SVC-*` cases.
 
-Required CI path:
-- Add executable service integration command (example): `npm run test:svc-integration`.
-- Run this in PR/mainline and publish evidence by:
+Implemented CI path:
+- Command: `npm run test:svc-integration` (in `build/package.json`)
+- Workflow: `.github/workflows/gate-a-svc.yml`
+- Artifact: `gate-a-svc-report` (`build/reports/gate-a-svc-vitest.json`)
+- Evidence labels are published from test metadata including:
   - service (`filing`, `assessment`, `amendment`, `claim`, `validation`, `rule-engine`)
   - case ID (`TC-S1-SVC-*`)
-  - backlog ID (`TB-S1-SVC-*`)
+  - gate lane (`A-SVC`)
 
 Failure policy:
 - Contract mismatch or idempotency side-effect defect: `blocker`.
 - Audit durability failure: `blocker`.
-- Non-critical observability/reporting gap with approved waiver: `non-blocker`.
+- Service-smoke route/response parity failure: `blocker`.
+
+## Portal Blocker Gate Mapping (Phase 4B+)
+Purpose:
+- Preserve Gate A stability while mapping portal-blocker verification into the correct downstream gates.
+
+Gate targeting:
+- `Gate A`: no change; remains Sprint 1 + service-risk baseline gate.
+- `Gate B`: portal auth/session contract parity and seeded-admin bootstrap guards (`TC-PORTAL-AUTH-01..06`).
+- `Gate C`: portal RBAC negative paths, admin/taxpayer journey flows, alter/undo/redo lifecycle, transparency payload checks, and DK overlay behavior (`TC-PORTAL-RBAC-*`, `TC-PORTAL-ADM-*`, `TC-PORTAL-TAX-*`, `TC-PORTAL-ALT-*`, `TC-PORTAL-TRN-*`, `TC-PORTAL-OVR-*`).
+
+Portal quality policy additions:
+- Forbidden role actions must be validated as negative paths with deterministic `401/403` semantics and zero side effects.
+- Failed authentication and invalid session cases are mandatory in the same cycle as successful auth path checks.
+- Gate C cannot be considered `Pass` for portal readiness unless both positive and negative role-path packs pass in the same validation cycle.
+
+## Remediation Auth/Admin Gate Addendum (2026-02-25)
+
+Remediation findings from `design/05-role-instructions-remediation-auth-admin.md` are mapped to Gate C execution packs:
+- `TC-REM-AUTHADM-01`: auth port/compose health
+- `TC-REM-AUTHADM-02`: seeded admin restart persistence
+- `TC-REM-AUTHADM-03`: refresh-token rotation/revocation persistence
+- `TC-REM-AUTHADM-04`: amendment mutate identity by amendment_id
+- `TC-REM-AUTHADM-05`: durable append-only alter history (filing + amendment)
+- `TC-REM-AUTHADM-06`: non-admin denial (`403`) for mutate routes
+- `TC-REM-AUTHADM-07`: signing-key startup hardening
+
+Gate rule:
+- Portal/admin remediation cannot be signed off unless all `TC-REM-AUTHADM-*` cases pass in the same validation cycle.
+
+Remediation command mapping:
+- Baseline gate command: `cd build && npm run test:gate-b` (code-level regression baseline).
+- Service-risk lane command: `cd build && npm run test:svc-integration` (domain/service risk checks).
+- Runtime/remediation checks: compose + API command pack in Gate C remediation workflow:
+  - auth health/port (`TC-REM-AUTHADM-01`)
+  - restart persistence checks (`TC-REM-AUTHADM-02`, `TC-REM-AUTHADM-03`, `TC-REM-AUTHADM-05`)
+  - amendment identity/RBAC/startup-hardening checks (`TC-REM-AUTHADM-04`, `TC-REM-AUTHADM-06`, `TC-REM-AUTHADM-07`)
+- CI implementation requirement:
+  - add `test:gate-c-remediation` (or equivalent workflow command set) and publish a remediation evidence artifact keyed by `TC-REM-AUTHADM-*`.
+
+## Phase 3 Gate Addendum - Claims Integration Reliability (2026-02-25)
+Scope:
+- Define mandatory commands and blocking policy for pre-build Phase 3 quality gate execution.
+
+Mandatory commands (`Gate C-Phase3`):
+1. `cd build && npm run test:gate-b`
+2. `cd build && npm run test:svc-integration`
+3. `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts`
+4. `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-resilience-gate-c.test.ts`
+
+Case coverage requirements:
+- Positive path: `TC-S3-CLM-01`, `TC-S3-CLM-08`
+- Negative path: `TC-S3-CLM-02`, `TC-S3-CLM-07`
+- Duplicate path: `TC-S3-CLM-03`
+- Retry path: `TC-S3-CLM-04`
+- DLQ path: `TC-S3-CLM-05`
+- Restart-persistence path: `TC-S3-CLM-06`
+
+Pass/fail policy:
+- Any failure in `TC-S3-CLM-*` is `blocker`.
+- Missing implementation of mandatory command scripts/tests is `blocker`.
+- `Gate C-Phase3` can be marked `Pass` only when all mandatory commands pass in one validation cycle and all risks `PH3-R01..PH3-R08` are covered by at least one blocking automated test.
+
+Current execution evidence (2026-02-25):
+- Gate verdict: **Blocked**
+- Blocking defects:
+  - `DEF-P3-001` (missing `phase3-claims-gate-c.test.ts`)
+  - `DEF-P3-002` (missing `phase3-claims-resilience-gate-c.test.ts`)
+
+Same-cycle evidence requirement (mandatory):
+| Command | Evidence ID | Required Status in Same Cycle |
+|---|---|---|
+| `cd build && npm run test:gate-b` | `P3-RUN-<n>-A` | Pass |
+| `cd build && npm run test:svc-integration` | `P3-RUN-<n>-B` | Pass |
+| `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts` | `P3-RUN-<n>-C` | Pass |
+| `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-resilience-gate-c.test.ts` | `P3-RUN-<n>-D` | Pass |
+
+Gate decision rule (authoritative for Phase 3 pre-build):
+- No `Ready` decision is permitted unless `P3-RUN-<n>-A..D` are all `Pass` in the same validation cycle.
 
 

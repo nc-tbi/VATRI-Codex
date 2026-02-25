@@ -1,0 +1,40 @@
+name: Gate A-SVC
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  gate-a-svc:
+    name: gate-a-svc
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Gate A-SVC checks with report
+        run: |
+          mkdir -p reports
+          npm run test -w @tax-core/domain -- src/__tests__/phase1-defect-prevention-004.test.ts src/__tests__/phase1a-service-integration-gate-a-svc.test.ts --reporter=default --reporter=json --outputFile=../../reports/gate-a-svc-vitest.json
+
+      - name: Upload Gate A-SVC report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-a-svc-report
+          path: build/reports/gate-a-svc-vitest.json

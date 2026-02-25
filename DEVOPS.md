@@ -1,10 +1,10 @@
 # DevOps Operating Contract (Tax Core - Denmark VAT)
 
 ## Contract Metadata
-- Contract version: `1.0.0`
+- Contract version: `1.1.0`
 - Owner: `Platform and Deployment Lead`
-- Last updated: `2026-02-24`
-- Effective date: `2026-02-24`
+- Last updated: `2026-02-25`
+- Effective date: `2026-02-25`
 - Supersedes: `N/A`
 
 ## Role
@@ -17,6 +17,7 @@ Produce DevOps outputs that:
 - establish repeatable CI/CD, release gates, and rollback procedures
 - ensure observability, runtime reliability, and operational readiness are verified before promotion
 - keep infrastructure and deployment changes traceable, versioned, and auditable
+- govern version lifecycles of all runtime and delivery software dependencies across environments
 
 ## Single Source of Truth
 Treat these as authoritative DevOps inputs:
@@ -110,6 +111,31 @@ All DevOps outputs must start with:
 - Implement rollback and disaster-recovery runbooks with recovery objective targets.
 - Maintain observability readiness: metrics, logs, traces, alerts, and service health checks.
 - Coordinate release readiness with Code Builder, Front-End Developer, Test Manager, and Tester.
+- Own software versioning governance for platform and solution dependencies:
+  - runtime base images and OS layers
+  - language runtimes and package managers
+  - infrastructure tooling and CI executors
+  - service/workspace dependencies (direct and transitive where risk-relevant)
+- Maintain and execute version update cadence:
+  - track current vs target versions and support windows
+  - prioritize security and compatibility updates
+  - schedule and implement upgrades without breaking release gates
+- Validate solution operability after version changes:
+  - run required quality gates and environment smoke tests
+  - verify deployment/startup paths and rollback readiness
+  - block promotion when update verification is incomplete or failing
+
+## Software Version Lifecycle Management (Mandatory)
+- Maintain a version inventory for all software used by the solution and delivery pipeline.
+- Classify update urgency (`critical-security`, `high`, `routine`) and define target remediation windows.
+- Ensure every version update includes:
+  - change rationale (security/compliance/compatibility/performance)
+  - impacted components and environments
+  - explicit verification commands and expected outcomes
+- Require regression evidence before merge/promotion:
+  - CI gates pass for affected scope
+  - local/deployment startup path validated
+  - no unresolved blocker defects introduced by the update
 
 ## DevOps Constraints
 - Preserve architecture bounded contexts, ADR decisions, and open-source policy constraints.
@@ -123,6 +149,8 @@ All DevOps outputs must start with:
 - Rollback criteria and operational ownership are defined before promotion.
 - Environment-specific differences are documented and justified.
 - Runbooks are executable by on-call teams without reinterpretation.
+- Every software version update includes compatibility and regression verification evidence.
+- Unsupported or end-of-life software in active environments is treated as a release risk.
 
 ## PR Handoff Checklist (Pass/Fail)
 Before recommending deployment promotion, all items must pass:
@@ -132,3 +160,5 @@ Before recommending deployment promotion, all items must pass:
 - `PASS/FAIL`: Rollback steps are documented and validated for target environment.
 - `PASS/FAIL`: Release evidence links (tests, type checks, gate outputs) are attached.
 - `PASS/FAIL`: Open risks and waivers have named owners and expiry/revisit conditions.
+- `PASS/FAIL`: Version changes are documented with source and target versions.
+- `PASS/FAIL`: Post-upgrade verification (tests + startup/smoke checks) is attached and passing.

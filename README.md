@@ -40,6 +40,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |   `-- traceability/                # Scenario-to-architecture traceability matrix
 |
 |-- design/                          # Solution design outputs
+|-- documentation/                   # Consolidated role-owned documentation packs
 |-- build/                           # Self-service portal implementation workspace
 |-- testing/                         # Test strategy and quality-governance outputs
 |-- critical-review/                 # Critical reviewer findings and advice artifacts
@@ -237,6 +238,8 @@ Helpful docs:
 - `build/README.md`
 - `build/local/README.md`
 - `scripts/local/run-local.ps1`
+- `build/openapi/index.html` (unified API explorer page)
+- `documentation/designer/README.md` (designer documentation pack index)
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
 

@@ -144,7 +144,7 @@
 
 ### D-17 — Preliminary Assessment Claim Trigger Policy
 
-- **Decision:** A preliminary claim intent is created only when `assessment_type=preliminary`, `result_type=payable`, `claim_amount > 0`, and no active preliminary claim exists for the same `taxpayer_id + period_end` idempotency key. Preliminary claims are suppressed for `refund` and `zero` preliminary assessment outcomes.
+- **Decision:** A preliminary claim intent is created only when `assessment_type=preliminary`, `result_type=payable`, `claim_amount > 0`, and no active preliminary claim exists for the same `taxpayer_id + tax_period_end` idempotency key. Preliminary claims are suppressed for `refund` and `zero` preliminary assessment outcomes.
 - **Supersession:** On `PreliminaryAssessmentSupersededByFiledReturn`, the preliminary claim state transitions to `superseded`. Final claim creation follows the standard `AssessmentCalculated` path with reconciliation against any dispatched preliminary claim.
 - **Configuration hook:** `preliminary_claim_trigger_policy_id` controls optional threshold conditions (e.g. de-minimis) without changing core claim-orchestrator logic.
 - **Rationale:** Eliminates ambiguity about whether non-payable preliminary assessments should trigger claims. Deterministic trigger policy preserves idempotency semantics and clean supersession lineage. Aligns with ADR-004 (outbox + claim dispatch) and ADR-003 (append-only evidence).

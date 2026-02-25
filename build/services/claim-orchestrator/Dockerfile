@@ -4,6 +4,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+COPY tsconfig.json ./
 COPY packages/domain/package.json ./packages/domain/
 COPY services/claim-orchestrator/package.json ./services/claim-orchestrator/
 

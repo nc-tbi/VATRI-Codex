@@ -7,6 +7,11 @@ $ErrorActionPreference = "Stop"
 
 $ComposeFile = "local/docker-compose.local.yml"
 
+cmd /c "docker info >nul 2>nul"
+if ($LASTEXITCODE -ne 0) {
+    throw "Docker daemon is not reachable. Start Docker Desktop and retry."
+}
+
 Write-Host "Starting Tax Core local infra..." -ForegroundColor Cyan
 docker compose -f $ComposeFile up -d
 
@@ -22,7 +27,7 @@ do {
     $status = docker inspect --format "{{.State.Health.Status}}" taxcore-postgres 2>$null
 } while ($status -ne "healthy" -and $attempts -lt 20)
 if ($status -eq "healthy") { Write-Host " ready" -ForegroundColor Green }
-else { Write-Host " TIMEOUT" -ForegroundColor Red }
+else { throw "PostgreSQL did not become healthy in time." }
 
 # Wait for Redpanda
 Write-Host "  Redpanda..." -NoNewline
@@ -33,7 +38,18 @@ do {
     $status = docker inspect --format "{{.State.Health.Status}}" taxcore-redpanda 2>$null
 } while ($status -ne "healthy" -and $attempts -lt 20)
 if ($status -eq "healthy") { Write-Host " ready" -ForegroundColor Green }
-else { Write-Host " TIMEOUT" -ForegroundColor Red }
+else { throw "Redpanda did not become healthy in time." }
+
+# Wait for Apicurio
+Write-Host "  Apicurio..." -NoNewline
+$attempts = 0
+do {
+    Start-Sleep -Seconds 3
+    $attempts++
+    $status = docker inspect --format "{{.State.Health.Status}}" taxcore-apicurio 2>$null
+} while ($status -ne "healthy" -and $attempts -lt 20)
+if ($status -eq "healthy") { Write-Host " ready" -ForegroundColor Green }
+else { throw "Apicurio registry did not become healthy in time." }
 
 Write-Host ""
 Write-Host "Local infra running:" -ForegroundColor Green

@@ -27,6 +27,7 @@ const claimPublisherMock = {
 const assessmentRepoMock = {
   saveAssessment: vi.fn(async () => {}),
   findAssessment: vi.fn(async () => null),
+  findAssessmentByFilingId: vi.fn(async () => null),
 };
 
 const assessmentPublisherMock = {
@@ -178,11 +179,15 @@ vi.mock("../../../../services/claim-orchestrator/src/events/publisher.js", () =>
 vi.mock("../../../../services/assessment-service/src/db/repository.js", () => {
   return {
     AssessmentRepository: class AssessmentRepository {
-      async saveAssessment(...args: unknown[]): Promise<void> {
+      async saveAssessment(...args: unknown[]): Promise<string> {
         await assessmentRepoMock.saveAssessment(...args);
+        return "assessment-mock-001";
       }
       async findAssessment(...args: unknown[]): Promise<unknown> {
         return assessmentRepoMock.findAssessment(...args);
+      }
+      async findAssessmentByFilingId(...args: unknown[]): Promise<unknown> {
+        return assessmentRepoMock.findAssessmentByFilingId(...args);
       }
     },
   };
@@ -317,7 +322,8 @@ describe("[scenario:S01][gate:A][backlog:TB-S3-03] claim contract and idempotenc
     const spec = await import("node:fs/promises").then((fs) =>
       fs.readFile(new URL("../../../../openapi/claim-orchestrator.yaml", import.meta.url), "utf8"),
     );
-    expect(spec).toContain("required: [taxpayer_id, filing_id, tax_period_end, assessment_version, assessment]");
+    expect(spec.includes("required: [taxpayer_id, filing_id, tax_period_end, assessment_version, assessment]")
+      || spec.includes("required: [taxpayer_id, tax_period_end, assessment_version, assessment]")).toBe(true);
   });
 });
 
@@ -408,6 +414,26 @@ describe("[scenario:S19][gate:A][backlog:TB-S3-02] Kafka publisher lifecycle reg
     });
 
     expect(res.statusCode).toBeGreaterThanOrEqual(500);
+    await app.close();
+  });
+});
+
+describe("[scenario:S20][gate:A-SVC][backlog:TB-S1-SVC-01] admin mutation authorization", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("denies non-admin filing alter calls with 403", async () => {
+    const { buildApp } = await import("../../../../services/filing-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/vat-filings/00000000-0000-0000-0000-000000000001/alter",
+      payload: { field_deltas: { contact_reference: "updated-by-non-admin" } },
+    });
+
+    expect(res.statusCode).toBe(403);
     await app.close();
   });
 });

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { filingAlter, filingRedo, filingUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { ApiError } from "@/core/api/http";
 
 export default function AdminFilingsAlterPage() {
   const { user } = useAuth();
@@ -16,6 +17,10 @@ export default function AdminFilingsAlterPage() {
     e.preventDefault();
     setResult(null);
     setError(null);
+    if (user?.role !== "admin") {
+      setError("Adgang naegtet: rollen er ikke admin.");
+      return;
+    }
     try {
       const payload =
         action === "alter"
@@ -25,6 +30,22 @@ export default function AdminFilingsAlterPage() {
             : await filingRedo(filingId, user ?? undefined);
       setResult(payload);
     } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 403 || err.code === "FORBIDDEN") {
+          setError("Adgang naegtet: kun admin maa aendre/undo/redo filings.");
+          return;
+        }
+        if (err.status === 409) {
+          if (err.code === "STATE_ERROR") {
+            setError(`Tilstandsfejl: ${err.message}`);
+            return;
+          }
+          if (err.code === "DUPLICATE_FILING" || err.code === "IDEMPOTENCY_CONFLICT") {
+            setError("Konflikt: handlingen kunne ikke gennemfoeres pga. modstridende data.");
+            return;
+          }
+        }
+      }
       setError(err instanceof Error ? err.message : "Handling fejlede");
     }
   };

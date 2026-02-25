@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" modified="2026-02-25T13:00:00.000Z" agent="Codex" version="24.7.17">
+  <diagram id="fe-context-biz-1" name="Frontend System Context">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2200" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="VATRI Self-Service Portal - Front-End System Context" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=28;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="980" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="subtitle" value="Business view of external actors, portal boundary, platform boundary, and traceability obligations" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=14;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="40" y="64" width="1100" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="actorTaxpayer" value="Taxpayer" style="shape=mxgraph.aws4.user;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="70" y="260" width="120" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="actorAdmin" value="Admin Officer" style="shape=mxgraph.aws4.user;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="70" y="470" width="120" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="portalBoundary" value="Portal Front-End (Scope)" style="swimlane;html=1;rounded=1;horizontal=0;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="260" y="180" width="520" height="540" as="geometry"/>
+        </mxCell>
+        <mxCell id="portalUi" value="Web UI (React + Next.js)&#10;Core shell + DK overlay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=14;" vertex="1" parent="portalBoundary">
+          <mxGeometry x="30" y="70" width="460" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="portalGuards" value="Auth Session + RBAC Route Guards" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=14;" vertex="1" parent="portalBoundary">
+          <mxGeometry x="30" y="220" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="portalApiClient" value="API Client + Query Cache&#10;error envelope + trace handling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=14;" vertex="1" parent="portalBoundary">
+          <mxGeometry x="270" y="220" width="220" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="portalUx" value="Journey Modules&#10;overview, obligations, filing, amendment, transparency, admin controls" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;fontSize=14;" vertex="1" parent="portalBoundary">
+          <mxGeometry x="30" y="350" width="460" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="platformBoundary" value="Tax Core Platform Boundary" style="swimlane;html=1;rounded=1;horizontal=0;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=15;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="860" y="180" width="660" height="540" as="geometry"/>
+        </mxCell>
+        <mxCell id="bff" value="Portal BFF&#10;API composition + session endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="platformBoundary">
+          <mxGeometry x="30" y="70" width="260" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="gateway" value="API Gateway&#10;coarse authz + policy + trace propagation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="platformBoundary">
+          <mxGeometry x="340" y="70" width="280" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="services" value="VAT Services&#10;registration, obligations, filing, validation,&#10;assessment, amendment, claim orchestration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="platformBoundary">
+          <mxGeometry x="30" y="220" width="590" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="obs" value="Observability&#10;trace_id + traceparent chain&#10;support diagnostics and audit evidence lookup" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=14;" vertex="1" parent="platformBoundary">
+          <mxGeometry x="30" y="390" width="590" height="90" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="systemS" value="System S (Only External System)&#10;Registration APIs + Taxpayer Accounting APIs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="370" width="430" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" value="uses portal" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="actorTaxpayer" target="portalUi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" value="uses portal" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="actorAdmin" target="portalUi"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" value="HTTPS requests + auth context" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="portalApiClient" target="bff"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" value="API-first boundary" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="bff" target="gateway"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" value="routes to services" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="gateway" target="services"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="integrates only with" style="endArrow=block;html=1;strokeWidth=2;" edge="1" parent="1" source="services" target="systemS"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="traceparent / trace_id propagation" style="dashed=1;endArrow=open;html=1;strokeWidth=2;" edge="1" parent="1" source="portalUi" target="obs"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" value="trace correlation" style="dashed=1;endArrow=open;html=1;strokeWidth=2;" edge="1" parent="1" source="bff" target="obs"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="legendBox" value="Legend" style="swimlane;html=1;rounded=1;horizontal=0;startSize=28;fillColor=#ffffff;strokeColor=#999999;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="780" width="880" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend1" value="Green boundary: front-end scope" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="legendBox">
+          <mxGeometry x="20" y="48" width="280" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend2" value="Yellow boundary: platform scope" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="legendBox">
+          <mxGeometry x="20" y="78" width="280" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend3" value="Solid arrows: request/response flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="legendBox">
+          <mxGeometry x="330" y="48" width="280" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend4" value="Dashed arrows: observability flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="legendBox">
+          <mxGeometry x="330" y="78" width="280" height="24" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend5" value="Grey box: external authoritative system" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;" vertex="1" parent="legendBox">
+          <mxGeometry x="620" y="63" width="240" height="24" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

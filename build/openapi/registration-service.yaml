@@ -1,0 +1,271 @@
+openapi: "3.1.0"
+info:
+  title: Registration Service
+  version: "1.0.0"
+  description: |
+    Manages VAT registration status and cadence policy derivation.
+    Phase 2: Epic E5 F5.1 — registration threshold (DKK 50,000) and cadence tiers (ML §§ 57-58).
+servers:
+  - url: http://localhost:3008
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  service:
+                    type: string
+
+  /registrations:
+    post:
+      operationId: createRegistration
+      summary: Create a VAT registration record
+      description: |
+        Status is derived from annual_turnover_dkk vs DK VAT threshold (DKK 50,000):
+        - Below threshold → `not_registered`
+        - At or above threshold → `pending_registration`
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRegistrationRequest"
+      responses:
+        "201":
+          description: Registration created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /registrations/{registration_id}:
+    get:
+      operationId: getRegistration
+      summary: Get registration by ID
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: Registration record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationRecord"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /registrations/{registration_id}/promote:
+    post:
+      operationId: promoteToRegistered
+      summary: Promote pending_registration to registered
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: Registration promoted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /registrations/{registration_id}/deregister:
+    post:
+      operationId: deregisterRegistration
+      summary: Deregister an active registration
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      responses:
+        "200":
+          description: Registration deregistered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /registrations/{registration_id}/transfer:
+    post:
+      operationId: transferRegistration
+      summary: Transfer registration to another taxpayer (overdragelse)
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to_taxpayer_id]
+              properties:
+                to_taxpayer_id:
+                  type: string
+      responses:
+        "200":
+          description: Registration transferred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatusResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /registrations/cadence-policy:
+    get:
+      operationId: getCadencePolicy
+      summary: Get filing cadence for a given annual turnover
+      description: Returns the periodic filing cadence derived from ML §§ 57-58 thresholds.
+      parameters:
+        - name: turnover_dkk
+          in: query
+          required: true
+          schema:
+            type: number
+          description: Annual VAT-liable turnover in DKK
+      responses:
+        "200":
+          description: Cadence policy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  turnover_dkk:
+                    type: number
+                  cadence:
+                    type: string
+                    enum: [monthly, quarterly, half_yearly, annual]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+components:
+  parameters:
+    RegistrationId:
+      name: registration_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    CreateRegistrationRequest:
+      type: object
+      required: [taxpayer_id, cvr_number, annual_turnover_dkk]
+      properties:
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+          minLength: 8
+          maxLength: 8
+          description: 8-digit Danish CVR number
+        annual_turnover_dkk:
+          type: number
+          minimum: 0
+
+    RegistrationResponse:
+      type: object
+      properties:
+        registration_id:
+          type: string
+        taxpayer_id:
+          type: string
+        status:
+          type: string
+          enum: [not_registered, pending_registration, registered, deregistered, transferred]
+        cadence:
+          type: string
+          enum: [monthly, quarterly, half_yearly, annual]
+        trace_id:
+          type: string
+
+    RegistrationRecord:
+      type: object
+      properties:
+        registration_id:
+          type: string
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+        status:
+          type: string
+        cadence:
+          type: string
+        annual_turnover_dkk:
+          type: number
+        registered_at:
+          type: string
+        deregistered_at:
+          type: string
+
+    StatusResponse:
+      type: object
+      properties:
+        registration_id:
+          type: string
+        status:
+          type: string
+        trace_id:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request — missing or invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    UnprocessableEntity:
+      description: Invalid state transition
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

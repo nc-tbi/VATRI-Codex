@@ -14,6 +14,9 @@ Translate architecture into implementable solution design decisions for service 
 - Model filing data with explicit return-level aggregates and linked line-level fact records.
 - Implement staged net-VAT derivation (`stage_1` to `stage_4`) as deterministic persisted calculation steps.
 - Keep AI assistive only; legally binding outcomes must come from deterministic rule/assessment services.
+- Enforce duplicate filing semantics (`200` replay for identical payload, `409` for conflicting payload).
+- Use canonical claim idempotency key: `taxpayer_id + tax_period_end + assessment_version`.
+- Make assessment retrieval available by both `filing_id` (operational) and `assessment_id` (audit/deep-link).
 
 ## Service Decomposition
 - `portal-ui`

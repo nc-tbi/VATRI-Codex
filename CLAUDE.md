@@ -124,7 +124,7 @@ npm run dev
 - Filing types: `regular`, `zero`, `amendment`
 - Assessment outcomes: `payable`, `refund`, `zero`
 - Bounded contexts: Registration -> Obligation -> Filing -> Validation -> Tax Rule & Assessment -> Amendment -> Claim -> Audit
-- Idempotency key: `taxpayer_id + period_end + assessment_version`
+- Idempotency key: `taxpayer_id + tax_period_end + assessment_version`
 - CVR number: 8-digit Danish business registration number
 
 ---

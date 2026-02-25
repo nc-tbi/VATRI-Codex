@@ -249,6 +249,8 @@ Implemented tests:
 |---|---|---|---|
 | `frontend/portal/src/core/rbac/route-guards.test.ts` | `cd frontend/portal && npm run test` | Pass | Route guard baseline (`requiresAuth`, taxpayer denied admin path). |
 | `frontend/portal/src/core/auth/service.test.ts` | `cd frontend/portal && npm run test` | Pass | Client session persistence/clear semantics baseline. |
+| `frontend/portal/src/core/api/http.test.ts` | `cd frontend/portal && npm run test` | Pass | Contract error envelope parsing and `409` machine-code handling baseline. |
+| `frontend/portal/src/features/claims/status-mapper.test.ts` | `cd frontend/portal && npm run test` | Pass | Claim retry-in-progress vs terminal failure UI mapping baseline. |
 | `frontend/portal/tests/e2e/login.spec.ts` | `cd frontend/portal && npm run test:e2e` | Pass | Browser-level login page availability and input visibility. |
 
 Coverage-link mapping (partial):
@@ -256,8 +258,58 @@ Coverage-link mapping (partial):
 |---|---|---|
 | `route-guards.test.ts` | `TC-PORTAL-RBAC-02`, `TC-PORTAL-RBAC-05` | Partial |
 | `service.test.ts` | `TC-PORTAL-AUTH-05` | Partial |
+| `http.test.ts` | `TC-PORTAL-ALT-05`, `TC-PORTAL-RBAC-05` | Partial |
+| `status-mapper.test.ts` | `TC-PORTAL-TAX-06`, `TC-PORTAL-TRN-03` | Partial |
 | `login.spec.ts` | `TC-PORTAL-OVR-01`, `TC-PORTAL-AUTH-01` | Partial |
 
 Execution note:
 - These tests provide immediate front-end signal and should be incorporated into the formal portal Gate C command pack as additional assertions, not as replacements for the full case suite.
+
+## 7. Phase 3 Executable Case Matrix (Pre-Build)
+
+Purpose:
+- Convert Sprint 3 (`TB-S3-01..05`) into a gate-executable matrix with ownership and deterministic pass/fail behavior before build starts.
+
+### 7.1 Backlog to Case Mapping
+| Backlog ID | Scope | Case IDs | Gate Target |
+|---|---|---|---|
+| `TB-S3-01` | Claim orchestration positive/negative paths | `TC-S3-CLM-01`, `TC-S3-CLM-02` | `Gate C-Phase3` |
+| `TB-S3-02` | Retry + DLQ + restart resilience | `TC-S3-CLM-04`, `TC-S3-CLM-05`, `TC-S3-CLM-06` | `Gate C-Phase3` |
+| `TB-S3-03` | Duplicate idempotency | `TC-S3-CLM-03`, `TC-S3-CLM-06` | `Gate C-Phase3` |
+| `TB-S3-04` | Customs contract mismatch handling | `TC-S3-CLM-07` | `Gate C-Phase3` |
+| `TB-S3-05` | Scenario risk anchor regression | `TC-S3-CLM-08` | `Gate C-Phase3` |
+
+### 7.2 Detailed Cases
+| Case ID | Coverage Type | Title | Preconditions | Steps | Expected Result | Owner | Blocking |
+|---|---|---|---|---|---|---|---|
+| `TC-S3-CLM-01` | Positive | Claim orchestration happy paths (`regular/refund/zero/amendment`) | Claim orchestrator + dependencies running | Execute canonical flows for `S01-S05` | Correct claim creation and dispatch intents for each flow | Code Builder + Tester | Yes |
+| `TC-S3-CLM-02` | Negative | Invalid claim creation input handling | API contract and validators active | Submit contradictory/invalid payload variants | Deterministic rejection envelope; no downstream side effects | Code Builder + Tester | Yes |
+| `TC-S3-CLM-03` | Duplicate | Duplicate event/API idempotency | Baseline claim exists and idempotency key strategy active | Replay same event/request and compare outputs | No duplicate claims/dispatch records; deterministic response | Code Builder + Tester | Yes |
+| `TC-S3-CLM-04` | Retry | Transient failure retry/backoff behavior | Failure injection hooks available for connector/outbox dispatch | Trigger transient dependency failure and observe retry sequence | Retry/backoff sequence follows policy and eventually converges | Code Builder + Tester + Platform/DevOps | Yes |
+| `TC-S3-CLM-05` | DLQ | Dead-letter routing and diagnostics | DLQ path configured | Force non-recoverable dispatch failure | Message routed to DLQ once; failure metadata + trace links present | Code Builder + Tester + Platform/DevOps | Yes |
+| `TC-S3-CLM-06` | Restart-persistence | Outbox + idempotency durability across restart | Persisted outbox/idempotency store enabled | Enqueue work, restart services mid-flow, resume processing | No duplicate/ghost processing; in-flight state recovers deterministically | Code Builder + Tester | Yes |
+| `TC-S3-CLM-07` | Negative + Contract | Customs mismatch/error mapping | Customs stub/provider contract suite available | Send mismatch/failure responses from provider stub | Error contract and reconciliation events match spec (`CustomsIntegrationFailed`) | Designer + Code Builder + Tester | Yes |
+| `TC-S3-CLM-08` | Positive + Regression | Scenario anchor pack (`S08`,`S09`,`S19`) | All Sprint 3 suites runnable | Execute anchor regression as single pack | All anchors pass and preserve prior expected semantics | Test Manager + Code Builder + Tester | Yes |
+
+### 7.3 Mandatory Commands (Phase 3)
+| Scope | Command | Required Result |
+|---|---|---|
+| Baseline type/test integrity | `cd build && npm run test:gate-b` | Pass |
+| Service risk regression baseline | `cd build && npm run test:svc-integration` | Pass |
+| Phase 3 claim reliability pack | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts` | Pass |
+| Phase 3 resilience pack (retry/DLQ/restart) | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-resilience-gate-c.test.ts` | Pass |
+
+Pass/fail policy:
+- Any failure in `TC-S3-CLM-*` is a `blocker` for `Gate C-Phase3`.
+- `Gate C-Phase3` passes only when all mandatory commands above pass in the same validation cycle.
+- Missing command implementation for the two Phase 3 packs is itself a `blocker` until delivered.
+
+### 7.4 Phase 3 Defect Evidence (Pre-Build Blockers)
+| Defect ID | Linked Case IDs | Evidence Command | Evidence Snippet | Timestamp (UTC) | Status |
+|---|---|---|---|---|---|
+| `DEF-P3-001` | `TC-S3-CLM-01`, `TC-S3-CLM-02`, `TC-S3-CLM-03`, `TC-S3-CLM-08` | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-gate-c.test.ts"` | no matching file returned | 2026-02-25T00:00:00Z | Open |
+| `DEF-P3-002` | `TC-S3-CLM-04`, `TC-S3-CLM-05`, `TC-S3-CLM-06` | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-resilience-gate-c.test.ts"` | no matching file returned | 2026-02-25T00:00:00Z | Open |
+
+Phase 3 verdict:
+- **Blocked** until both defect IDs are closed and all mandatory commands pass in one validation cycle.
 

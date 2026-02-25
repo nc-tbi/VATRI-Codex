@@ -38,6 +38,16 @@ Admin endpoints requiring enforcement are called with:
 - `x-user-role`
 - `x-subject-id`
 
+## Phase 3 Contract Handling (Frozen)
+- POST flows read finalized contract semantics only:
+  - `201 + idempotent=false`: new resource
+  - `200 + idempotent=true`: replay of existing resource
+  - `409`: conflict (handled by machine `error` code)
+- UI handling is explicitly non-optimistic:
+  - `DUPLICATE_FILING`, `IDEMPOTENCY_CONFLICT`, `STATE_ERROR` are mapped to dedicated conflict/domain messages.
+  - claim statuses `queued|sent|acked|failed|dead_letter|superseded` are rendered with retry/terminal distinctions.
+- Admin mutation pages enforce defense-in-depth role checks in UI and rely on backend `403/FORBIDDEN` as source of truth.
+
 ## Route Surface
 - Shared: `/login`, `/overview`
 - Taxpayer: `/obligations`, `/filings/new`, `/amendments/new`, `/submissions`, `/assessments-claims`

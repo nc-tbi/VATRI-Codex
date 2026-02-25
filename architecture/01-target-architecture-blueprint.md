@@ -152,9 +152,10 @@ Tax Core API surface (minimum):
   - `GET /vat-filings/{filing_id}`
 - Amendments:
   - `POST /vat-filings/{filing_id}/amendments`
-  - `GET /amendments/{correction_id}`
+  - `GET /amendments/{amendment_id}`
 - Assessment and status:
   - `GET /assessments/{assessment_id}`
+  - `GET /assessments/by-filing/{filing_id}`
   - `GET /tax-periods/{taxpayer_id}/{period_end}/status`
 - Claims:
   - `GET /claims/{claim_id}`
@@ -235,7 +236,14 @@ Claim payload:
 - `claim_id`, `taxpayer_id`, `period_start`, `period_end`, `result_type`, `amount`, `currency`, `filing_reference`, `rule_version_id`, `calculation_trace_id`, `created_at`
 
 Idempotency:
-- key = `taxpayer_id + period_end + assessment_version`
+- key = `taxpayer_id + tax_period_end + assessment_version`
+- duplicate `POST /vat-filings` with identical `filing_id` payload returns `200` replay and emits no new events
+- duplicate `POST /vat-filings` with same `filing_id` and conflicting payload returns `409`
+
+Assessment retrieval contract:
+- `GET /assessments/by-filing/{filing_id}` is the authoritative operational retrieval path.
+- `GET /assessments/{assessment_id}` remains for audit/deep-link retrieval.
+- `POST /assessments` response must include `assessment_id` and `filing_id`.
 
 API parity rule:
 - All user actions available in the portal must map to public Tax Core API operations.

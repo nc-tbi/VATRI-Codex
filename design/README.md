@@ -18,6 +18,25 @@ This folder is the dedicated working area for solution design outputs derived fr
 - `design/data-models/` for entities and state transitions
 - `design/sequence-flows/` for Mermaid sequence/activity diagrams
 - `design/test-coverage/` for scenario-to-test mappings
+- `design/portal/` for portal contracts and frontend readiness pack
+
+## Portal Blocker Pack
+- `design/portal/01-frontend-stack-and-runtime.md`
+- `design/portal/02-auth-and-rbac-contract.md`
+- `design/portal/03-country-overlay-ui-contract.md`
+- `design/portal/04-user-journeys-and-wireflow.md`
+- `design/portal/05-api-contract-deltas-for-portal.md`
+- `design/portal/06-local-environment-and-dev-setup.md`
+
+## Consolidated Designer Documentation
+- `documentation/designer/README.md`
+- `documentation/designer/01-solution-design-baseline.md`
+- `documentation/designer/02-contracts-and-integrations.md`
+- `documentation/designer/03-data-model-state-and-lineage.md`
+- `documentation/designer/04-diagrams-and-visual-artifacts.md`
+- `documentation/designer/05-portal-design-and-frontend-readiness.md`
+- `documentation/designer/06-local-run-and-api-docs-hub.md`
+- `documentation/designer/07-handover-and-definition-of-ready.md`
 
 ## Output Rule
 All new designer deliverables should be stored in `design/`.

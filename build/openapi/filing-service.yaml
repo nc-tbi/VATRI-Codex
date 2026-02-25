@@ -1,11 +1,14 @@
 openapi: "3.1.0"
 info:
   title: Filing Service API
-  version: "1.0.0"
+  version: "1.2.0"
   description: |
-    Tax Core filing service — receives and orchestrates canonical VAT filings (ADR-006).
-    Bounded context: Filing. Publishes to tax-core.filing.received, tax-core.filing.assessed,
-    tax-core.claim.created.
+    Tax Core filing service - receives and orchestrates canonical VAT filings (ADR-006).
+    Bounded context: Filing. Sole publisher of tax-core.filing.received.
+    Phase 3 freeze: tax-core.filing.assessed owned by assessment-service;
+    tax-core.claim.created owned by claim-orchestrator (design/03-phase-3-contract-freeze.md).
+    v1.2.0: FilingState enum; typed FilingAssessmentSummary and FilingClaimSummary;
+    StoredFilingRecord schema; idempotent field on FilingResponse.
 
 servers:
   - url: http://localhost:3001
@@ -30,8 +33,11 @@ paths:
       operationId: submitFiling
       summary: Submit a canonical VAT filing
       description: |
-        Accepts a canonical filing, runs validation → rule evaluation → staged assessment
-        → claim creation in a single orchestrated flow (S01–S19).
+        Accepts a canonical filing, runs validation -> rule evaluation -> staged assessment
+        -> claim creation in a single orchestrated flow (S01-S19).
+        Duplicate behavior:
+        - same filing_id and semantically identical payload: idempotent replay (200), no new events.
+        - same filing_id and conflicting payload: conflict (409), no side effects.
       tags: [Filings]
       requestBody:
         required: true
@@ -46,8 +52,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FilingResponse"
+        "200":
+          description: Existing filing returned (idempotent replay)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilingResponse"
         "409":
-          description: Filing state conflict
+          description: Filing conflict (duplicate filing_id with conflicting payload/state)
           content:
             application/json:
               schema:
@@ -64,6 +76,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    get:
+      operationId: listFilings
+      summary: List filings by taxpayer
+      tags: [Filings]
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tax_period_end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Filings for the taxpayer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  filings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StoredFilingRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
 
   /vat-filings/{filing_id}:
     get:
@@ -83,9 +129,100 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StoredFilingResponse"
+                $ref: "#/components/schemas/StoredFilingRecord"
         "404":
-          description: Not found
+          $ref: "#/components/responses/NotFound"
+
+  /vat-filings/{filing_id}/alter:
+    post:
+      operationId: alterFiling
+      summary: Admin - override filing fields
+      description: |
+        Applies partial field overrides and persists an append-only alter event with
+        before/after snapshot hashes and trace metadata.
+      tags: [Admin]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlterRequest"
+      responses:
+        "200":
+          description: Alter applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlterResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /vat-filings/{filing_id}/undo:
+    post:
+      operationId: undoFilingAlter
+      summary: Admin - revert last applied alter
+      tags: [Admin]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Undo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UndoRedoResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Nothing to undo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /vat-filings/{filing_id}/redo:
+    post:
+      operationId: redoFilingAlter
+      summary: Admin - re-apply last undone alter
+      tags: [Admin]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Redo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UndoRedoResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Nothing to redo
           content:
             application/json:
               schema:
@@ -137,7 +274,6 @@ components:
         cvr_number:
           type: string
           pattern: "^[0-9]{8}$"
-          description: 8-digit Danish CVR number
         tax_period_start:
           type: string
           format: date
@@ -176,33 +312,26 @@ components:
           type: number
         rubrik_a_goods_eu_purchase_value:
           type: number
-          minimum: 0
         rubrik_a_services_eu_purchase_value:
           type: number
-          minimum: 0
         rubrik_b_goods_eu_sale_value:
           type: number
-          minimum: 0
         rubrik_b_services_eu_sale_value:
           type: number
-          minimum: 0
         rubrik_c_other_vat_exempt_supplies_value:
           type: number
-          minimum: 0
 
-    StagedAssessment:
+    FilingState:
+      type: string
+      enum: [received, validated, assessed, claim_created]
+      description: |
+        Filing processing state. Terminal happy-path state: claim_created (for payable/refund outcomes)
+        or assessed (for zero outcomes). Matches domain FilingState type.
+
+    FilingAssessmentSummary:
       type: object
-      required:
-        - filing_id
-        - trace_id
-        - rule_version_id
-        - assessed_at
-        - stage1_gross_output_vat
-        - stage2_total_deductible_input_vat
-        - stage3_pre_adjustment_net_vat
-        - stage4_net_vat
-        - result_type
-        - claim_amount
+      description: Assessment summary embedded in FilingResponse (filing-service bounded context — no assessment_id).
+      required: [filing_id, trace_id, rule_version_id, assessed_at, stage4_net_vat, result_type, claim_amount]
       properties:
         filing_id:
           type: string
@@ -229,30 +358,182 @@ components:
           type: number
           minimum: 0
 
+    FilingClaimSummary:
+      type: object
+      description: Claim intent summary embedded in FilingResponse when a claim was created.
+      required: [claim_id, idempotency_key, status, result_type, claim_amount]
+      properties:
+        claim_id:
+          type: string
+          format: uuid
+        idempotency_key:
+          type: string
+          description: "{taxpayer_id}:{tax_period_end}:{assessment_version}"
+        status:
+          type: string
+          enum: [queued, sent, acked, failed, dead_letter, superseded]
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+
     FilingResponse:
       type: object
-      required: [filing_id, state, trace_id]
+      required: [filing_id, state, trace_id, idempotent]
       properties:
         filing_id:
           type: string
           format: uuid
         state:
-          type: string
-          enum: [received, validated, assessed, claim_created]
+          $ref: "#/components/schemas/FilingState"
         trace_id:
           type: string
+        idempotent:
+          type: boolean
+          description: True when the response is an idempotent replay of an existing filing (200). False on first create (201).
         assessment:
-          $ref: "#/components/schemas/StagedAssessment"
+          $ref: "#/components/schemas/FilingAssessmentSummary"
+          nullable: true
         claim_intent:
-          type: object
+          $ref: "#/components/schemas/FilingClaimSummary"
+          nullable: true
 
-    StoredFilingResponse:
+    StoredFilingRecord:
       type: object
+      description: |
+        Stored filing record as returned by GET /vat-filings/:id.
+        Reflects the effective state after any applied admin alter events.
+      required:
+        - filing_id
+        - taxpayer_id
+        - cvr_number
+        - tax_period_start
+        - tax_period_end
+        - filing_type
+        - state
+        - submission_timestamp
+        - rule_version_id
+        - assessment_version
+        - trace_id
+        - output_vat_amount_domestic
+        - reverse_charge_output_vat_goods_abroad_amount
+        - reverse_charge_output_vat_services_abroad_amount
+        - input_vat_deductible_amount_total
+        - adjustments_amount
+        - rubrik_a_goods_eu_purchase_value
+        - rubrik_a_services_eu_purchase_value
+        - rubrik_b_goods_eu_sale_value
+        - rubrik_b_services_eu_sale_value
+        - rubrik_c_other_vat_exempt_supplies_value
       properties:
         filing_id:
           type: string
+          format: uuid
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+        tax_period_start:
+          type: string
+          format: date
+        tax_period_end:
+          type: string
+          format: date
+        filing_type:
+          type: string
+          enum: [regular, zero, amendment]
+        state:
+          $ref: "#/components/schemas/FilingState"
+        submission_timestamp:
+          type: string
+          format: date-time
+        contact_reference:
+          type: string
+        source_channel:
+          type: string
+          enum: [portal, api, import]
+        rule_version_id:
+          type: string
+        assessment_version:
+          type: integer
+          minimum: 1
+        prior_filing_id:
+          type: string
+          format: uuid
+          nullable: true
         trace_id:
           type: string
+        output_vat_amount_domestic:
+          type: number
+        reverse_charge_output_vat_goods_abroad_amount:
+          type: number
+        reverse_charge_output_vat_services_abroad_amount:
+          type: number
+        input_vat_deductible_amount_total:
+          type: number
+        adjustments_amount:
+          type: number
+        rubrik_a_goods_eu_purchase_value:
+          type: number
+        rubrik_a_services_eu_purchase_value:
+          type: number
+        rubrik_b_goods_eu_sale_value:
+          type: number
+        rubrik_b_services_eu_sale_value:
+          type: number
+        rubrik_c_other_vat_exempt_supplies_value:
+          type: number
+        alter_history:
+          type: array
+          description: Applied admin alter events in order. Reflects current effective state.
+          items:
+            type: object
+            required: [alter_id, field_deltas, status]
+            properties:
+              alter_id:
+                type: string
+                format: uuid
+              field_deltas:
+                type: object
+              status:
+                type: string
+                enum: [applied, undone]
+
+    AlterRequest:
+      type: object
+      required: [field_deltas]
+      properties:
+        field_deltas:
+          type: object
+          additionalProperties: true
+
+    AlterResponse:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        filing_id:
+          type: string
+        alter_id:
+          type: string
+        effective_state:
+          type: object
+
+    UndoRedoResponse:
+      type: object
+      properties:
+        trace_id:
+          type: string
+        filing_id:
+          type: string
+        undone_alter_id:
+          type: string
+        redone_alter_id:
+          type: string
+        effective_state:
+          type: object
 
     ErrorResponse:
       type: object
@@ -264,3 +545,23 @@ components:
           type: string
         trace_id:
           type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Forbidden - admin role required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

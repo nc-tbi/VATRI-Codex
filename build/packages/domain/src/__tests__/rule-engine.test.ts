@@ -135,8 +135,8 @@ describe("RuleCatalog — effective-date filtering (ADR-002)", () => {
 // ---------------------------------------------------------------------------
 
 describe("DK VAT rules — loaded rules", () => {
-  it("all Phase 1 DK VAT rules are registered (7 rules)", () => {
-    expect(DK_VAT_RULES).toHaveLength(7);
+  it("all Phase 1 + Phase 2 DK VAT rules are registered (12 rules)", () => {
+    expect(DK_VAT_RULES).toHaveLength(12);
   });
 
   it("DK-VAT-001 applies when domestic output VAT > 0", () => {

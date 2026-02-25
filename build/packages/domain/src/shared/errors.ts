@@ -1,4 +1,4 @@
-// shared/errors.ts — Domain error types for Tax Core Phase 1
+// shared/errors.ts — Domain error types for Tax Core Phase 1 + Phase 2
 
 export class FilingStateError extends Error {
   constructor(
@@ -37,5 +37,26 @@ export class AmendmentError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "AmendmentError";
+  }
+}
+
+// Phase 2 error types
+
+export class ObligationStateError extends Error {
+  constructor(
+    public readonly currentState: string,
+    public readonly attemptedTransition: string,
+  ) {
+    super(
+      `Invalid obligation state transition: cannot '${attemptedTransition}' from state '${currentState}'`,
+    );
+    this.name = "ObligationStateError";
+  }
+}
+
+export class RegistrationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RegistrationError";
   }
 }

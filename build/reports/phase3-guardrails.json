@@ -1,0 +1,142 @@
+{
+  "gate": "phase3-guardrails",
+  "generated_at": "2026-02-25T11:31:04.360Z",
+  "passed": true,
+  "summary": {
+    "total": 26,
+    "passed": 26,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "name": "deterministic-image-postgres:16",
+      "status": "pass",
+      "detail": "Pinned image tag found"
+    },
+    {
+      "name": "deterministic-image-docker.redpanda.com/redpandadata/redpanda:v24.2.16",
+      "status": "pass",
+      "detail": "Pinned image tag found"
+    },
+    {
+      "name": "deterministic-image-provectuslabs/kafka-ui:v0.7.2",
+      "status": "pass",
+      "detail": "Pinned image tag found"
+    },
+    {
+      "name": "deterministic-image-apicurio/apicurio-registry-mem:2.6.2.Final",
+      "status": "pass",
+      "detail": "Pinned image tag found"
+    },
+    {
+      "name": "required-secret-signing-key",
+      "status": "pass",
+      "detail": "SESSION_SIGNING_KEY requires injection"
+    },
+    {
+      "name": "required-secret-encryption-key",
+      "status": "pass",
+      "detail": "SESSION_ENCRYPTION_KEY requires injection"
+    },
+    {
+      "name": "seed-default-disabled",
+      "status": "pass",
+      "detail": "ADMIN_SEED_ENABLED defaults to false"
+    },
+    {
+      "name": "startup-order-validation-service",
+      "status": "pass",
+      "detail": "validation-service waits for infra health"
+    },
+    {
+      "name": "startup-order-rule-engine-service",
+      "status": "pass",
+      "detail": "rule-engine-service waits for infra health"
+    },
+    {
+      "name": "insecure-default-seed-creds",
+      "status": "pass",
+      "detail": "No insecure admin defaults in .env template"
+    },
+    {
+      "name": "auth-runtime-secret-validation",
+      "status": "pass",
+      "detail": "Auth service validates both signing and encryption keys"
+    },
+    {
+      "name": "auth-runtime-seed-guardrails",
+      "status": "pass",
+      "detail": "Seed guardrails enforce local-only and no admin/admin"
+    },
+    {
+      "name": "observability-filing-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-validation-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-rule-engine-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-assessment-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-amendment-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-claim-orchestrator",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-obligation-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-registration-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "observability-auth-service",
+      "status": "pass",
+      "detail": "Structured logging + trace header configured"
+    },
+    {
+      "name": "traceparent-filing-service",
+      "status": "pass",
+      "detail": "CloudEvent includes traceparent"
+    },
+    {
+      "name": "traceparent-assessment-service",
+      "status": "pass",
+      "detail": "CloudEvent includes traceparent"
+    },
+    {
+      "name": "traceparent-amendment-service",
+      "status": "pass",
+      "detail": "CloudEvent includes traceparent"
+    },
+    {
+      "name": "traceparent-claim-orchestrator",
+      "status": "pass",
+      "detail": "CloudEvent includes traceparent"
+    },
+    {
+      "name": "traceparent-obligation-service",
+      "status": "pass",
+      "detail": "CloudEvent includes traceparent"
+    }
+  ]
+}

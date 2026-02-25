@@ -1,15 +1,13 @@
-// amendment-service/src/routes/amendment.ts
-// POST /amendments                 → createAmendment() (ADR-005)
-// GET  /amendments/:filing_id      → DB lookup by original filing
-import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
 import type { Sql } from "postgres";
 import type { Kafka } from "kafkajs";
+import { createHash, randomUUID } from "node:crypto";
 import {
   createAmendment,
   type StagedAssessment,
   AmendmentError,
 } from "@tax-core/domain";
-import { AmendmentRepository } from "../db/repository.js";
+import { AmendmentRepository, type AmendmentAlterEventRecord } from "../db/repository.js";
 import { AmendmentEventPublisher } from "../events/publisher.js";
 
 interface RouteOptions extends FastifyPluginOptions {
@@ -24,11 +22,57 @@ interface AmendmentBody {
   new_assessment: StagedAssessment;
 }
 
+interface AlterState {
+  alter_id: string;
+  field_deltas: Record<string, unknown>;
+  status: "applied" | "undone";
+}
+
+function getHeaderValue(input: string | string[] | undefined): string | null {
+  if (!input) return null;
+  return Array.isArray(input) ? input[0] ?? null : input;
+}
+
+function getAdminContext(req: FastifyRequest): { actor_subject_id: string | null; actor_role: string } | null {
+  const actor_role = getHeaderValue(req.headers["x-user-role"] as string | string[] | undefined)
+    ?? getHeaderValue(req.headers["x-role"] as string | string[] | undefined);
+  if (actor_role !== "admin") return null;
+  const actor_subject_id = getHeaderValue(req.headers["x-subject-id"] as string | string[] | undefined);
+  return { actor_subject_id, actor_role };
+}
+
+function deriveAlterStates(events: AmendmentAlterEventRecord[]): AlterState[] {
+  const states = new Map<string, AlterState>();
+  for (const event of events) {
+    if (event.event_type === "alter") {
+      states.set(event.alter_id, {
+        alter_id: event.alter_id,
+        field_deltas: event.field_deltas ?? {},
+        status: "applied",
+      });
+      continue;
+    }
+    const target = states.get(event.alter_id);
+    if (!target) continue;
+    target.status = event.event_type === "undo" ? "undone" : "applied";
+  }
+  return Array.from(states.values());
+}
+
+function applyAlters(base: Record<string, unknown>, states: AlterState[]): Record<string, unknown> {
+  return states
+    .filter((entry) => entry.status === "applied")
+    .reduce((acc, entry) => ({ ...acc, ...entry.field_deltas }), { ...base });
+}
+
+function snapshotHash(snapshot: Record<string, unknown>): string {
+  return createHash("sha256").update(JSON.stringify(snapshot)).digest("hex");
+}
+
 export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions): Promise<void> {
   const repo = new AmendmentRepository(opts.sql);
   const publisher = new AmendmentEventPublisher(opts.kafka);
 
-  // POST /amendments
   app.post<{ Body: AmendmentBody }>("/", async (req, reply) => {
     const { original_filing_id, taxpayer_id, original_assessment, new_assessment } = req.body;
     const traceId = req.id;
@@ -43,7 +87,6 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
       );
       await repo.saveAmendment(amendment);
       await publisher.publishAmendmentCreated(amendment, traceId);
-
       return reply.status(201).send({ trace_id: traceId, amendment });
     } catch (err) {
       if (err instanceof AmendmentError) {
@@ -54,10 +97,148 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
     }
   });
 
-  // GET /amendments/:filing_id
+  app.get<{ Querystring: { taxpayer_id?: string; tax_period_end?: string } }>(
+    "/",
+    async (req, reply) => {
+      const { taxpayer_id, tax_period_end } = req.query;
+      if (!taxpayer_id) {
+        return reply.status(400).send({ error: "BAD_REQUEST", message: "taxpayer_id is required", trace_id: req.id });
+      }
+      const amendments = await repo.findByTaxpayerId(taxpayer_id, tax_period_end);
+      return reply.send({ trace_id: req.id, taxpayer_id, amendments });
+    }
+  );
+
   app.get<{ Params: { filing_id: string } }>("/:filing_id", async (req, reply) => {
     const { filing_id } = req.params;
     const records = await repo.findByFilingId(filing_id);
     return reply.send({ trace_id: req.id, filing_id, amendments: records });
+  });
+
+  app.post<{ Params: { amendment_id: string }; Body: { field_deltas: Record<string, unknown> } }>(
+    "/:amendment_id/alter",
+    async (req, reply) => {
+      const adminCtx = getAdminContext(req);
+      if (!adminCtx) return reply.status(403).send({ error: "FORBIDDEN", trace_id: req.id });
+
+      const { amendment_id } = req.params;
+      const { field_deltas } = req.body ?? {};
+      const traceId = req.id;
+      if (!field_deltas || typeof field_deltas !== "object") {
+        return reply.status(400).send({ error: "BAD_REQUEST", message: "field_deltas object is required", trace_id: traceId });
+      }
+
+      const base = await repo.findByAmendmentId(amendment_id);
+      if (!base) return reply.status(404).send({ error: "NOT_FOUND", amendment_id, trace_id: traceId });
+
+      const events = await repo.findAlterEvents(amendment_id);
+      const beforeState = applyAlters(base, deriveAlterStates(events));
+      const alter_id = randomUUID();
+      const afterState = applyAlters(beforeState, [{ alter_id, field_deltas, status: "applied" }]);
+
+      await repo.saveAlterEvent({
+        event_id: randomUUID(),
+        amendment_id,
+        event_type: "alter",
+        alter_id,
+        field_deltas,
+        actor_subject_id: adminCtx.actor_subject_id,
+        actor_role: adminCtx.actor_role,
+        trace_id: traceId,
+        before_snapshot_hash: snapshotHash(beforeState),
+        after_snapshot_hash: snapshotHash(afterState),
+        created_at: new Date().toISOString(),
+      });
+
+      return reply.send({ trace_id: traceId, amendment_id, alter_id, effective_state: afterState });
+    }
+  );
+
+  app.post<{ Params: { amendment_id: string } }>("/:amendment_id/undo", async (req, reply) => {
+    const adminCtx = getAdminContext(req);
+    if (!adminCtx) return reply.status(403).send({ error: "FORBIDDEN", trace_id: req.id });
+
+    const { amendment_id } = req.params;
+    const traceId = req.id;
+    const base = await repo.findByAmendmentId(amendment_id);
+    if (!base) return reply.status(404).send({ error: "NOT_FOUND", amendment_id, trace_id: traceId });
+
+    const events = await repo.findAlterEvents(amendment_id);
+    const currentStates = deriveAlterStates(events);
+    const lastApplied = [...currentStates].reverse().find((entry) => entry.status === "applied");
+    if (!lastApplied) {
+      return reply.status(409).send({ error: "NOTHING_TO_UNDO", amendment_id, trace_id: traceId });
+    }
+
+    const beforeState = applyAlters(base, currentStates);
+    const projectedStates = currentStates.map((entry) =>
+      entry.alter_id === lastApplied.alter_id ? { ...entry, status: "undone" as const } : entry
+    );
+    const afterState = applyAlters(base, projectedStates);
+
+    await repo.saveAlterEvent({
+      event_id: randomUUID(),
+      amendment_id,
+      event_type: "undo",
+      alter_id: lastApplied.alter_id,
+      field_deltas: null,
+      actor_subject_id: adminCtx.actor_subject_id,
+      actor_role: adminCtx.actor_role,
+      trace_id: traceId,
+      before_snapshot_hash: snapshotHash(beforeState),
+      after_snapshot_hash: snapshotHash(afterState),
+      created_at: new Date().toISOString(),
+    });
+
+    return reply.send({
+      trace_id: traceId,
+      amendment_id,
+      undone_alter_id: lastApplied.alter_id,
+      effective_state: afterState,
+    });
+  });
+
+  app.post<{ Params: { amendment_id: string } }>("/:amendment_id/redo", async (req, reply) => {
+    const adminCtx = getAdminContext(req);
+    if (!adminCtx) return reply.status(403).send({ error: "FORBIDDEN", trace_id: req.id });
+
+    const { amendment_id } = req.params;
+    const traceId = req.id;
+    const base = await repo.findByAmendmentId(amendment_id);
+    if (!base) return reply.status(404).send({ error: "NOT_FOUND", amendment_id, trace_id: traceId });
+
+    const events = await repo.findAlterEvents(amendment_id);
+    const currentStates = deriveAlterStates(events);
+    const lastUndone = [...currentStates].reverse().find((entry) => entry.status === "undone");
+    if (!lastUndone) {
+      return reply.status(409).send({ error: "NOTHING_TO_REDO", amendment_id, trace_id: traceId });
+    }
+
+    const beforeState = applyAlters(base, currentStates);
+    const projectedStates = currentStates.map((entry) =>
+      entry.alter_id === lastUndone.alter_id ? { ...entry, status: "applied" as const } : entry
+    );
+    const afterState = applyAlters(base, projectedStates);
+
+    await repo.saveAlterEvent({
+      event_id: randomUUID(),
+      amendment_id,
+      event_type: "redo",
+      alter_id: lastUndone.alter_id,
+      field_deltas: null,
+      actor_subject_id: adminCtx.actor_subject_id,
+      actor_role: adminCtx.actor_role,
+      trace_id: traceId,
+      before_snapshot_hash: snapshotHash(beforeState),
+      after_snapshot_hash: snapshotHash(afterState),
+      created_at: new Date().toISOString(),
+    });
+
+    return reply.send({
+      trace_id: traceId,
+      amendment_id,
+      redone_alter_id: lastUndone.alter_id,
+      effective_state: afterState,
+    });
   });
 }

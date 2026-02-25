@@ -6,6 +6,9 @@ This subfolder is for the solution designer and contains implementation-oriented
 - `architecture/designer/01-solution-design-brief.md`
 - `architecture/designer/02-component-design-contracts.md`
 - `architecture/designer/03-nfr-observability-checklist.md`
+- `architecture/designer/04-portal-contract-approval-notes.md`
+- `architecture/designer/05-remediation-approval-auth-admin-controls.md`
+- `architecture/designer/06-phase-3-boundary-note.md`
 
 ## Required Inputs
 - `architecture/01-target-architecture-blueprint.md`

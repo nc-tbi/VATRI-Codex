@@ -1,6 +1,7 @@
-// shared/types.ts — Canonical types for Tax Core Phase 1
+// shared/types.ts — Canonical types for Tax Core Phase 1 + Phase 2
 // Source: design/01-vat-filing-assessment-solution-design.md (v1.6)
 //         analysis/02-vat-form-fields-dk.md
+//         architecture/delivery/capability-to-backlog-mapping.md §Phase 2 (Epics E3/E4/E5)
 
 // ---------------------------------------------------------------------------
 // Filing types
@@ -151,7 +152,19 @@ export type AuditEventType =
   | "claim_dead_lettered"
   | "amendment_created"
   | "rule_evaluated"
-  | "validation_failed";
+  | "validation_failed"
+  // Phase 2 — obligation and registration events
+  | "obligation_created"
+  | "obligation_submitted"
+  | "obligation_overdue"
+  | "preliminary_assessment_triggered"
+  | "preliminary_assessment_issued"
+  | "preliminary_assessment_superseded_by_filing"
+  | "final_assessment_calculated_from_filing"
+  | "registration_created"
+  | "registration_promoted"
+  | "registration_deregistered"
+  | "registration_transferred";
 
 /** Append-only audit evidence record — ADR-003 */
 export interface AuditRecord {
@@ -176,7 +189,9 @@ export type BoundedContext =
   | "amendment"
   | "claim"
   | "audit"
-  | "rule-engine";
+  | "rule-engine"
+  | "obligation"
+  | "registration";
 
 /** CloudEvents-aligned domain event envelope — ADR-001 */
 export interface DomainEvent<T = unknown> {
@@ -244,4 +259,84 @@ export interface FilingContext {
   readonly rule_engine_output?: RuleEngineOutput;
   readonly claim_intent?: ClaimIntent;
   readonly events: readonly DomainEvent[];
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Obligation types (Epic E5 F5.1/F5.2)
+// ---------------------------------------------------------------------------
+
+export type ObligationState = "due" | "submitted" | "overdue";
+
+export type ObligationCadence = "monthly" | "quarterly" | "half_yearly" | "annual";
+
+/** Filing obligation record — tracks one periodic VAT filing obligation.
+ *  Lifecycle: due → submitted (on filing) | overdue (on missed deadline).
+ *  ADR-001 bounded context: obligation */
+export interface ObligationRecord {
+  readonly obligation_id: string;
+  readonly taxpayer_id: string;
+  readonly tax_period_start: string;      // ISO 8601 date
+  readonly tax_period_end: string;        // ISO 8601 date
+  readonly due_date: string;              // ISO 8601 date
+  readonly cadence: ObligationCadence;
+  state: ObligationState;                 // mutable — state machine
+  filing_id?: string;                     // set when obligation is submitted
+  preliminary_assessment_id?: string;     // set when preliminary assessment is triggered
+  readonly created_at: string;            // ISO 8601 datetime
+  readonly trace_id: string;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Preliminary assessment types (Epic E5 F5.4)
+// ---------------------------------------------------------------------------
+
+export type PreliminaryAssessmentState =
+  | "triggered"
+  | "issued"
+  | "superseded_by_filing"
+  | "final_calculated";
+
+/** Preliminary assessment record — issued when an obligation becomes overdue.
+ *  Lifecycle: triggered → issued → superseded_by_filing → final_calculated.
+ *  ADR-001 bounded context: obligation */
+export interface PreliminaryAssessmentRecord {
+  readonly preliminary_assessment_id: string;
+  readonly taxpayer_id: string;
+  readonly tax_period_end: string;        // ISO 8601 date
+  readonly obligation_id: string;
+  readonly estimated_net_vat: number;     // estimated amount at trigger time
+  state: PreliminaryAssessmentState;      // mutable — state machine
+  superseding_filing_id?: string;         // set when superseded by a filed return
+  final_assessment?: StagedAssessment;    // set when final calculation is done
+  readonly triggered_at: string;          // ISO 8601 datetime
+  issued_at?: string;                     // ISO 8601 datetime
+  superseded_at?: string;                 // ISO 8601 datetime
+  readonly trace_id: string;
+}
+
+// ---------------------------------------------------------------------------
+// Phase 2 — Registration types (Epic E5 F5.1)
+// ---------------------------------------------------------------------------
+
+export type RegistrationStatus =
+  | "not_registered"
+  | "pending_registration"
+  | "registered"
+  | "deregistered"
+  | "transferred";
+
+/** Registration record — tracks a taxpayer's VAT registration status and cadence.
+ *  Cadence policy derived from annual turnover per ML §§ 57-58.
+ *  ADR-001 bounded context: registration */
+export interface RegistrationRecord {
+  readonly registration_id: string;
+  readonly taxpayer_id: string;
+  readonly cvr_number: string;            // 8-digit Danish CVR number
+  status: RegistrationStatus;             // mutable — state machine
+  readonly cadence: ObligationCadence;    // derived from annual_turnover_dkk at creation
+  readonly annual_turnover_dkk: number;
+  registered_at?: string;                 // ISO 8601 datetime
+  deregistered_at?: string;               // ISO 8601 datetime
+  readonly created_at: string;            // ISO 8601 datetime
+  readonly trace_id: string;
 }

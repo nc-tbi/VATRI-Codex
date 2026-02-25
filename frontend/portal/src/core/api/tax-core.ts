@@ -1,5 +1,5 @@
 import type { UserClaims } from "@/core/auth/types";
-import { apiGet, apiPost } from "@/core/api/http";
+import { apiGet, apiPost, apiPostWithMeta } from "@/core/api/http";
 
 export interface ObligationRecord {
   obligation_id: string;
@@ -43,6 +43,55 @@ export interface ClaimRecord extends Record<string, unknown> {
   filing_id: string;
   status: string;
   claim_amount: number;
+  retry_count?: number;
+  last_attempted_at?: string | null;
+  next_retry_at?: string | null;
+}
+
+export interface SubmissionResult {
+  status: 200 | 201;
+  idempotent: boolean;
+  trace_id: string;
+  resource_id: string;
+  body: Record<string, unknown>;
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+function parseSubmissionResult(status: number, payload: unknown, nestedResourceKey: "filing" | "amendment", idField: "filing_id" | "amendment_id"): SubmissionResult {
+  if (status !== 200 && status !== 201) {
+    throw new Error(`Unexpected submission status: ${status}`);
+  }
+  const body = asRecord(payload);
+  if (!body) {
+    throw new Error("Invalid contract response: body is not an object");
+  }
+  const traceId = body.trace_id;
+  const idempotent = body.idempotent;
+  if (typeof traceId !== "string") {
+    throw new Error("Invalid contract response: missing trace_id");
+  }
+  if (typeof idempotent !== "boolean") {
+    throw new Error("Invalid contract response: missing idempotent boolean");
+  }
+
+  const nested = asRecord(body[nestedResourceKey]);
+  const nestedId = nested ? nested[idField] : undefined;
+  const topLevelId = body[idField];
+  const resourceId = typeof topLevelId === "string" ? topLevelId : typeof nestedId === "string" ? nestedId : null;
+  if (!resourceId) {
+    throw new Error(`Invalid contract response: missing ${idField}`);
+  }
+
+  return {
+    status,
+    idempotent,
+    trace_id: traceId,
+    resource_id: resourceId,
+    body,
+  };
 }
 
 export async function listObligations(taxpayerId: string, user?: UserClaims): Promise<ObligationRecord[]> {
@@ -56,8 +105,9 @@ export async function listFilings(taxpayerId: string, taxPeriodEnd?: string, use
   return payload.filings ?? [];
 }
 
-export async function submitFiling(body: Record<string, unknown>, user?: UserClaims): Promise<Record<string, unknown>> {
-  return apiPost<Record<string, unknown>>("filing", "/vat-filings", body, user);
+export async function submitFiling(body: Record<string, unknown>, user?: UserClaims): Promise<SubmissionResult> {
+  const response = await apiPostWithMeta<Record<string, unknown>>("filing", "/vat-filings", body, user);
+  return parseSubmissionResult(response.status, response.data, "filing", "filing_id");
 }
 
 export async function listAmendments(taxpayerId: string, taxPeriodEnd?: string, user?: UserClaims): Promise<AmendmentRecord[]> {
@@ -66,8 +116,9 @@ export async function listAmendments(taxpayerId: string, taxPeriodEnd?: string, 
   return payload.amendments ?? [];
 }
 
-export async function submitAmendment(body: Record<string, unknown>, user?: UserClaims): Promise<Record<string, unknown>> {
-  return apiPost<Record<string, unknown>>("amendment", "/amendments", body, user);
+export async function submitAmendment(body: Record<string, unknown>, user?: UserClaims): Promise<SubmissionResult> {
+  const response = await apiPostWithMeta<Record<string, unknown>>("amendment", "/amendments", body, user);
+  return parseSubmissionResult(response.status, response.data, "amendment", "amendment_id");
 }
 
 export async function listAssessments(taxpayerId: string, taxPeriodEnd?: string, user?: UserClaims): Promise<AssessmentEnvelope[]> {

@@ -134,10 +134,14 @@ Purpose:
 | `PF-RUN-002` | 2026-02-25 | `cd frontend/portal && npm run build` | Pass | Portal production build validation |
 | `PF-RUN-003` | 2026-02-25 | `cd frontend/portal && npm run test` | Pass (`3/3`) | Portal unit tests (`route-guards`, `auth service`) |
 | `PF-RUN-004` | 2026-02-25 | `cd frontend/portal && npm run test:e2e` | Pass (`1/1`) | Playwright e2e login-page smoke |
+| `PF-RUN-005` | 2026-02-25 | `cd frontend/portal && npm run typecheck` | Pass | Portal contract-state hardening typecheck |
+| `PF-RUN-006` | 2026-02-25 | `cd frontend/portal && npm run test` | Pass (`7/7`) | Portal unit tests incl. API error envelope and claim retry/terminal mapping |
 
 Linked artifacts:
 - `frontend/portal/src/core/rbac/route-guards.test.ts`
 - `frontend/portal/src/core/auth/service.test.ts`
+- `frontend/portal/src/core/api/http.test.ts`
+- `frontend/portal/src/features/claims/status-mapper.test.ts`
 - `frontend/portal/tests/e2e/login.spec.ts`
 
 Consolidation note:

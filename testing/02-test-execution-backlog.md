@@ -89,11 +89,37 @@ Objective:
 Backlog:
 | ID | Work Item | Scenario IDs | Layer | Owner | Dependencies | DoD | Status |
 |---|---|---|---|---|---|---|---|
-| TB-S3-01 | Claim orchestration tests (regular/refund/zero + amendments) | `S01-S05` | Integration/E2E | Code Builder | TB-S2-01 | Correct claim creation conditions and amounts verified | Planned |
-| TB-S3-02 | Outbox + retry + DLQ resilience suite | `S01-S05`, `S19` | Resilience/Integration | Code Builder | TB-S3-01 | Retry/backoff/dead-letter paths tested with deterministic assertions | Planned |
-| TB-S3-03 | Idempotency duplicate-event tests (`taxpayer+period+version`) | `S01-S05`, `S19` | Integration | Code Builder | TB-S3-02 | Duplicate events create no duplicate claims/dispatch side effects | Planned |
-| TB-S3-04 | Customs/told integration contract tests and reconciliation errors | `S09` | Contract/Integration | Designer + Code Builder | TB-S2-05 | Contract and failure-event handling covered (`CustomsIntegrationFailed`, mismatch) | Planned |
-| TB-S3-05 | Scenario-risk anchor regression pack (`S08`, `S09`, `S19`) | `S08`, `S09`, `S19` | E2E/Regression | Test Manager + Code Builder | TB-S3-01..04 | Dedicated regression suite integrated into daily pipeline | Planned |
+| TB-S3-01 | Claim orchestration tests (regular/refund/zero + amendments) | `S01-S05` | Integration/E2E | Code Builder | TB-S2-01 | Correct claim creation conditions and amounts verified | Blocked |
+| TB-S3-02 | Outbox + retry + DLQ resilience suite | `S01-S05`, `S19` | Resilience/Integration | Code Builder | TB-S3-01 | Retry/backoff/dead-letter paths tested with deterministic assertions | Blocked |
+| TB-S3-03 | Idempotency duplicate-event tests (`taxpayer+period+version`) | `S01-S05`, `S19` | Integration | Code Builder | TB-S3-02 | Duplicate events create no duplicate claims/dispatch side effects | Blocked |
+| TB-S3-04 | Customs/told integration contract tests and reconciliation errors | `S09` | Contract/Integration | Designer + Code Builder | TB-S2-05 | Contract and failure-event handling covered (`CustomsIntegrationFailed`, mismatch) | Blocked |
+| TB-S3-05 | Scenario-risk anchor regression pack (`S08`, `S09`, `S19`) | `S08`, `S09`, `S19` | E2E/Regression | Test Manager + Code Builder | TB-S3-01..04 | Dedicated regression suite integrated into daily pipeline | Blocked |
+
+Phase 3 executable case matrix (pre-build lock):
+| Case ID | Coverage Type | Backlog Item | Primary Risk | Owner | Gate | Blocking |
+|---|---|---|---|---|---|---|
+| `TC-S3-CLM-01` | Positive | `TB-S3-01` | `PH3-R01` claim orchestration happy-path correctness | Code Builder + Tester | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-02` | Negative | `TB-S3-01` | `PH3-R02` invalid/contradictory claim input handling | Code Builder + Tester | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-03` | Duplicate | `TB-S3-03` | `PH3-R03` duplicate event/API idempotency regression | Code Builder + Tester | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-04` | Retry | `TB-S3-02` | `PH3-R04` retry/backoff correctness under transient failure | Code Builder + Tester + Platform/DevOps | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-05` | DLQ | `TB-S3-02` | `PH3-R05` dead-letter routing and observability integrity | Code Builder + Tester + Platform/DevOps | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-06` | Restart-persistence | `TB-S3-02`, `TB-S3-03` | `PH3-R06` outbox/idempotency state durability across restart | Code Builder + Tester | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-07` | Negative + Contract | `TB-S3-04` | `PH3-R07` customs contract mismatch/error mapping drift | Designer + Code Builder + Tester | `Gate C-Phase3` | Yes |
+| `TC-S3-CLM-08` | Positive + Regression anchor | `TB-S3-05` | `PH3-R08` scenario anchors (`S08`,`S09`,`S19`) not preserved | Test Manager + Code Builder + Tester | `Gate C-Phase3` | Yes |
+
+Phase 3 exit criteria (release-blocking):
+- Every risk `PH3-R01` through `PH3-R08` must map to at least one automated blocking case in `Gate C-Phase3`.
+- `Gate C-Phase3` can be marked pass only when all `TC-S3-CLM-*` cases pass in the same validation cycle.
+
+Phase 3 gate status (authoritative, 2026-02-25):
+- Current verdict: **Blocked**
+- Reason: both mandatory Phase 3 pack files are missing and therefore cannot produce passing evidence in the current cycle.
+
+Phase 3 active defects/evidence:
+| Defect ID | Finding | Severity | Owner | Evidence Command | Evidence Snippet | Status |
+|---|---|---|---|---|---|---|
+| `DEF-P3-001` | Missing Phase 3 claim reliability pack (`phase3-claims-gate-c.test.ts`) | High | Code Builder | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-gate-c.test.ts"` | no matching file returned | Open |
+| `DEF-P3-002` | Missing Phase 3 resilience pack (`phase3-claims-resilience-gate-c.test.ts`) | High | Code Builder | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-resilience-gate-c.test.ts"` | no matching file returned | Open |
 
 ### Sprint 4 - Amendments, Compliance, and Security (Phase 4/4A, Gate C)
 Objective:
@@ -328,6 +354,8 @@ Scope:
 Implemented test artifacts:
 - `frontend/portal/src/core/rbac/route-guards.test.ts`
 - `frontend/portal/src/core/auth/service.test.ts`
+- `frontend/portal/src/core/api/http.test.ts`
+- `frontend/portal/src/features/claims/status-mapper.test.ts`
 - `frontend/portal/tests/e2e/login.spec.ts`
 
 Executed commands:
@@ -343,6 +371,8 @@ Partial mapping to existing coverage IDs:
 |---|---|---|
 | `route-guards.test.ts` | `TC-PORTAL-RBAC-02`, `TC-PORTAL-RBAC-05` (partial) | Verifies admin-route denial for taxpayer and guard behavior baseline. |
 | `service.test.ts` | `TC-PORTAL-AUTH-05` (partial) | Verifies client-side session persistence/clear behavior (local store), not full API auth flow. |
+| `http.test.ts` | `TC-PORTAL-ALT-05`, `TC-PORTAL-RBAC-05` (partial) | Verifies typed `409` conflict handling and machine error-code parsing path. |
+| `status-mapper.test.ts` | `TC-PORTAL-TAX-06`, `TC-PORTAL-TRN-03` (partial) | Verifies retry-in-progress vs terminal claim-state UI mapping rules. |
 | `login.spec.ts` | `TC-PORTAL-OVR-01` (partial), `TC-PORTAL-AUTH-01` (UI readiness partial) | Verifies login page availability/inputs via browser automation. |
 
 Backlog interpretation:

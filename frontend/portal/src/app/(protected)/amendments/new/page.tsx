@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { submitAmendment } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { ApiError } from "@/core/api/http";
 
 export default function NewAmendmentPage() {
   const { user } = useAuth();
@@ -41,8 +42,23 @@ export default function NewAmendmentPage() {
         },
       };
       const result = await submitAmendment(body, user ?? undefined);
-      setMessage(`Ã†ndring indsendt. Amendment ID: ${String((result as { amendment?: { amendment_id?: string } }).amendment?.amendment_id ?? "ukendt")}`);
+      const replay = result.status === 200 && result.idempotent;
+      setMessage(
+        replay
+          ? `AEndring var allerede indsendt. Eksisterende amendment: ${result.resource_id} (trace_id: ${result.trace_id})`
+          : `AEndring indsendt. Amendment ID: ${result.resource_id} (trace_id: ${result.trace_id})`
+      );
     } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        if (err.code === "IDEMPOTENCY_CONFLICT") {
+          setError("Konflikt: samme noegle findes med andet amendment-indhold.");
+          return;
+        }
+        if (err.code === "STATE_ERROR") {
+          setError(`Tilstandsfejl: ${err.message}`);
+          return;
+        }
+      }
       setError(err instanceof Error ? err.message : "Indsendelse fejlede.");
     }
   };

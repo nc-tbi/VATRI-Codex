@@ -1,8 +1,10 @@
-// src/index.ts — Phase 1 Tax Core domain module barrel export
+// src/index.ts — Phase 1 + Phase 2 Tax Core domain module barrel export
 //
-// Phase 1 scope: S01-S19 (Foundation — canonical filing, validation, rule evaluation,
+// Phase 1 scope: S01-S20 (Foundation — canonical filing, validation, rule evaluation,
 // staged assessment, amendment versioning, claim dispatch, audit evidence).
-// Source: architecture/delivery/capability-to-backlog-mapping.md §Phase 1
+// Phase 2 scope: S06-S19, S22-S23 (Obligation Engine, Registration, Preliminary Assessment,
+// expanded rule packs DK-VAT-008..012).
+// Source: architecture/delivery/capability-to-backlog-mapping.md §Phase 1 + §Phase 2
 
 // Shared types and errors
 export type {
@@ -29,6 +31,14 @@ export type {
   RuleFacts,
   RuleEvaluationResult,
   RuleEngineOutput,
+  // Phase 2 types
+  ObligationState,
+  ObligationCadence,
+  ObligationRecord,
+  PreliminaryAssessmentState,
+  PreliminaryAssessmentRecord,
+  RegistrationStatus,
+  RegistrationRecord,
 } from "./shared/types.js";
 
 export {
@@ -37,6 +47,9 @@ export {
   RuleResolutionError,
   IdempotencyConflictError,
   AmendmentError,
+  // Phase 2 errors
+  ObligationStateError,
+  RegistrationError,
 } from "./shared/errors.js";
 
 // Audit evidence (ADR-003)
@@ -80,3 +93,31 @@ export {
   createInitialContext,
   transition,
 } from "./filing/index.js";
+
+// Obligation (Epic E5 F5.2/F5.4)
+export {
+  createObligation,
+  submitObligation,
+  markObligationOverdue,
+  triggerPreliminaryAssessment,
+  issuePreliminaryAssessment,
+  supersedeByFiling,
+  getObligation,
+  getPreliminaryAssessment,
+  getObligationsForTaxpayer,
+  _clearObligationStore,
+} from "./obligation/index.js";
+
+// Registration (Epic E5 F5.1)
+export {
+  DK_VAT_THRESHOLD_DKK,
+  getCadencePolicy,
+  createRegistration,
+  checkThresholdBreach,
+  promoteToRegistered,
+  deregister,
+  transferRegistration,
+  getRegistration,
+  getActiveRegistrationForTaxpayer,
+  _clearRegistrationStore,
+} from "./registration/index.js";

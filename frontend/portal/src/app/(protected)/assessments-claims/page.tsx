@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { listAssessments, listClaims } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { StatusChip } from "@/features/shared/status-chip";
+import { claimStatusToUi } from "@/features/claims/status-mapper";
 
 export default function AssessmentsClaimsPage() {
   const { user } = useAuth();
@@ -46,9 +48,18 @@ export default function AssessmentsClaimsPage() {
         <article className="rounded border p-4">
           <h3 className="font-medium">Krav</h3>
           <ul className="mt-2 space-y-2 text-sm">
-            {(claimQuery.data ?? []).map((claim) => (
-              <li key={String(claim.claim_id)}>{String(claim.claim_id)} - {String(claim.status)}</li>
-            ))}
+            {(claimQuery.data ?? []).map((claim) => {
+              const ui = claimStatusToUi(claim);
+              return (
+                <li key={String(claim.claim_id)} className="rounded border p-3">
+                  <p className="flex items-center gap-2">
+                    <span className="font-medium">{String(claim.claim_id)}</span>
+                    <StatusChip text={ui.label} tone={ui.tone} />
+                  </p>
+                  {ui.detail ? <p className="mt-1 text-[var(--muted)]">{ui.detail}</p> : null}
+                </li>
+              );
+            })}
           </ul>
         </article>
       </div>

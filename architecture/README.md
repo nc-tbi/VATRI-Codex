@@ -16,6 +16,7 @@ This folder contains architecture outputs derived from the business analysis pac
 - `architecture/adr/ADR-008-open-source-only-technology-policy.md`
 - `architecture/adr/ADR-009-portal-bff-and-api-first-ingress.md`
 - `architecture/adr/ADR-010-api-gateway-product-selection.md`
+- `architecture/adr/ADR-011-behavioral-policy-baseline.md`
 - `architecture/delivery/capability-to-backlog-mapping.md`
 - `architecture/traceability/scenario-to-architecture-traceability-matrix.md`
 - `architecture/designer/README.md`

@@ -3,7 +3,7 @@
 > **Status:** Draft v1.6
 > **Designer:** Solution Designer (DESIGNER.md contract)
 > **Architecture inputs:** `architecture/README.md`, `architecture/01-target-architecture-blueprint.md`, `architecture/02-architectural-principles.md`, `architecture/03-future-proof-modern-data-stack-and-standards.md`, ADR-001 through ADR-009, `architecture/delivery/capability-to-backlog-mapping.md`, `architecture/traceability/scenario-to-architecture-traceability-matrix.md`, `architecture/designer/01-03`
-> **Analysis inputs:** `analysis/02-vat-form-fields-dk.md`, `analysis/03-vat-flows-obligations.md`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`, `analysis/09-product-scope-and-requirements-alignment.md`
+> **Analysis inputs:** `analysis/02-vat-form-fields-dk.md`, `analysis/03-vat-flows-obligations.md`, `analysis/07-filing-scenarios-and-claim-outcomes-dk.md`, `analysis/09-product-scope-and-requirements-alignment.md`, `analysis/10-dk-vat-portal-ui-gap-assessment.md`
 > **Platform decisions:** `design/recommendations/internal-platform-choices-suggestions.md` (D-01 through D-17)
 > **Working folder:** `design/`
 > **Drawings:** `design/drawings/tax-core-vat.drawio`
@@ -774,7 +774,7 @@ Governance: new rule requires `legal_reference` and `effective_from`; `effective
 `filing_id`, `taxpayer_id`, `tax_period_start`, `tax_period_end`, `filing_type` (regular/zero/amendment), `submission_timestamp`, `source_channel`, `rule_version_id`, `status`, `trace_id`
 
 **DK VAT monetary fields:**
-`output_vat_amount` (salgsmoms), `input_vat_deductible_amount` (kÃ¸bsmoms), `vat_on_goods_purchases_abroad_amount`, `vat_on_services_purchases_abroad_amount`, `adjustments_amount`
+`output_vat_amount_domestic` (salgsmoms), `input_vat_deductible_amount_total` (kÃ¸bsmoms), `reverse_charge_output_vat_goods_abroad_amount`, `reverse_charge_output_vat_services_abroad_amount`, `adjustments_amount`
 
 **DK VAT international value boxes:**
 `rubrik_a_goods_eu_purchase_value`, `rubrik_a_services_eu_purchase_value`, `rubrik_b_goods_eu_sale_value_reportable`, `rubrik_b_goods_eu_sale_value_non_reportable`, `rubrik_b_services_eu_sale_value`, `rubrik_c_other_vat_exempt_supplies_value`, `reimbursement_oil_and_bottled_gas_duty_amount`, `reimbursement_electricity_duty_amount`
@@ -813,10 +813,10 @@ All portal workflows â€” registration, obligation viewing, filing submissio
   "tax_period_end": "2024-06-30",
   "filing_type": "regular",
   "source_channel": "portal",
-  "output_vat_amount": 150000.00,
-  "input_vat_deductible_amount": 80000.00,
-  "vat_on_goods_purchases_abroad_amount": 5000.00,
-  "vat_on_services_purchases_abroad_amount": 2000.00,
+  "output_vat_amount_domestic": 150000.00,
+  "input_vat_deductible_amount_total": 80000.00,
+  "reverse_charge_output_vat_goods_abroad_amount": 5000.00,
+  "reverse_charge_output_vat_services_abroad_amount": 2000.00,
   "adjustments_amount": 0.00,
   "rubrik_a_goods_eu_purchase_value": 20000.00,
   "rubrik_a_services_eu_purchase_value": 8000.00,

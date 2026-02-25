@@ -272,6 +272,8 @@ cd build
 npm run ci:phase3
 ```
 
+Current status (2026-02-25): **Phase 3 build successful**. Gate evidence is passing for integration, resilience, and observability lanes.
+
 What it runs:
 - guardrail enforcement (`scripts/ci/validate-guardrails.mjs`)
 - Phase 3 integration lane

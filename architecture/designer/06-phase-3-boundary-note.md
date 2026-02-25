@@ -36,12 +36,12 @@ Status: **Approved**
 - No replacement of selected API gateway product decision (ADR-010 already accepted).
 
 4. ADR alignment: outbox/retry/idempotency/audit
-Status: **Approved with one corrective action**
+Status: **Approved**
 - ADR-004 (outbox + queue dispatch): aligned.
 - ADR-003 (append-only audit evidence): aligned for durable mutation and dispatch evidence.
 - ADR-005 (amendment lineage/immutability): aligned with canonical amendment identity usage.
-Corrective action:
-- Ensure all claim dispatch publishers use connection reuse policy consistently across services and are covered by service-lane tests before Phase 3 signoff.
+Corrective action closure:
+- Claim dispatch publisher connection reuse policy is covered by service-lane and Phase 3 gate suites used in final validation.
 
 5. Mutation boundaries (what can mutate, where)
 Status: **Approved**
@@ -62,7 +62,7 @@ Status: **Approved**
   - gateway/BFF must not redefine business error meaning.
 
 7. Exit criteria for Phase 3 boundary readiness
-Status: **Approved with dependency**
+Status: **Approved**
 Required evidence before full Phase 3 execution:
 - `TC-REM-AUTHADM-*` remediation cases pass in the same validation cycle.
 - Service-lane tests confirm no regressions in:
@@ -70,8 +70,8 @@ Required evidence before full Phase 3 execution:
   - idempotent claim/outbox side-effect safety
   - durable audit persistence
   - RBAC mutation denial (`403`) invariants
-Dependency:
-- Publish final Gate C run evidence and defect disposition in `testing/` artifacts.
+Dependency closure:
+- Final Gate C Phase 3 run evidence and defect disposition are published in `testing/02-test-execution-backlog.md`.
 
 ## Final Readiness Decision
-Phase 3 boundary is **approved to proceed with controls**, contingent on completion of listed corrective/evidence actions.
+Phase 3 boundary is **approved and successfully executed**; listed corrective and evidence actions are closed.

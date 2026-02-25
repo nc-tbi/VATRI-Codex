@@ -89,11 +89,11 @@ Objective:
 Backlog:
 | ID | Work Item | Scenario IDs | Layer | Owner | Dependencies | DoD | Status |
 |---|---|---|---|---|---|---|---|
-| TB-S3-01 | Claim orchestration tests (regular/refund/zero + amendments) | `S01-S05` | Integration/E2E | Code Builder | TB-S2-01 | Correct claim creation conditions and amounts verified | Blocked |
-| TB-S3-02 | Outbox + retry + DLQ resilience suite | `S01-S05`, `S19` | Resilience/Integration | Code Builder | TB-S3-01 | Retry/backoff/dead-letter paths tested with deterministic assertions | Blocked |
-| TB-S3-03 | Idempotency duplicate-event tests (`taxpayer+period+version`) | `S01-S05`, `S19` | Integration | Code Builder | TB-S3-02 | Duplicate events create no duplicate claims/dispatch side effects | Blocked |
-| TB-S3-04 | Customs/told integration contract tests and reconciliation errors | `S09` | Contract/Integration | Designer + Code Builder | TB-S2-05 | Contract and failure-event handling covered (`CustomsIntegrationFailed`, mismatch) | Blocked |
-| TB-S3-05 | Scenario-risk anchor regression pack (`S08`, `S09`, `S19`) | `S08`, `S09`, `S19` | E2E/Regression | Test Manager + Code Builder | TB-S3-01..04 | Dedicated regression suite integrated into daily pipeline | Blocked |
+| TB-S3-01 | Claim orchestration tests (regular/refund/zero + amendments) | `S01-S05` | Integration/E2E | Code Builder | TB-S2-01 | Correct claim creation conditions and amounts verified | Done |
+| TB-S3-02 | Outbox + retry + DLQ resilience suite | `S01-S05`, `S19` | Resilience/Integration | Code Builder | TB-S3-01 | Retry/backoff/dead-letter paths tested with deterministic assertions | Done |
+| TB-S3-03 | Idempotency duplicate-event tests (`taxpayer+period+version`) | `S01-S05`, `S19` | Integration | Code Builder | TB-S3-02 | Duplicate events create no duplicate claims/dispatch side effects | Done |
+| TB-S3-04 | Customs/told integration contract tests and reconciliation errors | `S09` | Contract/Integration | Designer + Code Builder | TB-S2-05 | Contract and failure-event handling covered (`CustomsIntegrationFailed`, mismatch) | Done |
+| TB-S3-05 | Scenario-risk anchor regression pack (`S08`, `S09`, `S19`) | `S08`, `S09`, `S19` | E2E/Regression | Test Manager + Code Builder | TB-S3-01..04 | Dedicated regression suite integrated into daily pipeline | Done |
 
 Phase 3 executable case matrix (pre-build lock):
 | Case ID | Coverage Type | Backlog Item | Primary Risk | Owner | Gate | Blocking |
@@ -112,14 +112,14 @@ Phase 3 exit criteria (release-blocking):
 - `Gate C-Phase3` can be marked pass only when all `TC-S3-CLM-*` cases pass in the same validation cycle.
 
 Phase 3 gate status (authoritative, 2026-02-25):
-- Current verdict: **Blocked**
-- Reason: both mandatory Phase 3 pack files are missing and therefore cannot produce passing evidence in the current cycle.
+- Current verdict: **Pass**
+- Reason: mandatory Phase 3 packs are present and passing in the same validation cycle (`phase3-claims-gate-c.test.ts`, `phase3-claims-resilience-gate-c.test.ts`, `phase3-observability-gate-c.test.ts`) and baseline gate/typecheck remain green.
 
 Phase 3 active defects/evidence:
 | Defect ID | Finding | Severity | Owner | Evidence Command | Evidence Snippet | Status |
 |---|---|---|---|---|---|---|
-| `DEF-P3-001` | Missing Phase 3 claim reliability pack (`phase3-claims-gate-c.test.ts`) | High | Code Builder | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-gate-c.test.ts"` | no matching file returned | Open |
-| `DEF-P3-002` | Missing Phase 3 resilience pack (`phase3-claims-resilience-gate-c.test.ts`) | High | Code Builder | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-resilience-gate-c.test.ts"` | no matching file returned | Open |
+| `DEF-P3-001` | Missing Phase 3 claim reliability pack (`phase3-claims-gate-c.test.ts`) | High | Code Builder | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts src/__tests__/phase3-claims-resilience-gate-c.test.ts src/__tests__/phase3-observability-gate-c.test.ts` | suite pass (`12/12`) | Closed |
+| `DEF-P3-002` | Missing Phase 3 resilience pack (`phase3-claims-resilience-gate-c.test.ts`) | High | Code Builder | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts src/__tests__/phase3-claims-resilience-gate-c.test.ts src/__tests__/phase3-observability-gate-c.test.ts` | suite pass (`12/12`) | Closed |
 
 ### Sprint 4 - Amendments, Compliance, and Security (Phase 4/4A, Gate C)
 Objective:

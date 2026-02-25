@@ -34,6 +34,10 @@ Pages now call live service contracts:
 - Assessment: `3004`
 - Claim: `3006`
 
+Single-origin gateway/BFF mode is supported:
+- set `NEXT_PUBLIC_PORTAL_API_BASE_URL` (or `PORTAL_API_BASE_URL`) to route all portal API calls through one origin.
+- when this variable is set, service-specific base URLs are ignored by the shared API client.
+
 Admin endpoints requiring enforcement are called with:
 - `x-user-role`
 - `x-subject-id`
@@ -67,6 +71,11 @@ NEXT_PUBLIC_ASSESSMENT_SERVICE_BASE_URL=http://localhost:3004
 NEXT_PUBLIC_CLAIM_SERVICE_BASE_URL=http://localhost:3006
 ```
 
+Gateway/BFF single-origin option:
+```env
+NEXT_PUBLIC_PORTAL_API_BASE_URL=http://localhost:3000
+```
+
 ## Run
 ```bash
 cd frontend/portal
@@ -87,7 +96,18 @@ npm run test:e2e
 ```
 
 ## Playwright Coverage
-Current e2e coverage includes:
+Playwright is split into two lanes:
+- mocked lane (`@mocked`, project `mocked`): deterministic UI flow checks using `page.route` fixtures.
+- live-backend lane (`@live-backend`, project `live-backend`): real service/DB integration checks with no API route mocking.
+
+Commands:
+```bash
+npm run test:e2e:mocked
+npm run test:e2e:live
+npm run test:e2e
+```
+
+Current mocked coverage includes:
 - login page rendering and credential form visibility
 - taxpayer sidebar route visibility (obligations/new filing hidden from sidebar)
 - overview -> open VAT obligation -> contextual new filing flow
@@ -96,11 +116,26 @@ Current e2e coverage includes:
   - original filing is immutable/read-only
   - amendment starts with `original_filing_id` route context
 
+Current live-backend coverage includes:
+- login -> open obligation from overview -> submit filing
+- backend-observed obligation state transition to `submitted`
+- persisted claims visibility and rendering in assessments/claims page
+- amendment creation and retrieval from live amendment list
+- success message parsing from real contract fields (`resource_id`/`trace_id`)
+- CORS/preflight failure detection via browser console checks
+
 Implementation notes:
-- e2e API dependencies are mocked in `tests/e2e/utils/session-mocks.ts`.
-- main scenario specs are:
+- mocked fixtures: `tests/e2e/utils/session-mocks.ts`.
+- specs:
   - `tests/e2e/login.spec.ts`
   - `tests/e2e/taxpayer-flow.spec.ts`
+  - `tests/e2e/live-backend.spec.ts`
+- live lane environment (defaults shown):
+```env
+E2E_LIVE_USERNAME=admin
+E2E_LIVE_PASSWORD=adminadmin
+E2E_LIVE_TAXPAYER_ID=TXP-12345678
+```
 
 ## Implementation Notes
 - Client-side route guards are UX control and defense-in-depth.

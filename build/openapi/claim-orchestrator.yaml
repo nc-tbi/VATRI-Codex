@@ -157,18 +157,18 @@ components:
 
     ClaimRequest:
       type: object
-      required: [taxpayer_id, tax_period_end, assessment_version, assessment]
+      required: [taxpayer_id, filing_id, tax_period_end, assessment_version, assessment]
       description: |
-        Frozen (v1.1.0) claim creation request. Root filing_id is deprecated (removed from required);
-        filing_id is carried inside the assessment object. Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
+        Claim creation request for claim-orchestrator.
+        filing_id must be UUID and must match assessment.filing_id.
+        Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
       properties:
         taxpayer_id:
           type: string
         filing_id:
           type: string
           format: uuid
-          deprecated: true
-          description: Deprecated — filing_id is already inside assessment.filing_id. Ignored by service.
+          description: Filing identifier (UUID). Must match assessment.filing_id.
         tax_period_end:
           type: string
           format: date

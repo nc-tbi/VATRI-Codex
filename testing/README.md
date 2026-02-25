@@ -19,7 +19,12 @@ Current artifacts:
 Portal e2e implementation references:
 - `frontend/portal/tests/e2e/login.spec.ts`
 - `frontend/portal/tests/e2e/taxpayer-flow.spec.ts`
+- `frontend/portal/tests/e2e/live-backend.spec.ts`
 - `frontend/portal/tests/e2e/utils/session-mocks.ts`
+
+Portal e2e lanes:
+- mocked lane (`@mocked`, Playwright project `mocked`): API route mocks, deterministic UI verification.
+- live-backend lane (`@live-backend`, Playwright project `live-backend`): no route mocks, real service + DB integration verification.
 
 Primary role contract:
 - `TEST_MANAGER.md`

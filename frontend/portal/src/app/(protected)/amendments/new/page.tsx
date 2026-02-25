@@ -3,9 +3,12 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { submitAmendment } from "@/core/api/tax-core";
+import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
 import { useOverlayI18n } from "@/overlays/common/i18n";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
@@ -27,6 +30,10 @@ export default function NewAmendmentPage() {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    if (!UUID_RE.test(originalFilingId)) {
+      setError(t("amendments_new.invalid_original_filing_id"));
+      return;
+    }
     try {
       const now = new Date().toISOString();
       const body = {
@@ -66,7 +73,7 @@ export default function NewAmendmentPage() {
           return;
         }
       }
-      setError(err instanceof Error ? err.message : t("amendments_new.submit_error"));
+      setError(formatApiError(err, t("amendments_new.submit_error")));
     }
   };
 

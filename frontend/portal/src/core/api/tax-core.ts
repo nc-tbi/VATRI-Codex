@@ -97,6 +97,14 @@ interface ClaimCreateResponse {
   idempotent?: boolean;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function assertUuid(value: string, field: string): void {
+  if (!UUID_PATTERN.test(value)) {
+    throw new Error(`${field} must be a UUID`);
+  }
+}
+
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
 }
@@ -147,6 +155,11 @@ export async function listFilings(taxpayerId: string, taxPeriodEnd?: string, use
 }
 
 export async function submitFiling(body: Record<string, unknown>, user?: UserClaims): Promise<SubmissionResult> {
+  const filingId = body.filing_id;
+  if (typeof filingId !== "string") {
+    throw new Error("filing_id is required");
+  }
+  assertUuid(filingId, "filing_id");
   const response = await apiPostWithMeta<Record<string, unknown>>("filing", "/vat-filings", body, user);
   return parseSubmissionResult(response.status, response.data, "filing", "filing_id");
 }
@@ -181,6 +194,7 @@ export async function createClaimFromAssessment(
   },
   user?: UserClaims,
 ): Promise<Record<string, unknown>> {
+  assertUuid(body.filing_id, "filing_id");
   const payload = await apiPost<ClaimCreateResponse>("claim", "/claims", body, user);
   return payload.claim;
 }
@@ -238,6 +252,7 @@ export async function submitObligation(
   filingId: string,
   user?: UserClaims,
 ): Promise<Record<string, unknown>> {
+  assertUuid(filingId, "filing_id");
   return apiPost<Record<string, unknown>>(
     "obligation",
     `/obligations/${encodeURIComponent(obligationId)}/submit`,

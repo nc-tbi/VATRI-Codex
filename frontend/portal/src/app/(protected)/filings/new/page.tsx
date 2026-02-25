@@ -9,6 +9,7 @@ import {
   submitFiling,
   submitObligation,
 } from "@/core/api/tax-core";
+import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -136,7 +137,7 @@ export default function NewFilingPage() {
           return;
         }
       }
-      setError(err instanceof Error ? err.message : t("filings_new.submit_error"));
+      setError(formatApiError(err, t("filings_new.submit_error")));
     }
   };
 

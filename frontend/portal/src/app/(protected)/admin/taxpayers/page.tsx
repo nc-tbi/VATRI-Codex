@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { formatApiError } from "@/core/api/error-display";
 import { getRegistration } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -28,7 +29,7 @@ export default function AdminTaxpayersPage() {
       const payload = await getRegistration(registrationId, user ?? undefined);
       setResult(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("admin.taxpayers.error"));
+      setError(formatApiError(err, t("admin.taxpayers.error")));
     }
   };
 

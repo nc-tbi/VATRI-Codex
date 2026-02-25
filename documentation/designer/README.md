@@ -32,6 +32,6 @@ Reference date: 2026-02-25
 - `architecture/designer/01-04`
 
 ## Usage
-- Product/business stakeholders: read `01`, `04`, `05`.
+- Product Owner and business stakeholders: read `01`, `04`, `05`, `07`.
 - Implementation roles (Code Builder/Frontend/DevOps): read `02`, `05`, `06`, `07`.
 - QA roles (Test Manager/Tester): read `02`, `05`, `07`.

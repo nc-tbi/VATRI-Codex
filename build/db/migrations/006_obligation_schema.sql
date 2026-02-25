@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS obligation.obligations (
   created_at               TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX obligation_obligations_taxpayer_idx ON obligation.obligations (taxpayer_id);
-CREATE INDEX obligation_obligations_period_idx ON obligation.obligations (tax_period_end);
+CREATE INDEX IF NOT EXISTS obligation_obligations_taxpayer_idx ON obligation.obligations (taxpayer_id);
+CREATE INDEX IF NOT EXISTS obligation_obligations_period_idx ON obligation.obligations (tax_period_end);
 
 CREATE TABLE IF NOT EXISTS obligation.preliminary_assessments (
   preliminary_assessment_id UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,5 +39,5 @@ CREATE TABLE IF NOT EXISTS obligation.preliminary_assessments (
   trace_id                  TEXT        NOT NULL
 );
 
-CREATE INDEX obligation_preliminary_obligation_idx ON obligation.preliminary_assessments (obligation_id);
-CREATE INDEX obligation_preliminary_taxpayer_idx ON obligation.preliminary_assessments (taxpayer_id);
+CREATE INDEX IF NOT EXISTS obligation_preliminary_obligation_idx ON obligation.preliminary_assessments (obligation_id);
+CREATE INDEX IF NOT EXISTS obligation_preliminary_taxpayer_idx ON obligation.preliminary_assessments (taxpayer_id);

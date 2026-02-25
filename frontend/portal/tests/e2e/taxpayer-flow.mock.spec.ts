@@ -9,7 +9,7 @@ async function loginAsTaxpayer(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/overview/);
 }
 
-test("sidebar hides obligations and new vat return links for taxpayer", async ({ page }) => {
+test("@mocked sidebar hides obligations and new vat return links for taxpayer", async ({ page }) => {
   await mockPortalApis(page, {
     obligations: [
       {
@@ -24,7 +24,7 @@ test("sidebar hides obligations and new vat return links for taxpayer", async ({
     ],
     filings: [
       {
-        filing_id: "FILING-123",
+        filing_id: "f1111111-1111-4111-8111-111111111111",
         taxpayer_id: "TXP-12345678",
         tax_period_end: "2026-03-31",
         state: "submitted",
@@ -35,10 +35,10 @@ test("sidebar hides obligations and new vat return links for taxpayer", async ({
   await loginAsTaxpayer(page);
   await expect(page.getByRole("link", { name: /Forpligtelser|Obligations/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Ny momsangivelse|New VAT return/i })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Åbn momsforpligtelse|Open VAT obligation/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Open VAT obligation|momsforpligtelse/i })).toBeVisible();
 });
 
-test("overview opens obligation and filing submission includes obligation context", async ({ page }) => {
+test("@mocked overview opens obligation and filing submission includes obligation context", async ({ page }) => {
   let submittedObligationId: string | null = null;
   await mockPortalApis(page, {
     obligations: [
@@ -58,19 +58,22 @@ test("overview opens obligation and filing submission includes obligation contex
   });
 
   await loginAsTaxpayer(page);
-  await page.getByRole("link", { name: /Åbn momsforpligtelse|Open VAT obligation/i }).click();
+  await page.getByRole("link", { name: /Open VAT obligation|momsforpligtelse/i }).click();
   await expect(page).toHaveURL(/\/filings\/new\?obligation_id=OBL-2026Q1/);
 
   await page.getByRole("button", { name: /Indsend momsangivelse|Submit VAT return/i }).click();
-  await expect(page.getByText(/FILING-NEW-001/)).toBeVisible();
+  const successAlert = page.locator("p").filter({ hasText: /trace/i }).first();
+  await expect(successAlert).toBeVisible();
+  await expect(successAlert).toContainText(/trace-100/);
+  await expect(successAlert).toContainText(/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
   expect(submittedObligationId).toBe("OBL-2026Q1");
 });
 
-test("submitted filing page keeps original immutable and starts amendment from context", async ({ page }) => {
+test("@mocked submitted filing page keeps original immutable and starts amendment from context", async ({ page }) => {
   await mockPortalApis(page, {
     filings: [
       {
-        filing_id: "FILING-123",
+        filing_id: "f1111111-1111-4111-8111-111111111111",
         taxpayer_id: "TXP-12345678",
         tax_period_end: "2026-03-31",
         state: "submitted",
@@ -83,8 +86,8 @@ test("submitted filing page keeps original immutable and starts amendment from c
     ],
     amendments: [
       {
-        amendment_id: "AMD-001",
-        original_filing_id: "FILING-123",
+        amendment_id: "a1111111-1111-4111-8111-111111111111",
+        original_filing_id: "f1111111-1111-4111-8111-111111111111",
         taxpayer_id: "TXP-12345678",
         tax_period_end: "2026-03-31",
         delta_classification: "increase",
@@ -93,11 +96,11 @@ test("submitted filing page keeps original immutable and starts amendment from c
   });
 
   await loginAsTaxpayer(page);
-  await page.goto("/submissions/FILING-123");
-  await expect(page.getByText(/endelig og kan aldrig redigeres|final and can never be edited/i)).toBeVisible();
+  await page.goto("/submissions/f1111111-1111-4111-8111-111111111111");
+  await expect(page.getByText(/final and can never be edited|endelig og kan aldrig redigeres/i)).toBeVisible();
   await page.getByRole("link", { name: /Opret ændring|Create amendment/i }).click();
-  await expect(page).toHaveURL(/\/amendments\/new\?original_filing_id=FILING-123/);
+  await expect(page).toHaveURL(/\/amendments\/new\?original_filing_id=f1111111-1111-4111-8111-111111111111/);
   const originalFilingInput = page.getByLabel(/Originalt momsangivelses-id|Original filing ID/i);
-  await expect(originalFilingInput).toHaveValue("FILING-123");
+  await expect(originalFilingInput).toHaveValue("f1111111-1111-4111-8111-111111111111");
   await expect(originalFilingInput).toHaveAttribute("readonly", "");
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { formatApiError } from "@/core/api/error-display";
 import { getCadencePolicy } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -20,7 +21,7 @@ export default function AdminCadencePage() {
       const payload = await getCadencePolicy(Number(turnover), user ?? undefined);
       setResult(payload);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("admin.cadence.error"));
+      setError(formatApiError(err, t("admin.cadence.error")));
     }
   };
 

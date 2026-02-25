@@ -16,6 +16,7 @@ Provide a practical handover checklist from design to build/test execution.
 3. Required role guards and route permissions are documented.
 4. Local run + env contract are documented and reproducible.
 5. Open questions are tracked with owner + impact.
+6. Product Owner confirms active scope and domain acceptance criteria.
 
 ## Test-Phase Minimum Entry Criteria
 1. Scenario-to-test traceability exists for active scope.
@@ -28,6 +29,7 @@ Provide a practical handover checklist from design to build/test execution.
 - Architect signoff: ADR/platform boundary compliance.
 - Code Builder signoff: runtime/OpenAPI parity for implemented deltas.
 - Test Manager signoff: coverage and gate readiness.
+- Product Owner signoff: scope acceptance, domain/legal outcome acceptance, and release readiness.
 
 ## Change Control Rule
 Any post-signoff contract change must update:

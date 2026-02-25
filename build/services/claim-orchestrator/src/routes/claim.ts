@@ -26,17 +26,27 @@ interface ClaimBody {
   assessment: StagedAssessment;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 function isClaimBody(input: unknown): input is ClaimBody {
   if (!input || typeof input !== "object") return false;
   const body = input as Record<string, unknown>;
   const assessment = body.assessment;
+  const assessmentRecord = assessment as Record<string, unknown>;
   return (
     typeof body.taxpayer_id === "string" &&
     typeof body.filing_id === "string" &&
+    isUuid(body.filing_id) &&
     typeof body.tax_period_end === "string" &&
     typeof body.assessment_version === "number" &&
     !!assessment &&
-    typeof assessment === "object"
+    typeof assessment === "object" &&
+    typeof assessmentRecord.filing_id === "string" &&
+    isUuid(String(assessmentRecord.filing_id))
   );
 }
 
@@ -50,13 +60,20 @@ export async function claimRoutes(app: FastifyInstance, opts: RouteOptions): Pro
       return reply.status(422).send({
         error: "VALIDATION_FAILED",
         message:
-          "required fields: taxpayer_id, filing_id, tax_period_end, assessment_version, assessment",
+          "required fields: taxpayer_id, filing_id(UUID), tax_period_end, assessment_version, assessment(filing_id UUID)",
         trace_id: req.id,
       });
     }
 
     const { taxpayer_id, assessment, tax_period_end, assessment_version } = req.body;
     const traceId = req.id;
+    if (req.body.filing_id !== assessment.filing_id) {
+      return reply.status(422).send({
+        error: "VALIDATION_FAILED",
+        message: "filing_id must match assessment.filing_id",
+        trace_id: traceId,
+      });
+    }
 
     try {
       const idempotencyKey = buildIdempotencyKey(

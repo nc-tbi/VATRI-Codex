@@ -1,0 +1,98 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - heading "VATRI Portal" [level=1] [ref=e16]
+          - paragraph [ref=e17]: Danmark (administrator)
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - text: Sprog
+            - combobox "Sprog" [ref=e20]:
+              - option "Dansk" [selected]
+              - option "Engelsk"
+          - button "Log ud" [ref=e21] [cursor=pointer]
+    - generic [ref=e22]:
+      - complementary [ref=e23]:
+        - navigation [ref=e24]:
+          - link "Overblik" [ref=e25] [cursor=pointer]:
+            - /url: /overview
+          - link "Ny ændringsangivelse" [ref=e26] [cursor=pointer]:
+            - /url: /amendments/new
+          - link "Indsendelser" [ref=e27] [cursor=pointer]:
+            - /url: /submissions
+          - link "Vurderinger og krav" [ref=e28] [cursor=pointer]:
+            - /url: /assessments-claims
+          - separator [ref=e29]
+          - link "Registrer skatteyder" [ref=e30] [cursor=pointer]:
+            - /url: /admin/taxpayers/new
+          - link "Søg skatteyder" [ref=e31] [cursor=pointer]:
+            - /url: /admin/taxpayers
+          - link "Fastsæt indberetningskadence" [ref=e32] [cursor=pointer]:
+            - /url: /admin/cadence
+          - link "Ret indsendelser" [ref=e33] [cursor=pointer]:
+            - /url: /admin/filings-alter
+          - link "Ret ændringer" [ref=e34] [cursor=pointer]:
+            - /url: /admin/amendments-alter
+      - main [ref=e35]:
+        - generic [ref=e36]:
+          - heading "Registrer ny skatteyder" [level=2] [ref=e37]
+          - paragraph [ref=e38]: Fang samme registreringsoplysninger som System S kræver.
+          - paragraph [ref=e39]: Failed to fetch
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]: Skatteyder-id
+              - textbox "Skatteyder-id" [ref=e43]: 9787fa28-d74e-496e-ae28-dede59d7bf86
+            - generic [ref=e44]:
+              - generic [ref=e45]: CVR
+              - textbox "CVR" [ref=e46]: "12345678"
+            - generic [ref=e47]:
+              - generic [ref=e48]: Årlig omsætning (DKK)
+              - textbox "Årlig omsætning (DKK)" [ref=e49]: "50000"
+            - generic [ref=e50]:
+              - generic [ref=e51]: Juridisk navn
+              - textbox "Juridisk navn" [ref=e52]: Portal Live 9787fa28
+            - generic [ref=e53]:
+              - generic [ref=e54]: Handelsnavn
+              - textbox "Handelsnavn" [ref=e55]
+            - generic [ref=e56]:
+              - generic [ref=e57]: Registrering gælder fra
+              - textbox "Registrering gælder fra" [ref=e58]: 2026-02-25
+            - generic [ref=e59]:
+              - generic [ref=e60]: Registreringsstatus
+              - combobox "Registreringsstatus" [ref=e61]:
+                - option "Aktiv" [selected]
+                - option "Afventer"
+                - option "Inaktiv"
+            - generic [ref=e62]:
+              - generic [ref=e63]: Kontaktperson
+              - textbox "Kontaktperson" [ref=e64]: Portal Integration Tester
+            - generic [ref=e65]:
+              - generic [ref=e66]: Kontakt e-mail
+              - textbox "Kontakt e-mail" [ref=e67]: portal.integration@example.com
+            - generic [ref=e68]:
+              - generic [ref=e69]: Kontakttelefon
+              - textbox "Kontakttelefon" [ref=e70]: "+4511223344"
+            - generic [ref=e71]:
+              - generic [ref=e72]: Adresse linje 1
+              - textbox "Adresse linje 1" [ref=e73]: Integrationvej 1
+            - generic [ref=e74]:
+              - generic [ref=e75]: Adresse linje 2
+              - textbox "Adresse linje 2" [ref=e76]
+            - generic [ref=e77]:
+              - generic [ref=e78]: Postnummer
+              - textbox "Postnummer" [ref=e79]: "2100"
+            - generic [ref=e80]:
+              - generic [ref=e81]: By
+              - textbox "By" [ref=e82]: Kobenhavn
+            - generic [ref=e83]:
+              - generic [ref=e84]: Landekode
+              - textbox "Landekode" [ref=e85]: DK
+            - button "Opret registrering" [active] [ref=e86] [cursor=pointer]
+```

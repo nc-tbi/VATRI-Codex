@@ -8,6 +8,8 @@ interface MockPortalApisOptions {
   filings?: Array<Record<string, unknown>>;
   amendments?: Array<Record<string, unknown>>;
   onSubmitFiling?: (payload: Record<string, unknown>) => void;
+  filingResponseId?: string;
+  filingTraceId?: string;
 }
 
 function json(route: Route, body: unknown, status = 200): Promise<void> {
@@ -27,8 +29,11 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
 
   await page.route("**/auth/login", async (route) => {
     await json(route, {
+      trace_id: "trace-login-1",
+      session_id: "session-1",
       access_token: "token-1",
       refresh_token: "refresh-1",
+      expires_in: 3600,
       user,
     });
   });
@@ -41,11 +46,20 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
     await json(route, { ok: true });
   });
 
-  await page.route("**/obligations*", async (route) => {
-    await json(route, {
-      obligations: options.obligations ?? [],
-    });
-  });
+  const obligationHandler = async (route: Route): Promise<void> => {
+    const method = route.request().method().toUpperCase();
+    if (method === "GET") {
+      await json(route, { obligations: options.obligations ?? [] });
+      return;
+    }
+    if (method === "POST") {
+      await json(route, { status: "submitted" });
+      return;
+    }
+    await json(route, {});
+  };
+  await page.route("**/obligations*", obligationHandler);
+  await page.route("**/obligations/**", obligationHandler);
 
   await page.route("**/vat-filings*", async (route) => {
     const method = route.request().method().toUpperCase();
@@ -58,14 +72,16 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
     if (method === "POST") {
       const payload = (route.request().postDataJSON() ?? {}) as Record<string, unknown>;
       options.onSubmitFiling?.(payload);
+      const filingId = typeof payload.filing_id === "string" ? payload.filing_id : options.filingResponseId ?? "00000000-0000-4000-8000-000000000001";
+      const traceId = options.filingTraceId ?? "trace-100";
       await json(
         route,
         {
-          trace_id: "trace-100",
+          trace_id: traceId,
           idempotent: false,
-          filing_id: "FILING-NEW-001",
+          filing_id: filingId,
           filing: {
-            filing_id: "FILING-NEW-001",
+            filing_id: filingId,
           },
         },
         201

@@ -45,6 +45,12 @@ interface SupersedeBody {
   final_assessment: StagedAssessment;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 export async function obligationRoutes(
   app: FastifyInstance,
   options: RouteOptions,
@@ -100,6 +106,7 @@ export async function obligationRoutes(
     const traceId = req.id;
 
     if (!filing_id) return reply.badRequest("filing_id is required");
+    if (!isUuid(filing_id)) return reply.status(422).send({ error: "VALIDATION_FAILED", message: "filing_id must be a UUID", trace_id: traceId });
 
     await repo.loadIntoMemory(obligation_id);
     const obligation = submitObligation(obligation_id, filing_id, traceId);
@@ -171,6 +178,7 @@ export async function obligationRoutes(
     const traceId = req.id;
 
     if (!filing_id || !final_assessment) return reply.badRequest("filing_id and final_assessment are required");
+    if (!isUuid(filing_id)) return reply.status(422).send({ error: "VALIDATION_FAILED", message: "filing_id must be a UUID", trace_id: traceId });
 
     await repo.loadPreliminaryIntoMemory(preliminary_assessment_id);
     const superseded = supersedeByFiling(preliminary_assessment_id, filing_id, final_assessment, traceId);

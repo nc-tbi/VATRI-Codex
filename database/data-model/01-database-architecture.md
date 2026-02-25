@@ -536,6 +536,11 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 - `database/schemas/*.sql` defines the schema state for integration test database setup.
 - Seeding scripts must be provided in `database/runbooks/seed/` before Gate C integration tests.
 
+### Product Owner
+- Approves scope-impacting data contract changes before production promotion.
+- Confirms release evidence includes migration report, API contract impact notes, and test coverage for active domain scenarios.
+- Accepts or rejects deferred data risks with explicit owner and timeline.
+
 ---
 
 ## 17. Risks, Open Questions, and ADR Dependencies (Summary)
@@ -547,6 +552,7 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 | F-003 | claim_id/claim_status in filing table — tech debt | Code Builder (Phase 4) | ADR-001 |
 | R-02 | Rule catalog runtime alignment to persistent `rule_catalog` schema required | Architect + Code Builder | ADR-002 |
 | R-05 | Migration tooling decision | Database Architect + DevOps | ADR-008 |
+| R-08 | Release evidence completeness for domain-impacting database changes | Product Owner + Test Manager + DevOps | ADR-006 |
 | R-06 | Formal data retention policy | Database Architect + Legal | GDPR, Bogføringsloven |
 
 

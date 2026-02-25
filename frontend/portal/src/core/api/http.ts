@@ -18,6 +18,13 @@ function envName(service: ServiceName): string {
 }
 
 function serviceBaseUrl(service: ServiceName): string {
+  if (process.env.NEXT_PUBLIC_USE_PROXY_ROUTES === "1") {
+    return `/proxy/${service}`;
+  }
+  const sharedOrigin = process.env.NEXT_PUBLIC_PORTAL_API_BASE_URL || process.env.PORTAL_API_BASE_URL;
+  if (sharedOrigin) {
+    return sharedOrigin;
+  }
   return process.env[envName(service)] || SERVICE_DEFAULTS[service];
 }
 

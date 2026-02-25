@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { formatApiError } from "@/core/api/error-display";
 import { createRegistration } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -59,7 +60,7 @@ export default function AdminTaxpayersNewPage() {
       );
       setMessage(t("admin.taxpayers_new.success", { id: String(res.registration_id ?? t("shared.unknown")) }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("admin.taxpayers_new.error"));
+      setError(formatApiError(err, t("admin.taxpayers_new.error")));
     }
   };
 

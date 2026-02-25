@@ -2,6 +2,7 @@
 
 Workspace index for Database Architect outputs.
 Owner: Database Architecture Lead
+Product acceptance owner: Product Owner
 Contract: [`DATABASE_ARCHITECT.md`](../DATABASE_ARCHITECT.md)
 
 ## Workspace Structure
@@ -79,3 +80,4 @@ Before promoting any schema change:
 - [ ] Persistence contracts are updated.
 - [ ] Seed data scripts are updated or confirmed unchanged.
 - [ ] DevOps runbook is updated if procedure changes.
+- [ ] Product Owner signoff is recorded for domain-impacting schema changes.

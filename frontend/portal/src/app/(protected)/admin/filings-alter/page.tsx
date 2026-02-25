@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { formatApiError } from "@/core/api/error-display";
 import { filingAlter, filingRedo, filingUndo } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
@@ -48,7 +49,7 @@ export default function AdminFilingsAlterPage() {
           }
         }
       }
-      setError(err instanceof Error ? err.message : t("admin.shared.action_failed"));
+      setError(formatApiError(err, t("admin.shared.action_failed")));
     }
   };
 

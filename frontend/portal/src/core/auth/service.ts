@@ -5,7 +5,15 @@ const REFRESH_KEY = "vatri.portal.refresh_token";
 const USER_KEY = "vatri.portal.user";
 
 function baseUrl(): string {
-  return process.env.NEXT_PUBLIC_PORTAL_API_BASE_URL || process.env.PORTAL_API_BASE_URL || "http://localhost:3009";
+  if (process.env.NEXT_PUBLIC_USE_PROXY_ROUTES === "1") {
+    return "/proxy/auth";
+  }
+  return (
+    process.env.NEXT_PUBLIC_AUTH_SERVICE_BASE_URL ||
+    process.env.NEXT_PUBLIC_PORTAL_API_BASE_URL ||
+    process.env.PORTAL_API_BASE_URL ||
+    "http://localhost:3009"
+  );
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {

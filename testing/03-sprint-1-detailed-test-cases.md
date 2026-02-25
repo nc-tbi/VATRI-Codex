@@ -288,7 +288,7 @@ Purpose:
 | `TC-S3-CLM-04` | Retry | Transient failure retry/backoff behavior | Failure injection hooks available for connector/outbox dispatch | Trigger transient dependency failure and observe retry sequence | Retry/backoff sequence follows policy and eventually converges | Code Builder + Tester + Platform/DevOps | Yes |
 | `TC-S3-CLM-05` | DLQ | Dead-letter routing and diagnostics | DLQ path configured | Force non-recoverable dispatch failure | Message routed to DLQ once; failure metadata + trace links present | Code Builder + Tester + Platform/DevOps | Yes |
 | `TC-S3-CLM-06` | Restart-persistence | Outbox + idempotency durability across restart | Persisted outbox/idempotency store enabled | Enqueue work, restart services mid-flow, resume processing | No duplicate/ghost processing; in-flight state recovers deterministically | Code Builder + Tester | Yes |
-| `TC-S3-CLM-07` | Negative + Contract | Customs mismatch/error mapping | Customs stub/provider contract suite available | Send mismatch/failure responses from provider stub | Error contract and reconciliation events match spec (`CustomsIntegrationFailed`) | Designer + Code Builder + Tester | Yes |
+| `TC-S3-CLM-07` | Negative + Contract | Customs mismatch/error mapping | Customs stub/provider contract suite available | Send mismatch/failure responses from provider stub after a valid claim request passes input validation | Deterministic internal error envelope per contract freeze (`500`, `error=INTERNAL_ERROR`, required `trace_id`; `message` optional) and reconciliation events match spec (`CustomsIntegrationFailed`) | Designer + Code Builder + Tester | Yes |
 | `TC-S3-CLM-08` | Positive + Regression | Scenario anchor pack (`S08`,`S09`,`S19`) | All Sprint 3 suites runnable | Execute anchor regression as single pack | All anchors pass and preserve prior expected semantics | Test Manager + Code Builder + Tester | Yes |
 
 ### 7.3 Mandatory Commands (Phase 3)
@@ -307,9 +307,16 @@ Pass/fail policy:
 ### 7.4 Phase 3 Defect Evidence (Pre-Build Blockers)
 | Defect ID | Linked Case IDs | Evidence Command | Evidence Snippet | Timestamp (UTC) | Status |
 |---|---|---|---|---|---|
-| `DEF-P3-001` | `TC-S3-CLM-01`, `TC-S3-CLM-02`, `TC-S3-CLM-03`, `TC-S3-CLM-08` | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-gate-c.test.ts"` | no matching file returned | 2026-02-25T00:00:00Z | Open |
-| `DEF-P3-002` | `TC-S3-CLM-04`, `TC-S3-CLM-05`, `TC-S3-CLM-06` | `rg --files build/packages/domain/src/__tests__ \| rg "phase3-claims-resilience-gate-c.test.ts"` | no matching file returned | 2026-02-25T00:00:00Z | Open |
+| `DEF-P3-001` | `TC-S3-CLM-01`, `TC-S3-CLM-03`, `TC-S3-CLM-06` (plus `TC-S3-OBS-01` impact) | `cd build && npm run test:phase3-integration`; `cd build && npm run test:phase3-resilience`; `cd build && npm run test:phase3-observability` | `expected 422 to be 201` | 2026-02-25T20:18:55Z | Open |
+| `DEF-P3-002` | `TC-S3-CLM-07` | `cd build && npm run test:phase3-integration` | `expected 422 to be 500` | 2026-02-25T20:18:26Z | Open |
+| `DEF-P3-001` | `TC-S3-CLM-01`, `TC-S3-CLM-03`, `TC-S3-CLM-06` (plus `TC-S3-OBS-01` impact) | `cd build && npm run test:phase3-integration`; `cd build && npm run test:phase3-resilience`; `cd build && npm run test:phase3-observability` | closure rerun: `Test Files 1 passed, Tests 5 passed`; `Test Files 1 passed, Tests 4 passed`; `Test Files 1 passed, Tests 3 passed` | 2026-02-25T20:46:59Z | Closed (`P3-RUN-2026-02-25-02`) |
+| `DEF-P3-002` | `TC-S3-CLM-07` | `cd build && npm run test:phase3-integration` | closure rerun: `Test Files 1 passed, Tests 5 passed` | 2026-02-25T20:46:35Z | Closed (`P3-RUN-2026-02-25-02`) |
 
 Phase 3 verdict:
-- **Blocked** until both defect IDs are closed and all mandatory commands pass in one validation cycle.
+- **Pass** (`P3-RUN-2026-02-25-02`): both defect IDs closed and mandatory commands green in one validation cycle.
+
+Governance rule:
+- Append new `P3-RUN-*` IDs for each rerun; never replace prior evidence rows.
+- `Ready = Yes` only if all mandatory commands are `Pass` in the same cycle.
+- Any single fail or missing evidence => `Ready = No (Blocked)`.
 

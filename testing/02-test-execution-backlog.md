@@ -113,14 +113,37 @@ Phase 3 exit criteria (release-blocking):
 
 Phase 3 gate status (authoritative, 2026-02-25):
 - Current verdict: **Pass**
-- Reason: mandatory Phase 3 packs are present and passing in the same validation cycle (`phase3-claims-gate-c.test.ts`, `phase3-claims-resilience-gate-c.test.ts`, `phase3-observability-gate-c.test.ts`) and baseline gate/typecheck remain green.
+- Reason: mandatory command set is green in the same validation cycle (`P3-RUN-2026-02-25-02`).
 
 Phase 3 active defects/evidence:
 | Defect ID | Finding | Severity | Owner | Evidence Command | Evidence Snippet | Status |
 |---|---|---|---|---|---|---|
-| `DEF-P3-001` | Missing Phase 3 claim reliability pack (`phase3-claims-gate-c.test.ts`) | High | Code Builder | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts src/__tests__/phase3-claims-resilience-gate-c.test.ts src/__tests__/phase3-observability-gate-c.test.ts` | suite pass (`12/12`) | Closed |
-| `DEF-P3-002` | Missing Phase 3 resilience pack (`phase3-claims-resilience-gate-c.test.ts`) | High | Code Builder | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts src/__tests__/phase3-claims-resilience-gate-c.test.ts src/__tests__/phase3-observability-gate-c.test.ts` | suite pass (`12/12`) | Closed |
+| `DEF-P3-001` | Claim orchestration/idempotency/restart-persistence paths return `422` where `201/200` is expected (`TC-S3-CLM-01`, `TC-S3-CLM-03`, `TC-S3-CLM-06`; also impacts `TC-S3-OBS-01`) | High | Code Builder + Tester | `cd build && npm run test:phase3-integration`; `cd build && npm run test:phase3-resilience`; `cd build && npm run test:phase3-observability` | closure rerun: `Test Files 1 passed, Tests 5 passed`; `Test Files 1 passed, Tests 4 passed`; `Test Files 1 passed, Tests 3 passed` | Closed (`P3-RUN-2026-02-25-02`) |
+| `DEF-P3-002` | Customs mismatch mapping returns `422` instead of deterministic internal error envelope `500` (`TC-S3-CLM-07`) | High | Code Builder + Tester + Designer | `cd build && npm run test:phase3-integration` | closure rerun: `Test Files 1 passed, Tests 5 passed` | Closed (`P3-RUN-2026-02-25-02`) |
 
+Phase 3 validation cycle evidence (`P3-RUN-2026-02-25-01`):
+| Command | Expected | Actual | Verdict |
+|---|---|---|---|
+| `cd build && npm run ci:migration-compat` | Pass | Pass (`Migration compatibility check passed`) | Pass |
+| `cd build && npm run test:gate-b` | Pass | Fail (`7 failed`, includes `TC-S3-CLM-01/03/07/08`, `TC-S3-CLM-06`, `TC-S3-OBS-01`) | Fail |
+| `cd build && npm run test:svc-integration` | Pass | Fail (`phase1-defect-prevention-004.test.ts` claim idempotency `expected 422 to be 201`) | Fail |
+| `cd build && npm run test:phase3-integration` | Pass | Fail (`4 failed`; `expected 422 to be 201/500`) | Fail |
+| `cd build && npm run test:phase3-resilience` | Pass | Fail (`1 failed`; `expected 422 to be 201`) | Fail |
+
+Phase 3 validation cycle evidence (`P3-RUN-2026-02-25-02`):
+| Command | Expected | Actual | Verdict |
+|---|---|---|---|
+| `cd build && npm run ci:migration-compat` | Pass | Pass (`Migration compatibility check passed: runtime and canonical schemas are equivalent.`) | Pass |
+| `cd build && npm run test:gate-b` | Pass | Pass (`Test Files 17 passed, Tests 214 passed`, workspace `tsc --noEmit` passes) | Pass |
+| `cd build && npm run test:svc-integration` | Pass | Pass (`Test Files 2 passed, Tests 14 passed`) | Pass |
+| `cd build && npm run test:phase3-integration` | Pass | Pass (`Test Files 1 passed, Tests 5 passed`) | Pass |
+| `cd build && npm run test:phase3-resilience` | Pass | Pass (`Test Files 1 passed, Tests 4 passed`) | Pass |
+| `cd build && npm run test:phase3-observability` | Supporting | Pass (`Test Files 1 passed, Tests 3 passed`) | Pass |
+
+Phase 3 evidence governance rule:
+- Record new `P3-RUN-*` IDs append-only for every rerun; do not overwrite historical run evidence.
+- `Ready = Yes` only when all mandatory commands are `Pass` in the same validation cycle.
+- Any single fail or missing evidence => `Ready = No (Blocked)`.
 ### Sprint 4 - Amendments, Compliance, and Security (Phase 4/4A, Gate C)
 Objective:
 - Validate amendment lineage and enforce security/traceability controls before broad E2E gating.
@@ -378,5 +401,6 @@ Partial mapping to existing coverage IDs:
 Backlog interpretation:
 - `TB-S4B-08` is now **In Progress** from a command/readiness perspective due to executable portal test commands and baseline evidence.
 - Formal Gate C closure still requires full case-pack execution (`TC-PORTAL-*` and `TC-REM-AUTHADM-*`) in the governed pipeline.
+
 
 

@@ -157,10 +157,10 @@ Pass/fail policy:
 - `Gate C-Phase3` can be marked `Pass` only when all mandatory commands pass in one validation cycle and all risks `PH3-R01..PH3-R08` are covered by at least one blocking automated test.
 
 Current execution evidence (2026-02-25):
-- Gate verdict: **Blocked**
+- Gate verdict: **Pass** (`P3-RUN-2026-02-25-02`)
 - Blocking defects:
-  - `DEF-P3-001` (missing `phase3-claims-gate-c.test.ts`)
-  - `DEF-P3-002` (missing `phase3-claims-resilience-gate-c.test.ts`)
+  - `DEF-P3-001` (historical: claim/idempotency/restart and related observability path returned `422` instead of expected `201/200`; now closed in cycle `P3-RUN-2026-02-25-02`)
+  - `DEF-P3-002` (historical: customs mismatch mapping returned `422` instead of expected `500`; now closed in cycle `P3-RUN-2026-02-25-02`)
 
 Same-cycle evidence requirement (mandatory):
 | Command | Evidence ID | Required Status in Same Cycle |
@@ -170,7 +170,29 @@ Same-cycle evidence requirement (mandatory):
 | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-gate-c.test.ts` | `P3-RUN-<n>-C` | Pass |
 | `cd build && npm run test -w @tax-core/domain -- src/__tests__/phase3-claims-resilience-gate-c.test.ts` | `P3-RUN-<n>-D` | Pass |
 
+Latest validation cycle (`P3-RUN-2026-02-25-01`):
+| Command | Evidence ID | Actual Status | Evidence Snippet |
+|---|---|---|---|
+| `cd build && npm run ci:migration-compat` | `P3-RUN-2026-02-25-01-MIG` | Pass | `Migration compatibility check passed: runtime and canonical schemas are equivalent.` |
+| `cd build && npm run test:gate-b` | `P3-RUN-2026-02-25-01-A` | Fail | `7 failed`; includes `expected 422 to be 201` and `expected 422 to be 500` |
+| `cd build && npm run test:svc-integration` | `P3-RUN-2026-02-25-01-B` | Fail | `phase1-defect-prevention-004`: `expected 422 to be 201` |
+| `cd build && npm run test:phase3-integration` | `P3-RUN-2026-02-25-01-C` | Fail | `4 failed`; `expected 422 to be 201`, `expected 422 to be 500` |
+| `cd build && npm run test:phase3-resilience` | `P3-RUN-2026-02-25-01-D` | Fail | `1 failed`; `expected 422 to be 201` |
+| `cd build && npm run test:phase3-observability` | `P3-RUN-2026-02-25-01-E` | Fail | `TC-S3-OBS-01`: `expected 422 to be 201` |
+
+Latest validation cycle (`P3-RUN-2026-02-25-02`):
+| Command | Evidence ID | Actual Status | Evidence Snippet |
+|---|---|---|---|
+| `cd build && npm run ci:migration-compat` | `P3-RUN-2026-02-25-02-MIG` | Pass | `Migration compatibility check passed: runtime and canonical schemas are equivalent.` |
+| `cd build && npm run test:gate-b` | `P3-RUN-2026-02-25-02-A` | Pass | `Test Files 17 passed, Tests 214 passed` + workspace `tsc --noEmit` pass |
+| `cd build && npm run test:svc-integration` | `P3-RUN-2026-02-25-02-B` | Pass | `Test Files 2 passed, Tests 14 passed` |
+| `cd build && npm run test:phase3-integration` | `P3-RUN-2026-02-25-02-C` | Pass | `Test Files 1 passed, Tests 5 passed` |
+| `cd build && npm run test:phase3-resilience` | `P3-RUN-2026-02-25-02-D` | Pass | `Test Files 1 passed, Tests 4 passed` |
+| `cd build && npm run test:phase3-observability` | `P3-RUN-2026-02-25-02-E` | Pass | `Test Files 1 passed, Tests 3 passed` |
+
 Gate decision rule (authoritative for Phase 3 pre-build):
 - No `Ready` decision is permitted unless `P3-RUN-<n>-A..D` are all `Pass` in the same validation cycle.
+- `P3-RUN-*` evidence rows are append-only; do not overwrite historical cycles.
+- Any single fail or missing evidence in required commands => `Ready = No (Blocked)`.
 
 

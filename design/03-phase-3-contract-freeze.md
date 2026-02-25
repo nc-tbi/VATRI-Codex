@@ -78,6 +78,7 @@ All gaps resolved in this document are Phase 3 design decisions. They extend or 
 | RQ-CF-06 | Amendment `StagedAssessment` naming collision | Amendment service defines its own `StagedAssessment` schema (subset shape) alongside assessment service's `StagedAssessment`. Consumers see conflicting schemas under the same name. | **Resolved:** Amendment service schema renamed to `AssessmentSnapshot`. Spec updated to v1.2.0. |
 | RQ-CF-07 | Error code enum not in OpenAPI | `error` field is `type: string` with no enum — UI cannot pattern-match machine codes safely. | **Resolved:** Canonical error code registry defined in §9. |
 | RQ-CF-08 | `next_retry_at` missing from claim | UI cannot display retry countdown or schedule for `failed` claims. | **Resolved:** `next_retry_at` added to `ClaimIntent` as nullable field. Populated by outbox retry worker. |
+| RQ-CF-09 | `TC-S3-CLM-07` customs mismatch/error envelope drift | Test evidence shows `422` returned where negative customs/provider failure path expects deterministic internal envelope. | **Resolved contract decision:** downstream customs/provider mismatch/failure after valid request processing maps to `500` + `ErrorResponse` (`error=INTERNAL_ERROR`, `trace_id` required, `message` optional). See §9.1. |
 
 ---
 
@@ -247,6 +248,31 @@ ErrorResponse:
 2. `message` is present in development/staging. Clients must not depend on its content in production.
 3. No additional fields may be added to `ErrorResponse` bodies without a version bump.
 4. 404 bodies must not include resource identifiers (e.g., `filing_id`, `claim_id`) as extra fields — this is a Phase 1 deviation retired in Phase 3.
+
+### 9.1 `TC-S3-CLM-07` Contract Decision (Authoritative)
+
+Decision scope: claim-orchestrator negative contract test for downstream customs/provider mismatch/failure (`TC-S3-CLM-07`).
+
+Authoritative mapping:
+- If request validation fails before claim orchestration starts, return `422` with `ErrorResponse` (`VALIDATION_FAILED`).
+- If request is valid and downstream publish/integration fails during orchestration, return `500` with `ErrorResponse` where:
+  - `error = INTERNAL_ERROR` (required)
+  - `trace_id` is present (required)
+  - `message` is optional and non-contractual
+
+Authoritative payload shape for the `500` path:
+
+```json
+{
+  "error": "INTERNAL_ERROR",
+  "trace_id": "<w3c-trace-id>"
+}
+```
+
+Contract authority order for Code Builder:
+1. `design/03-phase-3-contract-freeze.md` §9 and §9.1 (this document)
+2. `build/openapi/claim-orchestrator.yaml` `components.schemas.ErrorResponse` + `POST /claims` `500`
+3. Runtime behavior in `build/services/claim-orchestrator/src/routes/claim.ts`
 
 ---
 

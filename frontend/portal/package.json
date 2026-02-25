@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "validate:openapi:release": "node scripts/validate-openapi-release.mjs",
+    "release:validate": "npm run validate:openapi:release && npm run typecheck && npm run test",
     "typecheck": "tsc --noEmit",
     "lint": "next lint",
     "test": "vitest run",

@@ -147,3 +147,49 @@ Linked artifacts:
 Consolidation note:
 - Portal baseline tests are now executable and evidenced.
 - Full Gate C portal readiness still depends on complete execution of `TC-PORTAL-*` and `TC-REM-AUTHADM-*` packs defined in `testing/03-sprint-1-detailed-test-cases.md`.
+
+---
+
+## Phase 3 Pre-Build Gate Evidence (Migration Smoke + Acceptance/Negative)
+
+Objective:
+- Record staging/prod-like migration smoke plus full Phase 3 acceptance/negative command evidence in one validation cycle.
+
+### Phase 3 Defects (Current)
+| Defect ID | Description | Severity | Owner | Status |
+|---|---|---|---|---|
+| `DEF-P3-001` | Claim orchestration/idempotency/restart-persistence positive paths return `422` instead of expected `201/200` (also impacts observability positive-path assertion) | High | Code Builder + Tester | Closed (`P3-RUN-2026-02-25-02`) |
+| `DEF-P3-002` | Customs mismatch mapping returns `422` instead of expected `500` internal error envelope | High | Code Builder + Tester + Designer | Closed (`P3-RUN-2026-02-25-02`) |
+
+### Validation Cycle Log
+| Run ID | Date | Command | Result | Evidence |
+|---|---|---|---|---|
+| `P3-RUN-2026-02-25-01-MIG` | 2026-02-25 | `cd build && npm run ci:migration-compat` | Pass | `Migration compatibility check passed: runtime and canonical schemas are equivalent.` |
+| `P3-RUN-2026-02-25-01-A` | 2026-02-25 | `cd build && npm run test:gate-b` | Fail | `7 failed` (`expected 422 to be 201/500`) |
+| `P3-RUN-2026-02-25-01-B` | 2026-02-25 | `cd build && npm run test:svc-integration` | Fail | `phase1-defect-prevention-004.test.ts`: `expected 422 to be 201` |
+| `P3-RUN-2026-02-25-01-C` | 2026-02-25 | `cd build && npm run test:phase3-integration` | Fail | `4 failed`; includes `TC-S3-CLM-01`, `TC-S3-CLM-03`, `TC-S3-CLM-07`, `TC-S3-CLM-08` |
+| `P3-RUN-2026-02-25-01-D` | 2026-02-25 | `cd build && npm run test:phase3-resilience` | Fail | `1 failed`; `TC-S3-CLM-06` (`expected 422 to be 201`) |
+| `P3-RUN-2026-02-25-01-E` | 2026-02-25 | `cd build && npm run test:phase3-observability` | Fail | `1 failed`; `TC-S3-OBS-01` (`expected 422 to be 201`) |
+| `P3-RUN-2026-02-25-01-F` | 2026-02-25 | `cd build && npm run ci:phase3` | Fail | Guardrails pass and report generated; integration lane fails with same `422` vs expected assertions |
+| `P3-RUN-2026-02-25-02-MIG` | 2026-02-25 | `cd build && npm run ci:migration-compat` | Pass | `Migration compatibility check passed: runtime and canonical schemas are equivalent.` |
+| `P3-RUN-2026-02-25-02-A` | 2026-02-25 | `cd build && npm run test:gate-b` | Pass | `Test Files 17 passed, Tests 214 passed`; workspace typecheck pass |
+| `P3-RUN-2026-02-25-02-B` | 2026-02-25 | `cd build && npm run test:svc-integration` | Pass | `Test Files 2 passed, Tests 14 passed` |
+| `P3-RUN-2026-02-25-02-C` | 2026-02-25 | `cd build && npm run test:phase3-integration` | Pass | `Test Files 1 passed, Tests 5 passed` |
+| `P3-RUN-2026-02-25-02-D` | 2026-02-25 | `cd build && npm run test:phase3-resilience` | Pass | `Test Files 1 passed, Tests 4 passed` |
+| `P3-RUN-2026-02-25-02-E` | 2026-02-25 | `cd build && npm run test:phase3-observability` | Pass | `Test Files 1 passed, Tests 3 passed` |
+
+Artifacts:
+- `build/reports/migration-compat-runtime-snapshot.json`
+- `build/reports/migration-compat-canonical-snapshot.json`
+- `build/reports/migration-compat-diff.json`
+- `build/reports/phase3-guardrails.json`
+- `build/reports/phase3-integration-vitest.json`
+
+Gate verdict:
+- `Gate C-Phase3`: **Pass** (`P3-RUN-2026-02-25-02`).
+- Rule: `Ready` is allowed only when mandatory same-cycle commands (`test:gate-b`, `test:svc-integration`, `test:phase3-integration`, `test:phase3-resilience`) are all green.
+
+Evidence policy:
+- Append new `P3-RUN-*` rows for every rerun (append-only).
+- Do not overwrite historical `P3-RUN-*` evidence.
+- Any single fail or missing evidence in required commands => `Ready = No (Blocked)`.

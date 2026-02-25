@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: Claim Orchestrator API
-  version: "1.1.0"
+  version: "1.1.1"
   description: |
     Tax Core claim orchestrator - idempotent claim dispatch with outbox pattern (ADR-004, ADR-006).
     Bounded context: Claim. Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
@@ -9,6 +9,7 @@ info:
     Sole authoritative publisher of tax-core.claim.created (Phase 3 freeze — design/03-phase-3-contract-freeze.md).
     v1.1.0: added superseded status (D-17); removed duplicate root filing_id from ClaimRequest;
     added idempotent:false on 201; added next_retry_at field.
+    v1.1.1: filing_id validation aligned to runtime/domain contract (required string parity with assessment.filing_id; no UUID hard requirement).
 
 servers:
   - url: http://localhost:3006
@@ -160,15 +161,14 @@ components:
       required: [taxpayer_id, filing_id, tax_period_end, assessment_version, assessment]
       description: |
         Claim creation request for claim-orchestrator.
-        filing_id must be UUID and must match assessment.filing_id.
+        filing_id must be present and must match assessment.filing_id.
         Idempotency key: {taxpayer_id}:{tax_period_end}:{assessment_version}.
       properties:
         taxpayer_id:
           type: string
         filing_id:
           type: string
-          format: uuid
-          description: Filing identifier (UUID). Must match assessment.filing_id.
+          description: Filing identifier. Must match assessment.filing_id.
         tax_period_end:
           type: string
           format: date
@@ -210,7 +210,6 @@ components:
           type: integer
         filing_id:
           type: string
-          format: uuid
         result_type:
           type: string
           enum: [payable, refund, zero]
@@ -262,7 +261,6 @@ components:
       properties:
         filing_id:
           type: string
-          format: uuid
         rule_version_id:
           type: string
         result_type:

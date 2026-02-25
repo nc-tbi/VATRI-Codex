@@ -85,10 +85,22 @@ npm run dev
 
 ## Validation
 ```bash
+npm run validate:openapi:release
 npm run typecheck
 npm run build
 npm run test
 ```
+
+Release-focused frontend validation shortcut:
+```bash
+npm run release:validate
+```
+
+`validate:openapi:release` validates the portal contract assumptions directly against the final generated OpenAPI artifacts in `build/openapi/*.yaml` (canonical release source), including:
+- required portal-consumed paths (`/auth/*`, `/registrations*`, `/obligations*`, `/vat-filings`, `/amendments`, `/assessments`, `/claims`)
+- deterministic error envelope presence (`error`, `trace_id`)
+- expected filing submit response contract (`200/201/409/422/500`, `idempotent`, `trace_id`, `filing_id`)
+- UUID expectation for canonical `filing_id`
 
 E2E starter (requires app running on `http://localhost:3000`):
 ```bash

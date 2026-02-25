@@ -13,6 +13,11 @@ if (!validLanes.has(lane)) {
   process.exit(1);
 }
 
+if (lane === "all" && args.has("--no-guardrails")) {
+  console.error("Guardrails cannot be disabled for lane 'all'.");
+  process.exit(1);
+}
+
 const reportsDir = join(process.cwd(), "reports");
 mkdirSync(reportsDir, { recursive: true });
 

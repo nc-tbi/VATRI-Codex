@@ -29,7 +29,6 @@ export default function LoginPage() {
   return (
     <div className="mx-auto mt-16 max-w-md rounded border border-[var(--border)] bg-[var(--surface)] p-6">
       <h2 className="mb-2 text-2xl font-semibold">Log ind</h2>
-      <p className="mb-6 text-sm text-[var(--muted)]">Brug admin/admin i lokal udvikling.</p>
       {error ? <div className="mb-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</div> : null}
       <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
         <label className="block">

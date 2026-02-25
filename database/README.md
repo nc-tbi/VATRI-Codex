@@ -1,86 +1,81 @@
-# Database Architecture — Tax Core
+﻿# Database Architecture - Tax Core
 
-> Workspace index for all Database Architect outputs.
-> Owner: Database Architecture Lead | Contract: [`DATABASE_ARCHITECT.md`](../DATABASE_ARCHITECT.md)
-
----
+Workspace index for Database Architect outputs.
+Owner: Database Architecture Lead
+Contract: [`DATABASE_ARCHITECT.md`](../DATABASE_ARCHITECT.md)
 
 ## Workspace Structure
 
 ```
 database/
-|-- README.md              # This file — workspace index
-|-- data-model/            # ERDs, entity definitions, data dictionaries
-|-- schemas/               # DDL schema files organised by bounded context
-|-- migrations/            # Versioned migration scripts and changelog records
-|-- runbooks/              # Operational procedures (backup, restore, schema promotion)
-`-- decisions/             # Database Decision Records (DBDR-nnn)
+|-- README.md
+|-- data-model/
+|-- schemas/
+|-- migrations/
+|-- runbooks/
+`-- decisions/
 ```
-
----
 
 ## Status
 
 | Area | Status | Notes |
 |---|---|---|
-| Data model | Not started | Awaiting initial design pass |
-| Schema DDL | Not started | Awaiting data model approval |
-| Migrations | Not started | Awaiting schema DDL |
-| Runbooks | Not started | Awaiting DevOps coordination |
-| DBDR records | Not started | Pending first database decision |
+| Data model | Completed | Master architecture and data dictionary authored |
+| Schema DDL | Completed | Seven bounded-context SQL files added under `database/schemas/` |
+| Migrations | Completed | Versioned forward and rollback scripts created under `database/migrations/` |
+| Runbooks | Planned | Operational backup/restore/promotion runbooks pending |
+| DBDR records | Completed | `DBDR-001` and `DBDR-002` created |
 
----
+## Deliverables
+
+### Master Architecture
+- [`database/data-model/01-database-architecture.md`](./data-model/01-database-architecture.md)
+
+### Bounded-Context DDL
+- [`database/schemas/registration.sql`](./schemas/registration.sql)
+- [`database/schemas/obligation.sql`](./schemas/obligation.sql)
+- [`database/schemas/filing.sql`](./schemas/filing.sql)
+- [`database/schemas/assessment.sql`](./schemas/assessment.sql)
+- [`database/schemas/amendment.sql`](./schemas/amendment.sql)
+- [`database/schemas/claim.sql`](./schemas/claim.sql)
+- [`database/schemas/audit.sql`](./schemas/audit.sql)
+
+### Database Decision Records
+- [`database/decisions/DBDR-001-postgresql-operational-store.md`](./decisions/DBDR-001-postgresql-operational-store.md)
+- [`database/decisions/DBDR-002-assessment-upsert-violates-adr003-adr005.md`](./decisions/DBDR-002-assessment-upsert-violates-adr003-adr005.md)
+
+### Migrations
+- `V1.0.001..007` baseline create scripts (one per bounded context)
+- `U1.0.001..007` rollback scripts (one per bounded context)
+- `V1.1.001` / `U1.1.001` assessment append-only lineage alignment
+- `V1.1.002` / `U1.1.002` claim Phase 3 alignment (`next_retry_at`, `superseded`)
 
 ## Governing Sources
 
-| Source | Purpose |
-|---|---|
-| [`DATABASE_ARCHITECT.md`](../DATABASE_ARCHITECT.md) | Role contract and design constraints |
-| [`architecture/adr/ADR-001-bounded-contexts-and-events.md`](../architecture/adr/ADR-001-bounded-contexts-and-events.md) | Bounded context boundaries — no cross-context joins |
-| [`architecture/adr/ADR-002-effective-dated-rule-catalog.md`](../architecture/adr/ADR-002-effective-dated-rule-catalog.md) | Rule catalog versioning requirements |
-| [`architecture/adr/ADR-003-append-only-audit-evidence.md`](../architecture/adr/ADR-003-append-only-audit-evidence.md) | Append-only and hard-delete prohibition |
-| [`architecture/adr/ADR-005-versioned-amendments.md`](../architecture/adr/ADR-005-versioned-amendments.md) | Amendment lineage versioning |
-| [`architecture/adr/ADR-008-open-source-only-technology-policy.md`](../architecture/adr/ADR-008-open-source-only-technology-policy.md) | Technology selection constraint |
-| [`architecture/designer/02-component-design-contracts.md`](../architecture/designer/02-component-design-contracts.md) | Per-service persistence contracts |
+- [`DATABASE_ARCHITECT.md`](../DATABASE_ARCHITECT.md)
+- [`architecture/adr/ADR-001-bounded-contexts-and-events.md`](../architecture/adr/ADR-001-bounded-contexts-and-events.md)
+- [`architecture/adr/ADR-002-effective-dated-rule-catalog.md`](../architecture/adr/ADR-002-effective-dated-rule-catalog.md)
+- [`architecture/adr/ADR-003-append-only-audit-evidence.md`](../architecture/adr/ADR-003-append-only-audit-evidence.md)
+- [`architecture/adr/ADR-004-outbox-queue-claim-dispatch.md`](../architecture/adr/ADR-004-outbox-queue-claim-dispatch.md)
+- [`architecture/adr/ADR-005-versioned-amendments.md`](../architecture/adr/ADR-005-versioned-amendments.md)
+- [`architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md`](../architecture/adr/ADR-007-lakehouse-and-event-streaming-data-platform.md)
+- [`architecture/adr/ADR-008-open-source-only-technology-policy.md`](../architecture/adr/ADR-008-open-source-only-technology-policy.md)
+- [`architecture/designer/02-component-design-contracts.md`](../architecture/designer/02-component-design-contracts.md)
 
----
+## Priority Defect Callout
 
-## Bounded Contexts in Scope
+Critical defect remains open in implementation code until Code Builder applies DBDR-002:
+- `build/services/assessment-service/src/db/repository.ts` currently uses `ON CONFLICT (filing_id) DO UPDATE` and cross-schema join with `filing.filings`.
 
-Per ADR-001, the following bounded contexts require independent persistence:
+## Schema Promotion Checklist
 
-1. Registration
-2. Obligation
-3. Filing
-4. Validation
-5. Tax Rule & Assessment
-6. Amendment
-7. Claim
-8. Audit
+Before promoting any schema change:
 
-Each context owns its own schema namespace. Cross-context data access is via events only; no cross-schema joins are permitted at the database layer.
-
----
-
-## Key Constraints (non-negotiable)
-
-- **Append-only** — legally mandated audit records (ADR-003). Hard-delete is prohibited.
-- **Effective-dated** — rule catalog and amendment tables carry `effective_from` / `effective_to` columns (ADR-002, ADR-005).
-- **Open-source only** — all database technology choices must comply with ADR-008.
-- **No raw-table integration surfaces** — persistence contracts are owned by the service layer; no other service may read another service's tables directly.
-- **GDPR / Danish tax-data retention** — CVR numbers, filing content, and assessment outcomes are subject to statutory retention periods. Archival strategy required before production data onboarding.
-
----
-
-## Schema Promotion Checklist (Quick Reference)
-
-Before promoting any schema change to an environment:
-
-- [ ] Migration script is idempotent or gated (safe to re-run).
+- [ ] Migration script is idempotent or gated (safe to rerun).
 - [ ] Rollback script exists and has been verified.
-- [ ] ADR-003 append-only and constraint requirements preserved.
-- [ ] Effective-date columns present on all rule-catalog and amendment lineage tables.
-- [ ] Data dictionary entry exists for every new or modified column.
-- [ ] Persistence contract document updated.
-- [ ] Test-data seeding scripts updated or confirmed unchanged.
-- [ ] DevOps migration runbook updated if promotion procedure changes.
+- [ ] ADR-003 append-only controls are preserved.
+- [ ] ADR-002/ADR-005 versioning controls are preserved.
+- [ ] Data dictionary entries are updated.
+- [ ] Persistence contracts are updated.
+- [ ] Seed data scripts are updated or confirmed unchanged.
+- [ ] DevOps runbook is updated if procedure changes.

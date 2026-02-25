@@ -1419,7 +1419,7 @@ AI capabilities must be scoped to assistive use only. This is an architecture-le
 | OQ-06 | Open | Audit Store retention policy? | Affects Lakehouse partitioning | Architecture / Legal |
 | OQ-07 | **RESOLVED** | Schema Registry technology? | **D-04: Apicurio Registry (Apache 2.0), BACKWARD_TRANSITIVE compatibility, one schema group per bounded context.** | Architecture |
 | OQ-08 | **RESOLVED** | Portal BFF deployment boundary? | **D-05: Independently deployed Kubernetes workload; W3C TraceContext propagation mandatory.** | Architecture |
-| OQ-09 | Open | Reserved for future scope: `additionalInfo`/`validAdditionalInfoTypes` policy (currently out of scope and not implemented). | No current delivery impact | Architecture / Integration / BA |
+| OQ-09 | **RESOLVED** | `additionalInfo`/`validAdditionalInfoTypes` policy | **Scope baseline confirmed: this solution does not submit `additionalInfo`, does not enforce `validAdditionalInfoTypes`, and treats any future use as a change request.** | Architecture / Integration / BA |
 | OQ-10 | Open | Taxpayer-accounting API consumption policy: polling cadence, `segmentId` strategy, and consistency guarantees across `payment-events` and `payment-segments`? | Blocks accounting reconciliation and settlement trigger behavior | Architecture / Integration |
 | OQ-11 | **RESOLVED** | `rounding_policy_version_id` scope? | **D-06: Per jurisdiction_code + effective_from. Entity fields defined in Section 5.4.** | Architecture / BA |
 | OQ-12 | **RESOLVED** | API Gateway product selection? | **D-09: Kong Gateway OSS (Apache 2.0). ADR-010 accepted. Fallback: Apache APISIX.** | Architecture |

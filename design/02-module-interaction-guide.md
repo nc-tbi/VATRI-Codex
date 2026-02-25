@@ -1096,20 +1096,20 @@ Architecture contract for all module work:
 | OQ-04 | **RESOLVED** | `rule_version_id` strategy? **D-03: Period + jurisdiction_code; filing_type optional in interface for forward compatibility.** | `filing-service`, `Rule Catalog mechanism` |
 | OQ-07 | **RESOLVED** | Schema Registry technology? **D-04: Apicurio Registry (Apache 2.0), BACKWARD_TRANSITIVE, one group per bounded context.** | `Schema Registry`, all Kafka producers |
 | OQ-08 | **RESOLVED** | Portal BFF deployment boundary? **D-05: Separate Kubernetes workload; W3C TraceContext mandatory.** | `portal-bff`, `API Gateway`, auth model |
-| OQ-09 | Open | Reserved for future scope: `additionalInfo`/`validAdditionalInfoTypes` policy (currently out of scope and not implemented). | `registration-service`, `system-s-registration-adapter`, portal registration UX |
+| OQ-09 | **RESOLVED** | `additionalInfo`/`validAdditionalInfoTypes` policy baseline | **Scope baseline confirmed: do not submit `additionalInfo`; do not enforce `validAdditionalInfoTypes`; require explicit change request before enabling either.** | `registration-service`, `system-s-registration-adapter`, portal registration UX |
 | OQ-10 | Open | Taxpayer-accounting pull profile: polling cadence and `segmentId` consistency guarantees between `payment-events` and `payment-segments`? | `system-s-accounting-adapter`, settlement/reconciliation flows |
 | OQ-11 | **RESOLVED** | `rounding_policy_version_id` scope? **D-06: Per jurisdiction_code + effective_from. Entity fields defined in design/01 Section 5.4.** | `assessment-service`, `claim-orchestrator` |
 | OQ-12 | **RESOLVED** | Preliminary assessment claim trigger policy | **D-17: create preliminary claim only when assessment is payable and trigger policy conditions pass; otherwise suppress.** | `assessment-service`, `claim-orchestrator` |
 | OQ-13 | Open | ViDA transport profile and cadence per taxpayer segment (including `corner_5`)? | `vida-ingestion-service`, `vida-verification-classification-service` |
 | OQ-14 | Open | Which risk reasons are legally disclosable in taxpayer-facing explanations? | `risk-profile-refresh-service`, `portal-bff` |
 | OQ-15 | Open | Settlement trigger legal thresholds and notification SLA details? | `settlement-trigger-service`, `obligation-service`, `portal-bff` |
+| OQ-16 | Open | System S human-task-management handoff contract for `HighRiskCaseTaskCreated` (sync API vs event-only)? | `risk-profile-refresh-service`, System S task integration |
+| OQ-17 | Open | Payment-plan ownership boundary in System S taxpayer-accounting integration? | `settlement-flow`, `system-s-accounting-adapter` |
+| OQ-18 | **RESOLVED** | API Gateway product selection? **D-09: Kong Gateway OSS (Apache 2.0). ADR-010 accepted. Fallback: Apache APISIX.** | `API Gateway`, all service routing |
+| OQ-19 | Open | ViDA Step 3 stream processor scope: Kafka Streams (embedded, v1) vs Apache Flink (v2 upgrade)? Revisit at ViDA Step 3 design milestone. | `vat-balance-service`, stream processing platform |
 
 ### D-17 Preliminary Claim Trigger Policy (Resolved)
 - Create preliminary claim intent only when `assessment_type=preliminary` and `result_type=payable` with `claim_amount > 0`.
 - Apply optional policy thresholds through `preliminary_claim_trigger_policy_id`.
 - Suppress preliminary claim intent for `refund` and `zero` preliminary outcomes.
 - On `PreliminaryAssessmentSupersededByFiledReturn`, mark preliminary claim as `superseded` and reconcile on final claim path.
-| OQ-16 | Open | System S human-task-management handoff contract for `HighRiskCaseTaskCreated` (sync API vs event-only)? | `risk-profile-refresh-service`, System S task integration |
-| OQ-17 | Open | Payment-plan ownership boundary in System S taxpayer-accounting integration? | `settlement-flow`, `system-s-accounting-adapter` |
-| OQ-18 | **RESOLVED** | API Gateway product selection? **D-09: Kong Gateway OSS (Apache 2.0). ADR-010 accepted. Fallback: Apache APISIX.** | `API Gateway`, all service routing |
-| OQ-19 | Open | ViDA Step 3 stream processor scope: Kafka Streams (embedded, v1) vs Apache Flink (v2 upgrade)? Revisit at ViDA Step 3 design milestone. | `vat-balance-service`, stream processing platform |

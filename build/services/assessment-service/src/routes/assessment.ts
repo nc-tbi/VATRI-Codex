@@ -26,7 +26,10 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
 
       // Merge explicit rule_version_id into the filing before assessment
       const assessment = computeStagedAssessment({ ...filing, rule_version_id });
-      const assessment_id = (await repo.saveAssessment(assessment)) ?? crypto.randomUUID();
+      const assessment_id = (await repo.saveAssessment(assessment, {
+        taxpayer_id: filing.taxpayer_id,
+        tax_period_end: filing.tax_period_end,
+      })) ?? crypto.randomUUID();
       const assessmentResponse = { ...assessment, assessment_id };
       await publisher.publishAssessed(assessmentResponse, traceId);
 

@@ -18,6 +18,7 @@
     "test:phase3-observability": "npm run test -w @tax-core/domain -- src/__tests__/phase3-observability-gate-c.test.ts",
     "test:phase3-gate-c": "npm run test:phase3-integration && npm run test:phase3-resilience && npm run test:phase3-observability",
     "ci:guardrails": "node scripts/ci/validate-guardrails.mjs",
+    "ci:migration-compat": "node scripts/ci/validate-migration-compat.mjs",
     "ci:phase3": "node scripts/ci/run-phase3-gate.mjs",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",

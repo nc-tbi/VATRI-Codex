@@ -22,10 +22,10 @@ database/
 | Area | Status | Notes |
 |---|---|---|
 | Data model | Completed | Master architecture and data dictionary authored |
-| Schema DDL | Completed | Seven bounded-context SQL files added under `database/schemas/` |
+| Schema DDL | Completed | Eight bounded-context SQL files added under `database/schemas/` |
 | Migrations | Completed | Versioned forward and rollback scripts created under `database/migrations/` |
-| Runbooks | Planned | Operational backup/restore/promotion runbooks pending |
-| DBDR records | Completed | `DBDR-001` and `DBDR-002` created |
+| Runbooks | In progress | Migration evidence runbooks added; operational backup/restore/promotion runbooks still pending |
+| DBDR records | Completed | `DBDR-001` through `DBDR-004` created |
 
 ## Deliverables
 
@@ -40,16 +40,24 @@ database/
 - [`database/schemas/amendment.sql`](./schemas/amendment.sql)
 - [`database/schemas/claim.sql`](./schemas/claim.sql)
 - [`database/schemas/audit.sql`](./schemas/audit.sql)
+- [`database/schemas/auth.sql`](./schemas/auth.sql)
 
 ### Database Decision Records
 - [`database/decisions/DBDR-001-postgresql-operational-store.md`](./decisions/DBDR-001-postgresql-operational-store.md)
 - [`database/decisions/DBDR-002-assessment-upsert-violates-adr003-adr005.md`](./decisions/DBDR-002-assessment-upsert-violates-adr003-adr005.md)
+- [`database/decisions/DBDR-003-filing-id-uuid-only-contract.md`](./decisions/DBDR-003-filing-id-uuid-only-contract.md)
+- [`database/decisions/DBDR-004-canonical-migration-source-and-rollback-boundaries.md`](./decisions/DBDR-004-canonical-migration-source-and-rollback-boundaries.md)
 
 ### Migrations
 - `V1.0.001..007` baseline create scripts (one per bounded context)
 - `U1.0.001..007` rollback scripts (one per bounded context)
 - `V1.1.001` / `U1.1.001` assessment append-only lineage alignment
 - `V1.1.002` / `U1.1.002` claim Phase 3 alignment (`next_retry_at`, `superseded`)
+- `V1.2.001` / `U1.2.001` auth/session persistence (`auth.users`, `auth.refresh_tokens`)
+- CI migration-compat gate compares `database/migrations/V*` against runtime mirror `build/db/migrations/*.sql`
+
+### Runbooks and Evidence
+- [`database/runbooks/2026-02-25-assessment-v1.1.001-precheck-backfill-evidence.md`](./runbooks/2026-02-25-assessment-v1.1.001-precheck-backfill-evidence.md)
 
 ## Governing Sources
 
@@ -74,6 +82,8 @@ Before promoting any schema change:
 
 - [ ] Migration script is idempotent or gated (safe to rerun).
 - [ ] Rollback script exists and has been verified.
+- [ ] Migration source is canonical (`database/migrations/`) and any runtime mirror is generated, not hand-edited (DBDR-004).
+- [ ] Rollback boundary classification is recorded for this release (A: pre-prod, B/C: production controls; DBDR-004).
 - [ ] ADR-003 append-only controls are preserved.
 - [ ] ADR-002/ADR-005 versioning controls are preserved.
 - [ ] Data dictionary entries are updated.

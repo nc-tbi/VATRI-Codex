@@ -29,3 +29,33 @@ jobs:
 
       - name: Run Gate A checks
         run: npm run test:gate-a
+
+  migration-compat:
+    name: migration-compat
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate migration compatibility
+        run: npm run ci:migration-compat
+
+      - name: Upload migration compatibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-compat-reports
+          path: build/reports/migration-compat-*.json

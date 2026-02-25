@@ -1,28 +1,40 @@
--- 005_audit_schema.sql — Audit bounded context schema
--- ADR-003: append-only evidence records — no UPDATE or DELETE permitted
--- One row per domain event across all bounded contexts.
+-- 005_audit_schema.sql
+-- Canonical audit bounded-context DDL aligned to database/migrations.
 
 CREATE SCHEMA IF NOT EXISTS audit;
 
-CREATE TABLE IF NOT EXISTS audit.evidence_records (
-  record_id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  trace_id          TEXT        NOT NULL,
-
-  event_type        TEXT        NOT NULL,
-  bounded_context   TEXT        NOT NULL CHECK (
-    bounded_context IN ('filing','validation','assessment','amendment','claim','audit','rule-engine')
-  ),
-  actor             TEXT        NOT NULL,
-
-  -- Immutable snapshot payload — stored as JSONB for queryability
-  payload           JSONB       NOT NULL,
-
-  timestamp         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS audit.evidence_entries (
+  evidence_id          UUID          PRIMARY KEY,
+  trace_id             TEXT          NOT NULL,
+  service_name         TEXT          NOT NULL,
+  actor_role           TEXT          NULL,
+  action_type          TEXT          NOT NULL,
+  event_timestamp      TIMESTAMPTZ   NOT NULL,
+  input_hash           TEXT          NULL,
+  decision_summary     TEXT          NULL,
+  filing_id            UUID          NULL,
+  assessment_id        UUID          NULL,
+  assessment_version   INTEGER       NULL,
+  claim_id             UUID          NULL,
+  payload_snapshot     JSONB         NULL,
+  created_at           TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- No UPDATE/DELETE permitted — enforce by policy and optional RLS
--- Index for trace correlation and event sourcing queries
-CREATE INDEX IF NOT EXISTS idx_audit_trace       ON audit.evidence_records (trace_id);
-CREATE INDEX IF NOT EXISTS idx_audit_event_type  ON audit.evidence_records (event_type);
-CREATE INDEX IF NOT EXISTS idx_audit_context     ON audit.evidence_records (bounded_context);
-CREATE INDEX IF NOT EXISTS idx_audit_timestamp   ON audit.evidence_records (timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_trace_id ON audit.evidence_entries (trace_id);
+CREATE INDEX IF NOT EXISTS idx_audit_event_timestamp ON audit.evidence_entries (event_timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_filing_id ON audit.evidence_entries (filing_id);
+
+CREATE OR REPLACE FUNCTION audit.prevent_row_modification()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'Append-only table: % does not allow %', TG_TABLE_NAME, TG_OP;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS prevent_evidence_entries_modification ON audit.evidence_entries;
+CREATE TRIGGER prevent_evidence_entries_modification
+BEFORE UPDATE OR DELETE ON audit.evidence_entries
+FOR EACH ROW
+EXECUTE FUNCTION audit.prevent_row_modification();

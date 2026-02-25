@@ -1,5 +1,5 @@
--- 008_auth_and_admin_control_persistence.sql
--- Canonical auth/session persistence DDL aligned to database/migrations.
+-- V1.2.001__add_auth_schema_and_refresh_tokens.sql
+-- Adds durable auth users and refresh-token persistence.
 
 CREATE SCHEMA IF NOT EXISTS auth;
 

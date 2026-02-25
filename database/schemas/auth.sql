@@ -1,5 +1,5 @@
--- 008_auth_and_admin_control_persistence.sql
--- Canonical auth/session persistence DDL aligned to database/migrations.
+-- auth.sql
+-- Authoritative DDL for auth bounded context.
 
 CREATE SCHEMA IF NOT EXISTS auth;
 

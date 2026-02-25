@@ -103,3 +103,43 @@ Current gate status note:
 Historical evidence rule:
 - append new `GA-RUN-*` records for each rerun; do not overwrite prior run records.
 
+---
+
+## Phase 2 — Gate B Delivery Evidence (Sprint 2)
+
+### Phase 2 Typecheck Fixes
+| Defect ID | Workspace | File | Symptom Summary | Severity | Owner | Status | Verification |
+|---|---|---|---|---|---|---|---|
+| `GB-TS-001` | `@tax-core/obligation-service` | `build/services/obligation-service/src/db/repository.ts` | Three `as Record<string, unknown>` direct casts rejected for `ObligationRecord`/`PreliminaryAssessmentRecord` (`TS2352`) — fixed to double-cast via `unknown` | High | Code Builder | Done | `GB-RUN-001` |
+| `GB-TS-002` | `@tax-core/registration-service` | `build/services/registration-service/src/db/repository.ts` | One `as Record<string, unknown>` direct cast rejected for `RegistrationRecord` (`TS2352`) — fixed to double-cast via `unknown` | High | Code Builder | Done | `GB-RUN-001` |
+
+### Gate B Rerun Evidence
+| Run ID | Date | Command | Tests | Typecheck | Gate B Verdict | Notes |
+|---|---|---|---|---|---|---|
+| `GB-RUN-001` | 2026-02-25 | `cd build && npm run test:gate-b` | Pass (`190/190`, 13 files) | Pass (0 errors, all 9 workspaces) | **Pass** | Phase 2 closure: Sprint 2 domain suites green (rule-regression 23, obligation 15, preliminary 12, registration 23); obligation-service + registration-service workspaces typecheck clean |
+
+Gate B status: **Pass** (`GB-RUN-001`, 2026-02-25).
+
+---
+
+## Portal Front-End Test Evidence (Execution Consolidation)
+
+Purpose:
+- Capture executed `frontend/portal` test commands and results for cross-role visibility.
+- Informational evidence for Test Manager/Tester planning; this section does not redefine Gate A scope.
+
+| Run ID | Date | Command | Result | Scope |
+|---|---|---|---|---|
+| `PF-RUN-001` | 2026-02-25 | `cd frontend/portal && npm run typecheck` | Pass | Portal TypeScript compile check |
+| `PF-RUN-002` | 2026-02-25 | `cd frontend/portal && npm run build` | Pass | Portal production build validation |
+| `PF-RUN-003` | 2026-02-25 | `cd frontend/portal && npm run test` | Pass (`3/3`) | Portal unit tests (`route-guards`, `auth service`) |
+| `PF-RUN-004` | 2026-02-25 | `cd frontend/portal && npm run test:e2e` | Pass (`1/1`) | Playwright e2e login-page smoke |
+
+Linked artifacts:
+- `frontend/portal/src/core/rbac/route-guards.test.ts`
+- `frontend/portal/src/core/auth/service.test.ts`
+- `frontend/portal/tests/e2e/login.spec.ts`
+
+Consolidation note:
+- Portal baseline tests are now executable and evidenced.
+- Full Gate C portal readiness still depends on complete execution of `TC-PORTAL-*` and `TC-REM-AUTHADM-*` packs defined in `testing/03-sprint-1-detailed-test-cases.md`.

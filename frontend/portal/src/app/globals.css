@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --text: #0d1b2a;
+  --muted: #4a5568;
+  --border: #d9e2ec;
+  --focus: #005ea5;
+}
+
+body {
+  background: radial-gradient(circle at top left, #f8fbff, var(--bg));
+  color: var(--text);
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+

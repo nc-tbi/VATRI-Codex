@@ -830,6 +830,38 @@ All portal workflows â€” registration, obligation viewing, filing submissio
 }
 ```
 
+### 4.2.1 DK Portal Field Mapping and Signed-Input UX Contract
+
+Portal form labels must map to canonical IDs without ambiguity:
+
+| Portal label (DK UI) | Canonical field id |
+|---|---|
+| UdgÃ¥ende moms | `output_vat_amount_domestic` |
+| Fradragsberettiget indgÃ¥ende moms | `input_vat_deductible_amount_total` |
+| Moms af varekÃ¸b i udlandet | `reverse_charge_output_vat_goods_abroad_amount` |
+| Moms af ydelseskÃ¸b i udlandet (omvendt betalingspligt) | `reverse_charge_output_vat_services_abroad_amount` |
+| Rubrik A - varer | `rubrik_a_goods_eu_purchase_value` |
+| Rubrik A - ydelser | `rubrik_a_services_eu_purchase_value` |
+| Rubrik B - varer (reportable EU-sales channel) | `rubrik_b_goods_eu_sale_value_reportable` |
+| Rubrik B - varer (non-reportable EU-sales channel) | `rubrik_b_goods_eu_sale_value_non_reportable` |
+| Rubrik B - ydelser | `rubrik_b_services_eu_sale_value` |
+| Rubrik C | `rubrik_c_other_vat_exempt_supplies_value` |
+| Olie- og flaskegasafgift | `reimbursement_oil_and_bottled_gas_duty_amount` |
+| Elafgift | `reimbursement_electricity_duty_amount` |
+
+Signed-input UX constraints:
+- Portal must display an explicit hint that negative amounts are entered with minus (`-`) prefix.
+- Parser accepts signed numerics at intake for portal-originated filing fields.
+- Sign admissibility is enforced by filing-type/rule policy in validation/rule-engine layers.
+- Error responses must include stable reason codes and `trace_id`.
+
+Calculation consequence (mandatory in assessment pipeline):
+- `stage_1_gross_output_vat_amount = output_vat_amount_domestic + reverse_charge_output_vat_goods_abroad_amount + reverse_charge_output_vat_services_abroad_amount`
+- `stage_2_total_deductible_input_vat_amount = input_vat_deductible_amount_total`
+- `stage_3_pre_adjustment_net_vat_amount = stage_1_gross_output_vat_amount - stage_2_total_deductible_input_vat_amount`
+- `stage_4_net_vat_amount = stage_3_pre_adjustment_net_vat_amount + adjustments_amount - reimbursement_oil_and_bottled_gas_duty_amount - reimbursement_electricity_duty_amount`
+- `result_type` and `claim_amount` are derived only from `stage_4_net_vat_amount`.
+
 ### 4.3 Duplicate Filing Submission Contract
 - Duplicate `POST /vat-filings` with identical semantic payload for the same `filing_id` returns `200` idempotent replay.
 - Duplicate `POST /vat-filings` with conflicting semantic payload for the same `filing_id` returns `409`.
@@ -1019,10 +1051,10 @@ Policy:
 - `trace_id`
 DK VAT overlay fields:
 - `cvr_number` (DK VAT, 8-digit CVR)
-- `output_vat_amount` (DK VAT, salgsmoms)
-- `input_vat_deductible_amount` (DK VAT, kobsmoms)
-- `vat_on_goods_purchases_abroad_amount` (DK VAT)
-- `vat_on_services_purchases_abroad_amount` (DK VAT)
+- `output_vat_amount_domestic` (DK VAT, salgsmoms)
+- `input_vat_deductible_amount_total` (DK VAT, kobsmoms)
+- `reverse_charge_output_vat_goods_abroad_amount` (DK VAT)
+- `reverse_charge_output_vat_services_abroad_amount` (DK VAT)
 - `adjustments_amount` (DK VAT)
 - `rubrik_a_goods_eu_purchase_value` (DK VAT)
 - `rubrik_a_services_eu_purchase_value` (DK VAT)

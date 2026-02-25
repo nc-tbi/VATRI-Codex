@@ -38,6 +38,7 @@ export function buildApp(config: AppConfig): FastifyInstance {
   app.register(authRoutes, { prefix: "/auth", store });
 
   app.addHook("onReady", async () => {
+    await store.ensureSchema();
     if (process.env.ADMIN_SEED_ENABLED === "true") {
       if (process.env.NODE_ENV === "production") {
         throw new Error("FATAL: ADMIN_SEED_ENABLED must not be true in production");

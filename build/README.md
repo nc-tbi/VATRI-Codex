@@ -289,6 +289,13 @@ Artifacts are written to `build/reports/`:
 CI workflow:
 - `.github/workflows/gate-c-phase3.yml`
 
+## Phase 4 Migration Release Safety
+
+For Phase 4+ database promotion governance and release safety controls:
+- `database/runbooks/phase4-migration-runbook-governance.md`
+- `build/scripts/ci/phase4-release-safety-gates.md`
+- `database/runbooks/templates/release-safety-evidence-template.md`
+
 ---
 
 ## Dev Scripts (PowerShell)

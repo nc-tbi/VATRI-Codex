@@ -44,11 +44,19 @@ export function buildApp(config: AppConfig): FastifyInstance {
   app.addHook("onReady", async () => {
     await store.ensureSchema();
     const env = (process.env.NODE_ENV ?? "development").toLowerCase();
-    const forceSeed = process.env.ADMIN_SEED_ENABLED === "true" || isLocalLikeEnv(env);
-    if (!forceSeed) return;
+    const localLike = isLocalLikeEnv(env);
+    const seedFlag = process.env.ADMIN_SEED_ENABLED?.trim().toLowerCase();
+    const seedEnabled = seedFlag ? seedFlag === "true" : localLike;
+    if (seedEnabled && !localLike) {
+      throw new Error("FATAL: ADMIN_SEED_ENABLED=true is not allowed outside local/dev/test");
+    }
+    if (!seedEnabled) return;
 
     const username = process.env.ADMIN_SEED_USERNAME?.trim() || "admin";
     const password = process.env.ADMIN_SEED_PASSWORD?.trim() || "adminadmin";
+    if (!username || !password) {
+      throw new Error("FATAL: ADMIN_SEED_USERNAME and ADMIN_SEED_PASSWORD are required when admin seeding is enabled");
+    }
     await store.seedAdminUser(username, password);
     app.log.info({ username }, "Seeded admin user");
   });

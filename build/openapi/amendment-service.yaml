@@ -1,13 +1,15 @@
 openapi: "3.1.0"
 info:
   title: Amendment Service API
-  version: "1.2.0"
+  version: "1.2.1"
   description: |
     Tax Core amendment service - versioned VAT filing amendments (ADR-005, ADR-006).
     Bounded context: Amendment. No in-place mutation; each amendment increments assessment_version.
     Publishes to tax-core.amendment.created.
     v1.2.0: StagedAssessment renamed to AssessmentSnapshot (disambiguation from assessment-service);
     required[] added to AlterResponse and UndoRedoResponse.
+    v1.2.1: AmendmentRequest required-fields aligned with runtime (tax_period_end required);
+    AmendmentResponse aligned with runtime fields (idempotent, amendment_id).
 
 servers:
   - url: http://localhost:3005
@@ -238,7 +240,7 @@ components:
 
     AmendmentRequest:
       type: object
-      required: [original_filing_id, taxpayer_id, original_assessment, new_assessment]
+      required: [original_filing_id, taxpayer_id, tax_period_end, original_assessment, new_assessment]
       properties:
         original_filing_id:
           type: string
@@ -295,10 +297,16 @@ components:
 
     AmendmentResponse:
       type: object
-      required: [trace_id, amendment]
+      required: [trace_id, idempotent, amendment_id, amendment]
       properties:
         trace_id:
           type: string
+        idempotent:
+          type: boolean
+          enum: [false]
+        amendment_id:
+          type: string
+          format: uuid
         amendment:
           $ref: "#/components/schemas/AmendmentRecord"
 

@@ -49,33 +49,33 @@ export interface ClaimRecord extends Record<string, unknown> {
 }
 
 export interface RegistrationAddress {
-  line1: string;
+  line1?: string;
   line2?: string;
-  postal_code: string;
-  city: string;
-  country_code: string;
+  postal_code?: string;
+  city?: string;
+  country_code?: string;
 }
 
 export interface RegistrationContact {
-  name: string;
-  email: string;
-  phone: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface RegistrationBusinessProfile {
-  legal_name: string;
+  legal_name?: string;
   trade_name?: string;
-  effective_date: string;
-  status: "active" | "pending" | "inactive";
+  effective_date?: string;
+  status?: "active" | "pending" | "inactive";
 }
 
 export interface RegistrationPayload {
   taxpayer_id: string;
   cvr_number: string;
   annual_turnover_dkk: number;
-  business_profile: RegistrationBusinessProfile;
-  contact: RegistrationContact;
-  address: RegistrationAddress;
+  business_profile?: RegistrationBusinessProfile;
+  contact?: RegistrationContact;
+  address?: RegistrationAddress;
 }
 
 export interface SubmissionResult {
@@ -217,6 +217,18 @@ export async function createRegistration(body: RegistrationPayload, user?: UserC
 
 export async function getRegistration(registrationId: string, user?: UserClaims): Promise<Record<string, unknown>> {
   return apiGet<Record<string, unknown>>("registration", `/registrations/${encodeURIComponent(registrationId)}`, user);
+}
+
+export async function findRegistrationsByTaxpayerId(taxpayerId: string, user?: UserClaims): Promise<Record<string, unknown>[]> {
+  const payload = await apiGet<{ registrations?: Record<string, unknown>[] } | Record<string, unknown>[]>(
+    "registration",
+    `/registrations?taxpayer_id=${encodeURIComponent(taxpayerId)}`,
+    user
+  );
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  return Array.isArray(payload.registrations) ? payload.registrations : [];
 }
 
 export async function getCadencePolicy(turnoverDkk: number, user?: UserClaims): Promise<Record<string, unknown>> {

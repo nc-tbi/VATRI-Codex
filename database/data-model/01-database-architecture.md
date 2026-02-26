@@ -27,19 +27,19 @@ This document is the authoritative database architecture for the Tax Core platfo
 
 ## 3. Decisions and Findings
 
-### F-001 — Assessment upsert violates ADR-003 and ADR-005 (blocking defect)
-`assessment-service/src/db/repository.ts` uses `ON CONFLICT (filing_id) DO UPDATE SET ...`. This overwrites an existing assessment record when re-assessed (e.g. after amendment). This:
+### F-001 — Assessment upsert violated ADR-003 and ADR-005 (resolved)
+Historical defect: `assessment-service/src/db/repository.ts` previously used `ON CONFLICT (filing_id) DO UPDATE SET ...`. This overwrote existing assessment records when re-assessed (e.g. after amendment). This:
 - Destroys prior assessment history (ADR-003 violation).
 - Prevents correct versioned lineage (ADR-005 violation).
 - Makes the `assessment_version` column meaningless as a lineage identifier.
 
-**Required fix:** Change the unique constraint to `UNIQUE (filing_id, assessment_version)`, remove the `DO UPDATE` clause, and add `taxpayer_id` + `tax_period_end` as denormalized columns to eliminate the cross-schema JOIN (see F-002).
+**Implemented fix:** `UNIQUE (filing_id, assessment_version)` with `ON CONFLICT ... DO NOTHING`, plus denormalized `taxpayer_id` and `tax_period_end`.
 **See:** `database/decisions/DBDR-002-assessment-upsert-violates-adr003-adr005.md`
 
-### F-002 — Assessment service performs a cross-schema JOIN (ADR-001 violation)
-`assessment-service/src/db/repository.ts::findByTaxpayerId` joins `assessment.assessments` with `filing.filings` to resolve `taxpayer_id`. This couples the assessment schema to the filing schema at the database layer, violating ADR-001 (no cross-context DB joins).
+### F-002 — Assessment service cross-schema JOIN risk (resolved in current implementation)
+Historical defect: `assessment-service/src/db/repository.ts::findByTaxpayerId` previously joined `assessment.assessments` with `filing.filings` to resolve `taxpayer_id`. This coupled assessment to filing at DB layer, violating ADR-001.
 
-**Required fix:** Denormalize `taxpayer_id` and `tax_period_end` into `assessment.assessments`. The assessment service already receives the full `StagedAssessment` record at write time, so both values are available. See authoritative DDL in `database/schemas/assessment.sql`.
+**Implemented fix:** `taxpayer_id` and `tax_period_end` are denormalized in `assessment.assessments` and query paths use local schema fields.
 
 ### F-003 — Filing table embeds claim_id and claim_status (cross-context coupling)
 `filing.filings` stores `claim_id` and `claim_status` as columns. These belong to the claim bounded context. This creates a soft FK coupling from filing to claim at the database layer.
@@ -73,7 +73,7 @@ The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an 
 
 | ID | Risk / Question | Severity | Mitigation |
 |---|---|---|---|
-| R-01 | Assessment upsert (F-001) actively destroys amendment lineage. Any amendment processed today overwrites the original assessment. | **Critical** | DBDR-002 issued; DDL correction in `database/schemas/assessment.sql`; Code Builder must update repository before amendment scenarios go live. |
+| R-01 | Regression risk: assessment append-only/versioned-lineage contract could be broken by future repository changes. | Medium | Enforce DBDR-002 contract in code review + Gate tests (`test:gate-b`, `test:svc-integration`). |
 | R-02 | Rule catalog persistence implementation lag vs architecture decision (D-02) in runtime code paths | High | Implement `rule_catalog` schema and service repository reads; block release until DB contract and runtime are aligned. |
 | R-03 | Audit append-only trigger controls may drift between runtime and canonical migration paths. | High | Migration compatibility CI gate validates trigger/function parity between `build/db/migrations` and `database/migrations`. |
 | R-04 | `filing.filings` cross-context columns `claim_id`/`claim_status` (F-003) create implicit coupling. Not blocking for current phases but will be a migration cost later. | Medium | Document as tech debt; schedule removal in Phase 4 data model refactor. |
@@ -534,7 +534,7 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 ### Code Builder
 - The authoritative schema for each bounded context is in `database/schemas/*.sql`.
 - Repositories must not issue `UPDATE` or `DELETE` on append-only tables.
-- `assessment-service/src/db/repository.ts` must be updated to use `ON CONFLICT (filing_id, assessment_version) DO NOTHING` and add `taxpayer_id` / `tax_period_end` to the INSERT (DBDR-002).
+- `assessment-service/src/db/repository.ts` is aligned to DBDR-002 (`ON CONFLICT (filing_id, assessment_version) DO NOTHING` and denormalized `taxpayer_id` / `tax_period_end`).
 - No cross-schema JOINs in any repository.
 
 ### DevOps
@@ -557,8 +557,8 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 
 | ID | Item | Owner | ADR |
 |---|---|---|---|
-| F-001 | Assessment upsert defect — must fix before Phase 4 | Code Builder | ADR-003, ADR-005 |
-| F-002 | Cross-schema JOIN in assessment service | Code Builder | ADR-001 |
+| F-001 | Assessment upsert defect (historical) — closed via DBDR-002 implementation | Code Builder | ADR-003, ADR-005 |
+| F-002 | Cross-schema JOIN in assessment service (historical) — closed in current repository implementation | Code Builder | ADR-001 |
 | F-003 | claim_id/claim_status in filing table — tech debt | Code Builder (Phase 4) | ADR-001 |
 | R-02 | Rule catalog runtime alignment to persistent `rule_catalog` schema required | Architect + Code Builder | ADR-002 |
 | R-05 | Migration tooling decision | Database Architect + DevOps | ADR-008 |

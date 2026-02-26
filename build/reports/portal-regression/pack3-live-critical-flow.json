@@ -1,0 +1,114 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\playwright.live.config.ts",
+    "rootDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/frontend/portal/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\live.global-setup.ts",
+    "globalTeardown": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\live.global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/build/reports/playwright-live",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-live",
+        "name": "chromium-live",
+        "testDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/frontend/portal/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 8,
+    "webServer": {
+      "command": "npm run dev -- --hostname 127.0.0.1 --port 3000",
+      "url": "http://127.0.0.1:3000/login",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "live-backend.spec.ts",
+      "file": "live-backend.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "@live-backend critical taxpayer/admin flow against live backend",
+          "ok": true,
+          "tags": [
+            "live-backend"
+          ],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-live",
+              "projectName": "chromium-live",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7843,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-26T08:59:45.557Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "138f0adcb6c3b2ca6ade-2ceeb711090037073356",
+          "file": "live-backend.spec.ts",
+          "line": 92,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-26T08:59:06.509Z",
+    "duration": 53933.936,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

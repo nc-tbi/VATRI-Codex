@@ -1,0 +1,42 @@
+{
+  "gate": "gate-c-remediation",
+  "generated_at": "2026-02-26T09:01:44.204Z",
+  "passed": true,
+  "cases": [
+    {
+      "case_id": "TC-REM-AUTHADM-01",
+      "status": "pass",
+      "detail": "external and internal auth health checks passed"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-02",
+      "status": "pass",
+      "detail": "admin login succeeded before and after auth restart"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-03",
+      "status": "pass",
+      "detail": "refresh token rotate/revoke behavior persisted across restart"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-04",
+      "status": "pass",
+      "detail": "amendment mutate endpoints resolve by amendment_id"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-05",
+      "status": "pass",
+      "detail": "alter lifecycle remained durable across service restart"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-06",
+      "status": "pass",
+      "detail": "non-admin callers are denied on mutate routes"
+    },
+    {
+      "case_id": "TC-REM-AUTHADM-07",
+      "status": "pass",
+      "detail": "auth startup fails fast when signing/encryption keys are missing"
+    }
+  ]
+}

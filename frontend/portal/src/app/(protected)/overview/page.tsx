@@ -91,9 +91,14 @@ export default function OverviewPage() {
                 <p className="mt-1 text-sm text-[var(--muted)]">
                   {t("obligations.period")}: {String(filing.tax_period_end ?? "-")}
                 </p>
-                <Link className="mt-2 inline-block text-sm text-action underline" href={`/submissions/${encodeURIComponent(filing.filing_id)}`}>
-                  {t("overview.view_filing")}
-                </Link>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <Link className="inline-block text-sm text-action underline" href={`/submissions/${encodeURIComponent(filing.filing_id)}`}>
+                    {t("overview.view_filing")}
+                  </Link>
+                  <Link className="inline-block text-sm text-action underline" href={`/amendments/new?original_filing_id=${encodeURIComponent(filing.filing_id)}`}>
+                    {t("overview.create_amendment")}
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

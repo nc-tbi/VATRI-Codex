@@ -54,8 +54,22 @@ Admin endpoints requiring enforcement are called with:
 
 ## Route Surface
 - Shared: `/login`, `/overview`
-- Taxpayer: `/amendments/new`, `/submissions`, `/submissions/[filingId]`, `/assessments-claims`
-- Taxpayer contextual-only routes (not shown in sidebar): `/obligations`, `/filings/new`
+- Taxpayer: `/submissions`, `/submissions/[filingId]`, `/assessments-claims`
+- Taxpayer contextual-only routes (not shown in sidebar): `/obligations`, `/filings/new`, `/amendments/new`
+- Amendment creation is context-only: `/amendments/new` requires `original_filing_id` from a submitted filing path.
+
+## Registration Contract (Current Backend)
+- Mandatory fields for create registration:
+  - `taxpayer_id`
+  - `cvr_number`
+  - `annual_turnover_dkk`
+- Optional frontend sections (sent only when filled):
+  - `business_profile`
+  - `contact`
+  - `address`
+- Find taxpayer supports registration lookup by:
+  - `registration_id` (primary path)
+  - `taxpayer_id` fallback (when backend exposes lookup by taxpayer)
 - Admin: `/admin/taxpayers/new`, `/admin/taxpayers`, `/admin/cadence`, `/admin/filings-alter`, `/admin/amendments-alter`
 
 ## Environment
@@ -140,7 +154,7 @@ Implementation notes:
 - mocked fixtures: `tests/e2e/utils/session-mocks.ts`.
 - specs:
   - `tests/e2e/login.spec.ts`
-  - `tests/e2e/taxpayer-flow.spec.ts`
+  - `tests/e2e/taxpayer-flow.mock.spec.ts`
   - `tests/e2e/live-backend.spec.ts`
 - live lane environment (defaults shown):
 ```env

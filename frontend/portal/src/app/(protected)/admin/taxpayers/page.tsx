@@ -2,7 +2,8 @@
 
 import { FormEvent, useState } from "react";
 import { formatApiError } from "@/core/api/error-display";
-import { getRegistration } from "@/core/api/tax-core";
+import { ApiError } from "@/core/api/http";
+import { findRegistrationsByTaxpayerId, getRegistration } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
@@ -25,10 +26,29 @@ export default function AdminTaxpayersPage() {
     e.preventDefault();
     setResult(null);
     setError(null);
+    const lookupValue = registrationId.trim();
+    if (!lookupValue) return;
     try {
-      const payload = await getRegistration(registrationId, user ?? undefined);
+      const payload = await getRegistration(lookupValue, user ?? undefined);
       setResult(payload);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        try {
+          const matches = await findRegistrationsByTaxpayerId(lookupValue, user ?? undefined);
+          const first = matches[0];
+          const resolvedRegistrationId = typeof first?.registration_id === "string" ? first.registration_id : null;
+          if (!resolvedRegistrationId) {
+            setError(formatApiError(err, t("admin.taxpayers.error")));
+            return;
+          }
+          const payload = await getRegistration(resolvedRegistrationId, user ?? undefined);
+          setResult(payload);
+          return;
+        } catch {
+          setError(formatApiError(err, t("admin.taxpayers.error")));
+          return;
+        }
+      }
       setError(formatApiError(err, t("admin.taxpayers.error")));
     }
   };

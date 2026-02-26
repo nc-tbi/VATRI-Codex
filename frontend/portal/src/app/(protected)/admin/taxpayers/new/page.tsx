@@ -31,31 +31,59 @@ export default function AdminTaxpayersNewPage() {
     e.preventDefault();
     setMessage(null);
     setError(null);
+    const normalizedTaxpayerId = taxpayerId.trim();
+    const normalizedCvr = cvr.trim();
+    const normalizedTurnover = Number(turnover);
+    const trimmedLegalName = legalName.trim();
+    const trimmedTradeName = tradeName.trim();
+    const trimmedEffectiveDate = effectiveDate.trim();
+    const trimmedContactName = contactName.trim();
+    const trimmedContactEmail = contactEmail.trim();
+    const trimmedContactPhone = contactPhone.trim();
+    const trimmedAddressLine1 = addressLine1.trim();
+    const trimmedAddressLine2 = addressLine2.trim();
+    const trimmedPostalCode = postalCode.trim();
+    const trimmedCity = city.trim();
+    const trimmedCountryCode = countryCode.trim();
+
     try {
+      const payload = {
+        taxpayer_id: normalizedTaxpayerId,
+        cvr_number: normalizedCvr,
+        annual_turnover_dkk: normalizedTurnover,
+        ...(trimmedLegalName || trimmedTradeName || trimmedEffectiveDate
+          ? {
+              business_profile: {
+                ...(trimmedLegalName ? { legal_name: trimmedLegalName } : {}),
+                ...(trimmedTradeName ? { trade_name: trimmedTradeName } : {}),
+                ...(trimmedEffectiveDate ? { effective_date: trimmedEffectiveDate } : {}),
+                status,
+              },
+            }
+          : {}),
+        ...(trimmedContactName || trimmedContactEmail || trimmedContactPhone
+          ? {
+              contact: {
+                ...(trimmedContactName ? { name: trimmedContactName } : {}),
+                ...(trimmedContactEmail ? { email: trimmedContactEmail } : {}),
+                ...(trimmedContactPhone ? { phone: trimmedContactPhone } : {}),
+              },
+            }
+          : {}),
+        ...(trimmedAddressLine1 || trimmedAddressLine2 || trimmedPostalCode || trimmedCity || trimmedCountryCode
+          ? {
+              address: {
+                ...(trimmedAddressLine1 ? { line1: trimmedAddressLine1 } : {}),
+                ...(trimmedAddressLine2 ? { line2: trimmedAddressLine2 } : {}),
+                ...(trimmedPostalCode ? { postal_code: trimmedPostalCode } : {}),
+                ...(trimmedCity ? { city: trimmedCity } : {}),
+                ...(trimmedCountryCode ? { country_code: trimmedCountryCode } : {}),
+              },
+            }
+          : {}),
+      };
       const res = await createRegistration(
-        {
-          taxpayer_id: taxpayerId,
-          cvr_number: cvr,
-          annual_turnover_dkk: Number(turnover),
-          business_profile: {
-            legal_name: legalName,
-            trade_name: tradeName || undefined,
-            effective_date: effectiveDate,
-            status,
-          },
-          contact: {
-            name: contactName,
-            email: contactEmail,
-            phone: contactPhone,
-          },
-          address: {
-            line1: addressLine1,
-            line2: addressLine2 || undefined,
-            postal_code: postalCode,
-            city,
-            country_code: countryCode,
-          },
-        },
+        payload,
         user ?? undefined
       );
       setMessage(t("admin.taxpayers_new.success", { id: String(res.registration_id ?? t("shared.unknown")) }));
@@ -77,15 +105,15 @@ export default function AdminTaxpayersNewPage() {
         </label>
         <label>
           <span className="mb-1 block text-sm">CVR</span>
-          <input className="w-full rounded border px-3 py-2" value={cvr} onChange={(e) => setCvr(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={cvr} onChange={(e) => setCvr(e.target.value)} required minLength={8} maxLength={8} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.turnover")}</span>
-          <input className="w-full rounded border px-3 py-2" value={turnover} onChange={(e) => setTurnover(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" type="number" min="0" value={turnover} onChange={(e) => setTurnover(e.target.value)} required />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.legal_name")}</span>
-          <input className="w-full rounded border px-3 py-2" value={legalName} onChange={(e) => setLegalName(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={legalName} onChange={(e) => setLegalName(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.trade_name")}</span>
@@ -93,7 +121,7 @@ export default function AdminTaxpayersNewPage() {
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.effective_date")}</span>
-          <input className="w-full rounded border px-3 py-2" type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.status")}</span>
@@ -105,19 +133,19 @@ export default function AdminTaxpayersNewPage() {
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.contact_name")}</span>
-          <input className="w-full rounded border px-3 py-2" value={contactName} onChange={(e) => setContactName(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={contactName} onChange={(e) => setContactName(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.contact_email")}</span>
-          <input className="w-full rounded border px-3 py-2" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.contact_phone")}</span>
-          <input className="w-full rounded border px-3 py-2" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
         </label>
         <label className="md:col-span-2">
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.address_line_1")}</span>
-          <input className="w-full rounded border px-3 py-2" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
         </label>
         <label className="md:col-span-2">
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.address_line_2")}</span>
@@ -125,15 +153,15 @@ export default function AdminTaxpayersNewPage() {
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.postal_code")}</span>
-          <input className="w-full rounded border px-3 py-2" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.city")}</span>
-          <input className="w-full rounded border px-3 py-2" value={city} onChange={(e) => setCity(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={city} onChange={(e) => setCity(e.target.value)} />
         </label>
         <label>
           <span className="mb-1 block text-sm">{t("admin.taxpayers_new.country_code")}</span>
-          <input className="w-full rounded border px-3 py-2" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required />
+          <input className="w-full rounded border px-3 py-2" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} />
         </label>
         <button className="col-span-full rounded bg-action px-4 py-2 text-white" type="submit">
           {t("admin.taxpayers_new.create")}

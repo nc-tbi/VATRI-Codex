@@ -1,0 +1,164 @@
+{
+  "gate": "gate-c-portal-regression",
+  "generated_at": "2026-02-26T09:00:00.506Z",
+  "include_live": true,
+  "executions": [
+    {
+      "name": "pack1-vitest-auth-rbac",
+      "command": "npm run test -- src/core/auth/service.test.ts src/core/rbac/route-guards.test.ts --reporter=default --reporter=json --outputFile=../../build/reports/portal-regression/pack1-vitest.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack1-playwright-mocked-login",
+      "command": "npm run test:e2e:mocked -- --grep \"@mocked login page loads\" --reporter=json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack2-vitest-http",
+      "command": "npm run test -- src/core/api/http.test.ts --reporter=default --reporter=json --outputFile=../../build/reports/portal-regression/pack2-vitest.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack2-playwright-mocked-all",
+      "command": "npm run test:e2e:mocked -- --grep \"@mocked\" --reporter=json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack3-vitest-status-mapper",
+      "command": "npm run test -- src/features/claims/status-mapper.test.ts --reporter=default --reporter=json --outputFile=../../build/reports/portal-regression/pack3-vitest.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack3-playwright-mocked-targeted",
+      "command": "npm run test:e2e:mocked -- --grep \"@mocked (login page loads|sidebar hides obligations and new vat return links for taxpayer)\" --reporter=json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack2-playwright-live-admin-registration",
+      "command": "npm run test:e2e:live -- --grep \"@live-backend admin can create and retrieve taxpayer registration through persisted backend state\" --reporter=json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "name": "pack3-playwright-live-critical-flow",
+      "command": "npm run test:e2e:live -- --grep \"@live-backend critical taxpayer/admin flow against live backend\" --reporter=json",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "coverage_matrix": [
+    {
+      "backlog_id": "TB-S4B-01",
+      "case_ids": [
+        "TC-PORTAL-AUTH-01",
+        "TC-PORTAL-AUTH-02",
+        "TC-PORTAL-AUTH-03",
+        "TC-PORTAL-AUTH-04",
+        "TC-PORTAL-AUTH-05",
+        "TC-PORTAL-AUTH-06"
+      ],
+      "evidence": [
+        "pack1-vitest-auth-rbac",
+        "pack1-playwright-mocked-login"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-02",
+      "case_ids": [
+        "TC-PORTAL-RBAC-01",
+        "TC-PORTAL-RBAC-02",
+        "TC-PORTAL-RBAC-03",
+        "TC-PORTAL-RBAC-04",
+        "TC-PORTAL-RBAC-05",
+        "TC-PORTAL-RBAC-06"
+      ],
+      "evidence": [
+        "pack1-vitest-auth-rbac",
+        "pack2-playwright-mocked-all"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-03",
+      "case_ids": [
+        "TC-PORTAL-ADM-01",
+        "TC-PORTAL-ADM-02",
+        "TC-PORTAL-ADM-03",
+        "TC-PORTAL-ADM-04",
+        "TC-PORTAL-ADM-05"
+      ],
+      "evidence": [
+        "pack2-playwright-live-admin-registration"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-04",
+      "case_ids": [
+        "TC-PORTAL-TAX-01",
+        "TC-PORTAL-TAX-02",
+        "TC-PORTAL-TAX-03",
+        "TC-PORTAL-TAX-04",
+        "TC-PORTAL-TAX-05",
+        "TC-PORTAL-TAX-06"
+      ],
+      "evidence": [
+        "pack3-playwright-live-critical-flow"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-05",
+      "case_ids": [
+        "TC-PORTAL-ALT-01",
+        "TC-PORTAL-ALT-02",
+        "TC-PORTAL-ALT-03",
+        "TC-PORTAL-ALT-04",
+        "TC-PORTAL-ALT-05",
+        "TC-PORTAL-ALT-06",
+        "TC-PORTAL-ALT-07"
+      ],
+      "evidence": [
+        "pack2-vitest-http",
+        "pack2-playwright-mocked-all"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-06",
+      "case_ids": [
+        "TC-PORTAL-TRN-01",
+        "TC-PORTAL-TRN-02",
+        "TC-PORTAL-TRN-03",
+        "TC-PORTAL-TRN-04"
+      ],
+      "evidence": [
+        "pack3-vitest-status-mapper"
+      ],
+      "status": "pass"
+    },
+    {
+      "backlog_id": "TB-S4B-07",
+      "case_ids": [
+        "TC-PORTAL-OVR-01",
+        "TC-PORTAL-OVR-02",
+        "TC-PORTAL-OVR-03",
+        "TC-PORTAL-OVR-04",
+        "TC-PORTAL-OVR-05"
+      ],
+      "evidence": [
+        "pack1-playwright-mocked-login",
+        "pack3-playwright-mocked-targeted"
+      ],
+      "status": "pass"
+    }
+  ],
+  "passed": true
+}

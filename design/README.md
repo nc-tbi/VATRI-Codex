@@ -30,6 +30,8 @@ This folder is the dedicated working area for solution design outputs derived fr
 
 ## Additional Alignment Notes
 - `design/07-dk-vat-form-ui-design-consequences.md`
+- `design/08-phase-4-contract-freeze.md`
+- `design/09-rbac-security-policy-validation.md`
 
 ## Consolidated Designer Documentation
 - `documentation/designer/README.md`

@@ -7,7 +7,6 @@ import { useOverlayI18n } from "@/overlays/common/i18n";
 
 const links = [
   "/overview",
-  "/amendments/new",
   "/submissions",
   "/assessments-claims",
 ];

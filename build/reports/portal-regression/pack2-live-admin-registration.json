@@ -1,0 +1,114 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\playwright.live.config.ts",
+    "rootDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/frontend/portal/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\live.global-setup.ts",
+    "globalTeardown": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\live.global-teardown.ts",
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/build/reports/playwright-live",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-live",
+        "name": "chromium-live",
+        "testDir": "C:/Users/tbi/OneDrive - Netcompany/Documents/Projects/VATRI/Codex/frontend/portal/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 90000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 8,
+    "webServer": {
+      "command": "npm run dev -- --hostname 127.0.0.1 --port 3000",
+      "url": "http://127.0.0.1:3000/login",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "admin-registration.live.spec.ts",
+      "file": "admin-registration.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "@live-backend admin can create and retrieve taxpayer registration through persisted backend state",
+          "ok": true,
+          "tags": [
+            "live-backend"
+          ],
+          "tests": [
+            {
+              "timeout": 90000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-live",
+              "projectName": "chromium-live",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4027,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-26T08:58:50.200Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ea29d8b4c1185f763c1e-83822dd357ac8b839c14",
+          "file": "admin-registration.live.spec.ts",
+          "line": 8,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-26T08:58:10.856Z",
+    "duration": 51167.268000000004,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

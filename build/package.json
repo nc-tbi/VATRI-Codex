@@ -21,6 +21,7 @@
     "ci:migration-compat": "node scripts/ci/validate-migration-compat.mjs",
     "ci:phase3": "node scripts/ci/run-phase3-gate.mjs --lane all --guardrails",
     "ci:phase3-cycle": "npm run ci:migration-compat && npm run ci:phase3",
+    "test:gate-c-remediation": "node scripts/ci/run-gate-c-remediation.mjs",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev": "docker compose -f docker-compose.services.yml up --build",

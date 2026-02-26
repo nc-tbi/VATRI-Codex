@@ -29,6 +29,12 @@ interface AlterState {
   status: "applied" | "undone";
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 function getHeaderValue(input: string | string[] | undefined): string | null {
   if (!input) return null;
   return Array.isArray(input) ? input[0] ?? null : input;
@@ -137,8 +143,14 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
       const { amendment_id } = req.params;
       const { field_deltas } = req.body ?? {};
       const traceId = req.id;
+      if (!isUuid(amendment_id)) {
+        return reply.status(400).send({ error: "BAD_REQUEST", message: "amendment_id must be UUID", trace_id: traceId });
+      }
       if (!field_deltas || typeof field_deltas !== "object") {
         return reply.status(400).send({ error: "BAD_REQUEST", message: "field_deltas object is required", trace_id: traceId });
+      }
+      if (Array.isArray(field_deltas)) {
+        return reply.status(400).send({ error: "BAD_REQUEST", message: "field_deltas must be a JSON object", trace_id: traceId });
       }
 
       const base = await repo.findByAmendmentId(amendment_id);
@@ -149,21 +161,26 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
       const alter_id = randomUUID();
       const afterState = applyAlters(beforeState, [{ alter_id, field_deltas, status: "applied" }]);
 
-      await repo.saveAlterEvent({
-        event_id: randomUUID(),
-        amendment_id,
-        event_type: "alter",
-        alter_id,
-        field_deltas,
-        actor_subject_id: adminCtx.actor_subject_id,
-        actor_role: adminCtx.actor_role,
-        trace_id: traceId,
-        before_snapshot_hash: snapshotHash(beforeState),
-        after_snapshot_hash: snapshotHash(afterState),
-        created_at: new Date().toISOString(),
-      });
+      try {
+        await repo.saveAlterEvent({
+          event_id: randomUUID(),
+          amendment_id,
+          event_type: "alter",
+          alter_id,
+          field_deltas,
+          actor_subject_id: adminCtx.actor_subject_id,
+          actor_role: adminCtx.actor_role,
+          trace_id: traceId,
+          before_snapshot_hash: snapshotHash(beforeState),
+          after_snapshot_hash: snapshotHash(afterState),
+          created_at: new Date().toISOString(),
+        });
 
-      return reply.send({ trace_id: traceId, amendment_id, alter_id, effective_state: afterState });
+        return reply.send({ trace_id: traceId, amendment_id, alter_id, effective_state: afterState });
+      } catch (err) {
+        req.log.error(err);
+        return reply.status(500).send({ error: "INTERNAL_ERROR", trace_id: traceId });
+      }
     }
   );
 
@@ -173,6 +190,9 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
 
     const { amendment_id } = req.params;
     const traceId = req.id;
+    if (!isUuid(amendment_id)) {
+      return reply.status(400).send({ error: "BAD_REQUEST", message: "amendment_id must be UUID", trace_id: traceId });
+    }
     const base = await repo.findByAmendmentId(amendment_id);
     if (!base) return reply.status(404).send({ error: "NOT_FOUND", amendment_id, trace_id: traceId });
 
@@ -189,26 +209,31 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
     );
     const afterState = applyAlters(base, projectedStates);
 
-    await repo.saveAlterEvent({
-      event_id: randomUUID(),
-      amendment_id,
-      event_type: "undo",
-      alter_id: lastApplied.alter_id,
-      field_deltas: null,
-      actor_subject_id: adminCtx.actor_subject_id,
-      actor_role: adminCtx.actor_role,
-      trace_id: traceId,
-      before_snapshot_hash: snapshotHash(beforeState),
-      after_snapshot_hash: snapshotHash(afterState),
-      created_at: new Date().toISOString(),
-    });
+    try {
+      await repo.saveAlterEvent({
+        event_id: randomUUID(),
+        amendment_id,
+        event_type: "undo",
+        alter_id: lastApplied.alter_id,
+        field_deltas: null,
+        actor_subject_id: adminCtx.actor_subject_id,
+        actor_role: adminCtx.actor_role,
+        trace_id: traceId,
+        before_snapshot_hash: snapshotHash(beforeState),
+        after_snapshot_hash: snapshotHash(afterState),
+        created_at: new Date().toISOString(),
+      });
 
-    return reply.send({
-      trace_id: traceId,
-      amendment_id,
-      undone_alter_id: lastApplied.alter_id,
-      effective_state: afterState,
-    });
+      return reply.send({
+        trace_id: traceId,
+        amendment_id,
+        undone_alter_id: lastApplied.alter_id,
+        effective_state: afterState,
+      });
+    } catch (err) {
+      req.log.error(err);
+      return reply.status(500).send({ error: "INTERNAL_ERROR", trace_id: traceId });
+    }
   });
 
   app.post<{ Params: { amendment_id: string } }>("/:amendment_id/redo", async (req, reply) => {
@@ -217,6 +242,9 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
 
     const { amendment_id } = req.params;
     const traceId = req.id;
+    if (!isUuid(amendment_id)) {
+      return reply.status(400).send({ error: "BAD_REQUEST", message: "amendment_id must be UUID", trace_id: traceId });
+    }
     const base = await repo.findByAmendmentId(amendment_id);
     if (!base) return reply.status(404).send({ error: "NOT_FOUND", amendment_id, trace_id: traceId });
 
@@ -233,25 +261,30 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
     );
     const afterState = applyAlters(base, projectedStates);
 
-    await repo.saveAlterEvent({
-      event_id: randomUUID(),
-      amendment_id,
-      event_type: "redo",
-      alter_id: lastUndone.alter_id,
-      field_deltas: null,
-      actor_subject_id: adminCtx.actor_subject_id,
-      actor_role: adminCtx.actor_role,
-      trace_id: traceId,
-      before_snapshot_hash: snapshotHash(beforeState),
-      after_snapshot_hash: snapshotHash(afterState),
-      created_at: new Date().toISOString(),
-    });
+    try {
+      await repo.saveAlterEvent({
+        event_id: randomUUID(),
+        amendment_id,
+        event_type: "redo",
+        alter_id: lastUndone.alter_id,
+        field_deltas: null,
+        actor_subject_id: adminCtx.actor_subject_id,
+        actor_role: adminCtx.actor_role,
+        trace_id: traceId,
+        before_snapshot_hash: snapshotHash(beforeState),
+        after_snapshot_hash: snapshotHash(afterState),
+        created_at: new Date().toISOString(),
+      });
 
-    return reply.send({
-      trace_id: traceId,
-      amendment_id,
-      redone_alter_id: lastUndone.alter_id,
-      effective_state: afterState,
-    });
+      return reply.send({
+        trace_id: traceId,
+        amendment_id,
+        redone_alter_id: lastUndone.alter_id,
+        effective_state: afterState,
+      });
+    } catch (err) {
+      req.log.error(err);
+      return reply.status(500).send({ error: "INTERNAL_ERROR", trace_id: traceId });
+    }
   });
 }

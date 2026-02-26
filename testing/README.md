@@ -14,6 +14,7 @@ Current artifacts:
 - `testing/03-sprint-1-detailed-test-cases.md`
 - `testing/04-gate-a-ci-spec.md`
 - `testing/05-gate-a-defect-remediation-tracker.md`
+- `testing/06-phase-4-same-cycle-evidence-handoff.md`
 - `documentation/01-dk-vat-calculation-coverage-matrix.md` (implemented vs partial vs missing calculation coverage baseline)
 
 Portal e2e implementation references:
@@ -29,6 +30,16 @@ Portal e2e lanes:
 Portal release contract validation:
 - `cd frontend/portal && npm run validate:openapi:release`
 - validates frontend assumptions against generated OpenAPI artifacts in `build/openapi/*.yaml` from canonical release source.
+
+Latest Phase 4 front-end execution evidence (for Test Manager visibility):
+- `P4-RUN-2026-02-26-01-D` (Pass): `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live`
+- contract validation pass: `cd frontend/portal && npm run validate:openapi:release`
+- evidence artifacts:
+  - `build/reports/portal-regression/portal-regression-summary.json`
+  - `build/reports/portal-regression/portal-regression-coverage-matrix.md`
+  - `build/reports/p4-20260226-091646-D-portal-regression-live.log`
+  - `build/reports/p4-20260226-092125-D-openapi-release-validation.log`
+- detailed drift note and run log: `testing/05-gate-a-defect-remediation-tracker.md` (Phase 4 section)
 
 Primary role contract:
 - `TEST_MANAGER.md`

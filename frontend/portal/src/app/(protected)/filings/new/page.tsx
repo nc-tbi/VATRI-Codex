@@ -84,6 +84,7 @@ export default function NewFilingPage() {
       const energyElectricityAmount = parseAmount(energyElectricity);
       const payload = {
         filing_id: uuid(),
+        trace_id: uuid(),
         taxpayer_id: taxpayerId,
         cvr_number: "12345678",
         tax_period_start: "2026-01-01",

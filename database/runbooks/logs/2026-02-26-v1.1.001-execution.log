@@ -1,0 +1,25 @@
+Command:
+Get-Content database/migrations/V1.1.001__fix_assessment_append_only_lineage.sql | docker exec -i taxcore-postgres psql -U taxcore -d taxcore_local -v ON_ERROR_STOP=1
+
+Output:
+ALTER TABLE
+UPDATE 0
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DO
+CREATE INDEX
+CREATE INDEX
+exit_code=0
+
+Notices:
+NOTICE:  column "assessment_version" of relation "assessments" already exists, skipping
+NOTICE:  column "assessment_type" of relation "assessments" already exists, skipping
+NOTICE:  column "taxpayer_id" of relation "assessments" already exists, skipping
+NOTICE:  column "tax_period_end" of relation "assessments" already exists, skipping
+NOTICE:  column "created_at" of relation "assessments" already exists, skipping
+NOTICE:  constraint "assessments_filing_id_key" of relation "assessments" does not exist, skipping
+NOTICE:  relation "idx_assessment_taxpayer_period" already exists, skipping
+NOTICE:  relation "idx_assessment_assessed_at" already exists, skipping

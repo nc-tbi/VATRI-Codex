@@ -131,7 +131,15 @@ Remediation command mapping:
   - restart persistence checks (`TC-REM-AUTHADM-02`, `TC-REM-AUTHADM-03`, `TC-REM-AUTHADM-05`)
   - amendment identity/RBAC/startup-hardening checks (`TC-REM-AUTHADM-04`, `TC-REM-AUTHADM-06`, `TC-REM-AUTHADM-07`)
 - CI implementation requirement:
-  - add `test:gate-c-remediation` (or equivalent workflow command set) and publish a remediation evidence artifact keyed by `TC-REM-AUTHADM-*`.
+  - `build/package.json`: `test:gate-c-remediation`
+  - workflow: `.github/workflows/gate-c-remediation.yml`
+  - artifact: `gate-c-remediation-artifacts` (`build/reports/gate-c-remediation-summary.json`) keyed by `TC-REM-AUTHADM-*`.
+
+Portal regression aggregation/reporting implementation (`TB-S4B-08`):
+- `frontend/portal/package.json`: `test:gate-c-portal-regression`
+- command supports live lane: `npm run test:gate-c-portal-regression -- --include-live`
+- workflow: `.github/workflows/gate-c-portal-regression.yml`
+- artifacts: `build/reports/portal-regression/*` including `portal-regression-summary.json` and coverage matrix.
 
 ## Phase 3 Gate Addendum - Claims Integration Reliability (2026-02-25)
 Scope:
@@ -194,5 +202,35 @@ Gate decision rule (authoritative for Phase 3 pre-build):
 - No `Ready` decision is permitted unless `P3-RUN-<n>-A..D` are all `Pass` in the same validation cycle.
 - `P3-RUN-*` evidence rows are append-only; do not overwrite historical cycles.
 - Any single fail or missing evidence in required commands => `Ready = No (Blocked)`.
+
+## Phase 4 Gate Addendum - Same-Cycle Evidence Governance (2026-02-25)
+Scope:
+- Define an evidence-driven Gate C decision rule for Phase 4 build readiness.
+
+Mandatory commands (`Gate C-Phase4`):
+1. `cd build && npm run ci:migration-compat`
+2. `cd build && npm run test:gate-b`
+3. `cd build && npm run test:svc-integration`
+4. `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live`
+5. `cd build && npm run test:gate-c-remediation`
+
+Coverage intent:
+- Commands 1-3 protect migration/runtime parity and core-service regression baseline.
+- Command 4 is the full portal acceptance + negative-path suite.
+- Command 5 is the auth/admin remediation acceptance + negative-path suite.
+
+Same-cycle evidence requirement (mandatory):
+| Command | Evidence ID | Required Status in Same Cycle |
+|---|---|---|
+| `cd build && npm run ci:migration-compat` | `P4-RUN-<n>-A` | Pass |
+| `cd build && npm run test:gate-b` | `P4-RUN-<n>-B` | Pass |
+| `cd build && npm run test:svc-integration` | `P4-RUN-<n>-C` | Pass |
+| `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live` | `P4-RUN-<n>-D` | Pass |
+| `cd build && npm run test:gate-c-remediation` | `P4-RUN-<n>-E` | Pass |
+
+Decision rule (authoritative for Phase 4 pre-build):
+- `Ready = Yes` only when `P4-RUN-<n>-A..E` are all `Pass` in the same validation cycle.
+- Any single fail or missing command evidence in that cycle => `Ready = No (Blocked)`.
+- `P4-RUN-*` evidence is append-only; historical rows must not be overwritten.
 
 

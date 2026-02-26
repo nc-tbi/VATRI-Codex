@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "test:e2e": "npm run test:e2e:mocked && npm run test:e2e:live",
     "test:e2e:mocked": "playwright test --config playwright.config.ts",
-    "test:e2e:live": "playwright test --config playwright.live.config.ts"
+    "test:e2e:live": "playwright test --config playwright.live.config.ts",
+    "test:gate-c-portal-regression": "node scripts/run-gate-c-portal-regression.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

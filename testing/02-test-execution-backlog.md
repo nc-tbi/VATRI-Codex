@@ -153,8 +153,8 @@ Backlog:
 |---|---|---|---|---|---|---|---|
 | TB-S4-01 | Amendment lineage and delta classification suite | `S04-S05`, `S21` | Integration/E2E | Code Builder | TB-S3-03 | Version chain correctness proven; `S21` manual/legal route asserted | Planned |
 | TB-S4-02 | Validation -> rule -> assessment -> audit field lineage tests | `S06-S15` | Integration/Traceability | Code Builder | TB-S2-01 | Field lineage assertions pass for reverse-charge and deduction-right fields | Planned |
-| TB-S4-03 | RBAC and error-envelope security tests | `S01-S03`, `S20` | Security/Contract | Security + Code Builder | TB-S2-04 | Unauthorized actions blocked; error envelopes include required support trace context | Planned |
-| TB-S4-04 | API parity tests for portal-BFF workflows | `S01-S05`, `S16-S19` | E2E/Contract | Designer + Code Builder | TB-S2-04 | Portal workflows verifiably achievable via public APIs | Planned |
+| TB-S4-03 | RBAC and error-envelope security tests | `S01-S03`, `S20` | Security/Contract | Security + Code Builder | TB-S2-04 | Unauthorized actions blocked; error envelopes include required support trace context; policy validated in `design/09-rbac-security-policy-validation.md` | Contract Validated |
+| TB-S4-04 | API parity tests for portal-BFF workflows | `S01-S05`, `S16-S19` | E2E/Contract | Designer + Code Builder | TB-S2-04 | Portal workflows verifiably achievable via public APIs; contract frozen in `design/08-phase-4-contract-freeze.md` | Contract Frozen |
 | TB-S4-05 | Gate C rollout (core E2E scenario regression required for merge/release branch) | all in-sprint | Process | Test Manager + Platform/DevOps | TB-S4-01..04 | Gate C enforced with published runbook and failure policy | Planned |
 
 ### Sprint 4B - Portal Front-End Blocker Test Readiness (DoR Support)
@@ -165,13 +165,13 @@ Backlog:
 | ID | Work Item | Scenario IDs | Layer | Owner | Gate | Dependencies | DoD | Status |
 |---|---|---|---|---|---|---|---|---|
 | TB-S4B-01 | Portal auth and session contract coverage (`POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `POST /auth/refresh`) | `S01-S03` | Contract/Integration | Test Manager + Tester + Code Builder | `Gate C` | auth-service runtime + OpenAPI delivered (Sprint 4B) | Coverage IDs `TC-PORTAL-AUTH-01..06` mapped and executable in CI lane | **In Progress** |
-| TB-S4B-02 | Role guard and forbidden action negative-path coverage (admin vs taxpayer route/API misuse) | `S20` | Security/Integration | Test Manager + Tester + Security | `Gate C` | TB-S4B-01 | Forbidden role actions produce deterministic `403`/policy-compliant envelope; no side effects | **In Progress** |
+| TB-S4B-02 | Role guard and forbidden action negative-path coverage (admin vs taxpayer route/API misuse) | `S20` | Security/Integration | Test Manager + Tester + Security | `Gate C` | TB-S4B-01 | Forbidden role actions produce deterministic `403`/policy-compliant envelope; no side effects; policy validated in `design/09-rbac-security-policy-validation.md` | Contract Validated |
 | TB-S4B-03 | Admin taxpayer registration and cadence edit test pack | `S16-S19`, `S22-S23` | Integration/E2E | Test Manager + Tester + Code Builder | `Gate C` | registration/obligation APIs + RBAC guards | Coverage IDs `TC-PORTAL-ADM-01..05` mapped with pass/fail evidence | **In Progress** |
 | TB-S4B-04 | Taxpayer filing + amendment submission + list view lifecycle coverage | `S01-S05`, `S21` | E2E/Integration | Test Manager + Tester + Code Builder | `Gate C` | list endpoints (filing/amendment/assessment/obligation/claim) delivered (Sprint 4B) | Coverage IDs `TC-PORTAL-TAX-01..06` mapped; superseded/draft/submitted states asserted | **In Progress** |
-| TB-S4B-05 | Admin alter/undo/redo lifecycle coverage with idempotency/conflict semantics | `S04-S05`, `S19`, `S21` | Integration/Contract | Test Manager + Tester + Code Builder + Designer | `Gate C` | alter/undo/redo endpoints + OpenAPI parity delivered (Sprint 4B) | Coverage IDs `TC-PORTAL-ALT-01..07` mapped; NOTHING_TO_UNDO/REDO conflict assertions validated | **In Progress** |
-| TB-S4B-06 | Assessments/claims transparency payload and readability coverage | `S01-S03`, `S30-S34` | Contract/E2E | Test Manager + Tester + Designer | `Gate C` | transparency envelope delivered in assessment-service (Sprint 4B) | Coverage IDs `TC-PORTAL-TRN-01..04` mapped; calculation_stages + explanation fields validated | **In Progress** |
-| TB-S4B-07 | Country overlay rendering contract verification (DK baseline + extension rules) | `S01-S03` | UI Contract/Integration | Test Manager + Tester + Designer | `Gate C` | overlay contract approved | Coverage IDs `TC-PORTAL-OVR-01..05` mapped; DK-first path green; extension rules validated | Planned |
-| TB-S4B-08 | Portal-ready regression lane aggregation and reporting | all portal-blocker features | Process | Test Manager + Platform/DevOps + Tester | `Gate C` | TB-S4B-01..07 | Portal pack command and report artifact published with coverage ID matrix | Planned |
+| TB-S4B-05 | Admin alter/undo/redo lifecycle coverage with idempotency/conflict semantics | `S04-S05`, `S19`, `S21` | Integration/Contract | Test Manager + Tester + Code Builder + Designer | `Gate C` | alter/undo/redo endpoints + OpenAPI parity delivered (Sprint 4B); contract frozen in `design/08-phase-4-contract-freeze.md` | Coverage IDs `TC-PORTAL-ALT-01..07` mapped; NOTHING_TO_UNDO/REDO conflict assertions validated | Contract Frozen |
+| TB-S4B-06 | Assessments/claims transparency payload and readability coverage | `S01-S03`, `S30-S34` | Contract/E2E | Test Manager + Tester + Designer | `Gate C` | transparency envelope delivered in assessment-service (Sprint 4B); contract frozen in `design/08-phase-4-contract-freeze.md` | Coverage IDs `TC-PORTAL-TRN-01..04` mapped; calculation_stages + explanation fields validated | Contract Frozen |
+| TB-S4B-07 | Country overlay rendering contract verification (DK baseline + extension rules) | `S01-S03` | UI Contract/Integration | Test Manager + Tester + Designer | `Gate C` | overlay contract approved; contract frozen in `design/08-phase-4-contract-freeze.md` + `design/portal/03-country-overlay-ui-contract.md` | Coverage IDs `TC-PORTAL-OVR-01..05` mapped; DK-first path green; extension rules validated | Contract Frozen |
+| TB-S4B-08 | Portal-ready regression lane aggregation and reporting | all portal-blocker features | Process | Test Manager + Platform/DevOps + Tester | `Gate C` | TB-S4B-01..07 | Portal pack command and report artifact published with coverage ID matrix | **Done** |
 
 ### Sprint 4C - Auth/Admin Remediation Regression Pack
 Objective:
@@ -185,9 +185,9 @@ Backlog:
 | TB-S4C-03 | Refresh token rotation/revocation persistence across restart | `S01` | Integration/Auth | Test Manager + Tester + Code Builder | `Gate C` | TB-S4C-02 | Token lifecycle persists and revoked tokens stay revoked after restart | Planned |
 | TB-S4C-04 | Amendment alter/undo/redo identity correctness by amendment_id | `S04-S05` | Integration/Contract | Test Manager + Tester + Code Builder | `Gate C` | amendment repo/route remediation | Mutations target canonical amendment resource and reject invalid IDs deterministically | Planned |
 | TB-S4C-05 | Durable append-only alter history verification (filing + amendment) | `S04-S05`, `S20` | Integration/Audit | Test Manager + Tester + Code Builder | `Gate C` | TB-S4C-04 | Restart-safe history with event-level trace/actor/hash metadata proven | Planned |
-| TB-S4C-06 | Role-based denial for non-admin mutation calls (`403`) | `S20` | Security/Integration | Test Manager + Tester + Security | `Gate C` | RBAC runtime guards | Non-admin calls are denied with no mutation side effects | Planned |
-| TB-S4C-07 | Signing key missing/invalid startup hardening checks | `S20` | Security/Runtime | Test Manager + Tester + DevOps | `Gate C` | auth startup guard remediation | Service fails startup when signing key missing; non-local guard behavior verified | Planned |
-| TB-S4C-08 | Gate C remediation command pack and CI wiring | all remediation findings | Process | Test Manager + Platform/DevOps + Tester | `Gate C` | TB-S4C-01..07 | `test:gate-c-remediation` command (or equivalent workflow command set) executes all `TC-REM-AUTHADM-*` cases with evidence artifact publication | Planned |
+| TB-S4C-06 | Role-based denial for non-admin mutation calls (`403`) | `S20` | Security/Integration | Test Manager + Tester + Security | `Gate C` | RBAC runtime guards | Non-admin calls are denied with no mutation side effects; validated in `design/09-rbac-security-policy-validation.md` | Contract Validated |
+| TB-S4C-07 | Signing key missing/invalid startup hardening checks | `S20` | Security/Runtime | Test Manager + Tester + DevOps | `Gate C` | auth startup guard remediation | Service fails startup when signing/encryption keys are missing; non-local guard behavior verified | Contract Validated |
+| TB-S4C-08 | Gate C remediation command pack and CI wiring | all remediation findings | Process | Test Manager + Platform/DevOps + Tester | `Gate C` | TB-S4C-01..07 | `test:gate-c-remediation` command (or equivalent workflow command set) executes all `TC-REM-AUTHADM-*` cases with evidence artifact publication | Done |
 
 ### Sprint 5 - ViDA Step 1/2 Coverage (Phase 6 partial, Gate D prework)
 Objective:
@@ -366,8 +366,8 @@ Sprint 4B implementation delivered (2026-02-25):
 - Verification baseline: `cd build && npm install` + `npm run typecheck --workspaces --if-present` (pass, all 9 workspaces).
 
 Gate C pre-conditions for portal:
-- TB-S4B-01..06: In Progress (implementation done; Tester execution pending local stack)
-- TB-S4B-07..08: Planned (overlay rendering contract — frontend scaffolding dependency)
+- TB-S4B-01..07: In Progress (implementation done; execution evidence captured in consecutive pack rerun on 2026-02-25; full case-pack closure still pending governance sign-off)
+- TB-S4B-08: Done (`frontend/portal` command pack + CI workflow + coverage matrix artifact publication implemented)
 - DoR status: READY — Architect Areas 2, 6, 7 all resolved (see architecture/designer/04-portal-contract-approval-notes.md)
 
 ## 10. Portal Front-End Test Consolidation (2026-02-25)
@@ -399,8 +399,64 @@ Partial mapping to existing coverage IDs:
 | `login.spec.ts` | `TC-PORTAL-OVR-01` (partial), `TC-PORTAL-AUTH-01` (UI readiness partial) | Verifies login page availability/inputs via browser automation. |
 
 Backlog interpretation:
-- `TB-S4B-08` is now **In Progress** from a command/readiness perspective due to executable portal test commands and baseline evidence.
+- `TB-S4B-08` is now **Done** with command execution + CI aggregation/report publication:
+  - `frontend/portal`: `npm run test:gate-c-portal-regression` (supports `--include-live`)
+  - workflow: `.github/workflows/gate-c-portal-regression.yml`
+  - artifacts: `build/reports/portal-regression/*` including coverage matrix.
+
+- `TB-S4C-08` is now **Done** with remediation command pack + CI wiring:
+  - `build`: `npm run test:gate-c-remediation`
+  - workflow: `.github/workflows/gate-c-remediation.yml`
+  - artifacts: `build/reports/gate-c-remediation-summary.json`.
 - Formal Gate C closure still requires full case-pack execution (`TC-PORTAL-*` and `TC-REM-AUTHADM-*`) in the governed pipeline.
 
 
+
+
+## 11. Phase 4 Prep - Sequential Portal Pack Evidence (2026-02-25)
+
+Objective:
+- Execute the three requested pre-build packs consecutively and capture execution evidence.
+
+Execution summary (same session, sequential packs):
+| Pack | Backlog Scope | Command(s) | Timestamp | Result | Evidence Snippet |
+|---|---|---|---|---|---|
+| Pack 1 | `TB-S4B-01..02` (auth/session + role guard) | `cd frontend/portal && npm run test -- src/core/auth/service.test.ts src/core/rbac/route-guards.test.ts` | 2026-02-25T22:26:13+01:00 | Pass | `Test Files 2 passed`, `Tests 3 passed` |
+| Pack 1 | `TB-S4B-01..02` (supporting UI auth smoke) | `cd frontend/portal && npx playwright test --config playwright.config.ts --grep '@mocked login page loads'` | 2026-02-25T22:29:12+01:00 | Pass | `1 passed` |
+| Pack 2 | `TB-S4B-03..05` (admin/taxpayer lifecycle) | `cd frontend/portal && npm run test -- src/core/api/http.test.ts` | 2026-02-25T22:29:57+01:00 | Pass | `Test Files 1 passed`, `Tests 2 passed` |
+| Pack 2 | `TB-S4B-03..05` (mocked lifecycle e2e) | `cd frontend/portal && npx playwright test --config playwright.config.ts --grep '@mocked .*'` | 2026-02-25T22:30:02+01:00 | Pass | `5 passed` |
+| Pack 2 | `TB-S4B-03..05` (live admin registration flow) | `cd frontend/portal && npx playwright test --config playwright.live.config.ts --grep '@live-backend admin can create and retrieve taxpayer registration'` | 2026-02-25T22:30:17+01:00 | Pass | `1 passed` |
+| Pack 3 | `TB-S4B-06..07` (transparency + overlay) | `cd frontend/portal && npm run test -- src/features/claims/status-mapper.test.ts` | 2026-02-25T22:31:24+01:00 | Pass | `Test Files 1 passed`, `Tests 2 passed` |
+| Pack 3 | `TB-S4B-06..07` (overlay/auth mocked checks) | `cd frontend/portal && npx playwright test --config playwright.config.ts --grep '@mocked (login page loads|sidebar hides obligations and new vat return links for taxpayer)'` | 2026-02-25T22:31:30+01:00 | Pass | `2 passed` |
+| Pack 3 | `TB-S4B-06..07` (live transparency flow) | `cd frontend/portal && npx playwright test --config playwright.live.config.ts --grep '@live-backend critical taxpayer/admin flow against live backend'` | 2026-02-25T22:31:40+01:00 | Pass | `1 passed` |
+
+Interpretation:
+- Requested pack-level rerun for Phase 4 prep is green.
+- This evidence strengthens readiness for `TB-S4B-01..07`; formal Gate C closure remains governed by full `TC-PORTAL-*` and `TC-REM-AUTHADM-*` completion policy.
+
+## 12. Phase 4 Gate C Readiness Governance (Same-Cycle)
+
+Authoritative mandatory command set:
+1. `cd build && npm run ci:migration-compat`
+2. `cd build && npm run test:gate-b`
+3. `cd build && npm run test:svc-integration`
+4. `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live`
+5. `cd build && npm run test:gate-c-remediation`
+
+Evidence policy:
+- Record Phase 4 runs as append-only `P4-RUN-*` rows.
+- A single validation cycle must contain all five commands and all must pass.
+- Partial evidence (for example, portal-only pack runs) is supporting but not sufficient for `Ready`.
+
+Current Phase 4 verdict (2026-02-25):
+- **Ready = No (Blocked)**
+- Reason: no recorded same-cycle `P4-RUN-*` evidence yet for the full mandatory command set (`A..E`).
+- Existing `PF-RUN-*` rows remain valid supporting evidence only.
+
+Update (2026-02-26):
+- `P4-RUN-2026-02-26-01-D` recorded as **Pass** for command 4:
+  - `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live`
+- Front-end contract validation also verified in same working cycle:
+  - `cd frontend/portal && npm run validate:openapi:release` -> Pass (`35 checks`)
+- Gate-C Phase 4 global verdict remains dependent on same-cycle completion of all mandatory commands `A..E`.
 

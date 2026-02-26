@@ -73,6 +73,22 @@ async function postJson<T>(
   return (await response.json()) as T;
 }
 
+async function loginWithRetry(page: Page, username: string, password: string, attempts = 3): Promise<void> {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    await page.goto("/login");
+    await page.getByLabel(/Brugernavn|Username/i).fill(username);
+    await page.getByLabel(/Adgangskode|Password/i).fill(password);
+    await page.getByRole("button", { name: /Log ind|Sign in/i }).click();
+    try {
+      await expect(page).toHaveURL(/\/overview/, { timeout: 30000 });
+      return;
+    } catch (error) {
+      if (attempt === attempts) throw error;
+      await page.waitForTimeout(1500);
+    }
+  }
+}
+
 test("@live-backend critical taxpayer/admin flow against live backend", async ({ page, request }) => {
   const username = process.env.E2E_LIVE_USERNAME ?? "admin";
   const password = process.env.E2E_LIVE_PASSWORD ?? "adminadmin";
@@ -85,11 +101,7 @@ test("@live-backend critical taxpayer/admin flow against live backend", async ({
     }
   });
 
-  await page.goto("/login");
-  await page.getByLabel(/Brugernavn|Username/i).fill(username);
-  await page.getByLabel(/Adgangskode|Password/i).fill(password);
-  await page.getByRole("button", { name: /Log ind|Sign in/i }).click();
-  await expect(page).toHaveURL(/\/overview/, { timeout: 30000 });
+  await loginWithRetry(page, username, password);
 
   const session = await readSession(page);
   if (session.user.role === "admin") {
@@ -147,12 +159,12 @@ test("@live-backend critical taxpayer/admin flow against live backend", async ({
   await expect(page).toHaveURL(new RegExp(`/filings/new\\?obligation_id=${obligationId}`));
 
   await page.getByRole("button", { name: /Indsend momsangivelse|Submit VAT return/i }).click();
-  const filingSuccess = page.locator("p").filter({ hasText: /trace/i }).first();
+  const filingSuccess = page.locator("p").filter({ hasText: /trace|sporings/i }).first();
   await expect(filingSuccess).toBeVisible({ timeout: 45000 });
   const filingSuccessText = (await filingSuccess.innerText()).trim();
   const filingId = filingSuccessText.match(UUID_RE)?.[0];
   expect(filingId, `Could not parse filing resource_id from success message: ${filingSuccessText}`).toBeDefined();
-  expect(filingSuccessText).toMatch(/trace/i);
+  expect(filingSuccessText).toMatch(/trace|sporings/i);
 
   try {
     await expect
@@ -283,7 +295,7 @@ test("@live-backend critical taxpayer/admin flow against live backend", async ({
   await page.goto(`/amendments/new?original_filing_id=${encodeURIComponent(String(filingId))}`);
   await page.getByLabel(/Nyt nettoresultat|New net result/i).fill("25");
   await page.getByRole("button", { name: /Indsend ændringsangivelse|Submit amendment return/i }).click();
-  const amendmentSuccess = page.locator("p").filter({ hasText: /trace/i }).first();
+  const amendmentSuccess = page.locator("p").filter({ hasText: /trace|sporings/i }).first();
   await expect(amendmentSuccess).toBeVisible({ timeout: 45000 });
   const amendmentSuccessText = (await amendmentSuccess.innerText()).trim();
   const amendmentId = amendmentSuccessText.match(UUID_RE)?.[0];

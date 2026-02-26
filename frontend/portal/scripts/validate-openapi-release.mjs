@@ -140,8 +140,8 @@ for (const code of ["400", "422", "500"]) {
   );
 }
 checks.push(
-  checkRegex(files.amendment, /required:\s*\[trace_id,\s*amendment\]/)
-    ? pass("amendment-submit-envelope", "Amendment response includes trace_id + amendment")
+  checkRegex(files.amendment, /required:\s*\[trace_id,\s*idempotent,\s*amendment_id,\s*amendment\]/)
+    ? pass("amendment-submit-envelope", "Amendment response includes trace_id + idempotent + amendment_id + amendment")
     : fail("amendment-submit-envelope", "Amendment response envelope mismatch"),
 );
 

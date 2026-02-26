@@ -6,7 +6,8 @@
 - Purpose: deterministic UI behavior checks with API route mocks.
 - Specs:
   - `login.spec.ts`
-  - `taxpayer-flow.spec.ts`
+  - `taxpayer-flow.mock.spec.ts`
+  - includes amendment context-only access checks (`/amendments/new` requires `original_filing_id`)
 - Mock helper:
   - `utils/session-mocks.ts`
 

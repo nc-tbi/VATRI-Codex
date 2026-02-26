@@ -17,6 +17,14 @@ function baseUrl(): string {
 }
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
+  return loginWithOptions(username, password, { persist: true });
+}
+
+export async function loginWithOptions(
+  username: string,
+  password: string,
+  options: { persist?: boolean } = {}
+): Promise<LoginResponse> {
   const res = await fetch(`${baseUrl()}/auth/login`, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -26,8 +34,37 @@ export async function login(username: string, password: string): Promise<LoginRe
     throw new Error("Login failed");
   }
   const payload = (await res.json()) as LoginResponse;
-  persistSession(payload);
+  const shouldPersist = options.persist ?? true;
+  if (shouldPersist && !payload.password_change_required) {
+    persistSession(payload);
+  }
   return payload;
+}
+
+export async function completeFirstLoginPasswordCreation(args: {
+  accessToken: string;
+  currentPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  const { accessToken, currentPassword, newPassword } = args;
+  const body = JSON.stringify({ current_password: currentPassword, new_password: newPassword });
+  const headers = {
+    "content-type": "application/json",
+    authorization: `Bearer ${accessToken}`,
+  };
+
+  const candidatePaths = ["/auth/change-password", "/auth/password"];
+  let lastError: Error | null = null;
+  for (const path of candidatePaths) {
+    try {
+      const res = await fetch(`${baseUrl()}${path}`, { method: "POST", headers, body });
+      if (res.ok) return;
+      lastError = new Error(`Password setup failed (${res.status})`);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error("Password setup failed");
+    }
+  }
+  throw lastError ?? new Error("Password setup failed");
 }
 
 export async function me(accessToken: string): Promise<UserClaims> {

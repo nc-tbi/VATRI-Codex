@@ -54,10 +54,16 @@ database/
 - `V1.1.001` / `U1.1.001` assessment append-only lineage alignment
 - `V1.1.002` / `U1.1.002` claim Phase 3 alignment (`next_retry_at`, `superseded`)
 - `V1.2.001` / `U1.2.001` auth/session persistence (`auth.users`, `auth.refresh_tokens`)
-- CI migration-compat gate compares `database/migrations/V*` against runtime mirror `build/db/migrations/*.sql`
+- `V1.2.002` / `U1.2.002` assessment type-constraint normalization (single deterministic constraint)
+- CI migration-compat gate compares `database/migrations/V*` against runtime mirror `build/db/migrations/*.sql` (currently passing)
 
 ### Runbooks and Evidence
 - [`database/runbooks/2026-02-25-assessment-v1.1.001-precheck-backfill-evidence.md`](./runbooks/2026-02-25-assessment-v1.1.001-precheck-backfill-evidence.md)
+- [`database/runbooks/2026-02-26-phase4-release-safety-evidence-pack.md`](./runbooks/2026-02-26-phase4-release-safety-evidence-pack.md)
+- [`database/runbooks/phase4-migration-runbook-governance.md`](./runbooks/phase4-migration-runbook-governance.md)
+- [`database/runbooks/templates/release-safety-evidence-template.md`](./runbooks/templates/release-safety-evidence-template.md)
+- [`database/runbooks/templates/release-safety-evidence-production-template.md`](./runbooks/templates/release-safety-evidence-production-template.md)
+- [`build/scripts/ci/phase4-release-safety-gates.md`](../build/scripts/ci/phase4-release-safety-gates.md)
 
 ## Governing Sources
 
@@ -73,8 +79,9 @@ database/
 
 ## Priority Defect Callout
 
-Critical defect remains open in implementation code until Code Builder applies DBDR-002:
-- `build/services/assessment-service/src/db/repository.ts` currently uses `ON CONFLICT (filing_id) DO UPDATE` and cross-schema join with `filing.filings`.
+DBDR-002 implementation status:
+- Closed (implemented in runtime code).
+- `build/services/assessment-service/src/db/repository.ts` now uses `ON CONFLICT (filing_id, assessment_version) DO NOTHING` and taxpayer/period denormalized lookup (no cross-schema JOIN for taxpayer queries).
 
 ## Schema Promotion Checklist
 

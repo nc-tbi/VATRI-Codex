@@ -19,5 +19,6 @@ export interface LoginResponse {
   refresh_token: string;
   expires_in: number;
   user: UserClaims;
+  password_change_required?: boolean;
 }
 

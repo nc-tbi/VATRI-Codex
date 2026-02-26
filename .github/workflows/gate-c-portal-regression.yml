@@ -1,0 +1,56 @@
+name: Gate C - Portal Regression
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  portal-regression:
+    name: portal-regression-aggregation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: |
+            build/package-lock.json
+            frontend/portal/package-lock.json
+
+      - name: Install build dependencies
+        working-directory: build
+        run: npm ci
+
+      - name: Install portal dependencies
+        working-directory: frontend/portal
+        run: npm ci
+
+      - name: Install Playwright browser
+        working-directory: frontend/portal
+        run: npx playwright install chromium
+
+      - name: Start backend stack for live portal lane
+        working-directory: build
+        run: docker compose --env-file .env.portal.local -f docker-compose.services.yml up -d --build
+
+      - name: Run portal regression command pack with live lane
+        working-directory: frontend/portal
+        run: npm run test:gate-c-portal-regression -- --include-live
+
+      - name: Publish portal regression artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-c-portal-regression-artifacts
+          path: build/reports/portal-regression
+
+      - name: Stop backend stack
+        if: always()
+        working-directory: build
+        run: docker compose --env-file .env.portal.local -f docker-compose.services.yml down -v

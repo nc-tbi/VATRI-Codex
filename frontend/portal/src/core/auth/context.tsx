@@ -1,13 +1,24 @@
 ﻿"use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { clearSession, getAccessToken, getRefreshToken, getStoredUser, login as doLogin, logout as doLogout, me } from "./service";
-import type { UserClaims } from "./types";
+import {
+  clearSession,
+  completeFirstLoginPasswordCreation,
+  getAccessToken,
+  getRefreshToken,
+  getStoredUser,
+  loginWithOptions,
+  logout as doLogout,
+  me,
+  persistSession,
+} from "./service";
+import type { LoginResponse, UserClaims } from "./types";
 
 interface AuthContextValue {
   user: UserClaims | null;
   loading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<LoginResponse>;
+  completeFirstLogin: (session: LoginResponse, currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -42,8 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
       login: async (username: string, password: string) => {
-        const payload = await doLogin(username, password);
-        setUser(payload.user);
+        const payload = await loginWithOptions(username, password, { persist: true });
+        if (!payload.password_change_required) {
+          setUser(payload.user);
+        }
+        return payload;
+      },
+      completeFirstLogin: async (session: LoginResponse, currentPassword: string, newPassword: string) => {
+        await completeFirstLoginPasswordCreation({
+          accessToken: session.access_token,
+          currentPassword,
+          newPassword,
+        });
+        persistSession(session);
+        setUser(session.user);
       },
       logout: async () => {
         await doLogout(getRefreshToken());

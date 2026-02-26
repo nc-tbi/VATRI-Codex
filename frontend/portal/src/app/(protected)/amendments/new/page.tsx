@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { submitAmendment } from "@/core/api/tax-core";
 import { formatApiError } from "@/core/api/error-display";
@@ -25,6 +26,19 @@ export default function NewAmendmentPage() {
   const [newNet, setNewNet] = useState("0");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const hasContext = Boolean(filingFromContext);
+
+  if (!hasContext) {
+    return (
+      <section>
+        <h2 className="text-2xl font-semibold">{t("amendments_new.title")}</h2>
+        <p className="mt-2 text-[var(--muted)]">{t("amendments_new.context_required")}</p>
+        <Link className="mt-4 inline-block rounded bg-action px-4 py-2 text-sm text-white" href="/overview">
+          {t("filings_new.go_to_overview")}
+        </Link>
+      </section>
+    );
+  }
 
   const onSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();

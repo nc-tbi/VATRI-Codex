@@ -148,6 +148,11 @@ Coverage ID conventions:
 | `TB-S4B-06` | Assessments/claims transparency | `TC-PORTAL-TRN-01` to `TC-PORTAL-TRN-04` | `Gate C` |
 | `TB-S4B-07` | DK overlay + extension behavior | `TC-PORTAL-OVR-01` to `TC-PORTAL-OVR-05` | `Gate C` |
 
+Phase 4 freeze authority:
+- `design/08-phase-4-contract-freeze.md` is authoritative for `TB-S4-04` and `TB-S4B-05..07`.
+- Required negative-path envelope assertions for these scopes: HTTP status + `error` + `trace_id`.
+- RBAC/security authority for `TB-S4-03`, `TB-S4B-02`, `TB-S4C-06..07`: `design/09-rbac-security-policy-validation.md`.
+
 ### 6.2 Auth and Session Cases (`TC-PORTAL-AUTH-*`)
 | Case ID | Title | Preconditions | Steps | Expected Result | Gate |
 |---|---|---|---|---|---|
@@ -163,7 +168,7 @@ Coverage ID conventions:
 |---|---|---|---|---|---|
 | `TC-PORTAL-RBAC-01` | Taxpayer denied admin registration route/API | Taxpayer session active | Invoke admin registration endpoint | `403` and no write side effect | `Gate C` |
 | `TC-PORTAL-RBAC-02` | Taxpayer denied cadence edit action | Taxpayer session active | Attempt cadence edit endpoint | `403` and no obligation state mutation | `Gate C` |
-| `TC-PORTAL-RBAC-03` | Admin denied taxpayer-only self-service route/API misuse | Admin session active | Attempt taxpayer-owned submission route without target taxpayer context | Deterministic policy rejection | `Gate C` |
+| `TC-PORTAL-RBAC-03` | Admin denied taxpayer-only self-service route/API misuse | Admin session active | Attempt taxpayer-owned submission route without target taxpayer context | Deterministic policy rejection (`403` envelope with `error` + `trace_id`) | `Gate C` |
 | `TC-PORTAL-RBAC-04` | Unauthenticated access denied for protected routes | No auth context | Invoke protected portal APIs | `401` for all protected endpoints | `Gate C` |
 | `TC-PORTAL-RBAC-05` | Forbidden action error envelope consistency | Any denied action | Compare denied responses across APIs | Stable error schema + trace context | `Gate C` |
 | `TC-PORTAL-RBAC-06` | No side effects on denied alter/undo/redo | Taxpayer session active | Attempt admin alter endpoint | `403`; unchanged filing/amendment state | `Gate C` |
@@ -190,10 +195,10 @@ Coverage ID conventions:
 | `TC-PORTAL-ALT-02` | Admin undo action success path | Admin session; prior action exists | Invoke undo action | Prior state restoration semantics met | `Gate C` |
 | `TC-PORTAL-ALT-03` | Admin redo action success path | Admin session; prior undo exists | Invoke redo action | Reapplied state semantics met | `Gate C` |
 | `TC-PORTAL-ALT-04` | Alter/undo/redo idempotency on duplicate calls | Same request replayed | Repeat action with same idempotency key | No duplicate side effects; deterministic response | `Gate C` |
-| `TC-PORTAL-ALT-05` | Alter conflict semantics | Concurrent edits prepared | Submit conflicting alter/undo/redo action | Conflict response contract (`409`) and no corruption | `Gate C` |
+| `TC-PORTAL-ALT-05` | Alter conflict semantics | Concurrent edits prepared | Submit conflicting alter/undo/redo action | Conflict response contract (`409`) and no corruption; deterministic `error` + `trace_id` envelope | `Gate C` |
 | `TC-PORTAL-ALT-06` | Audit evidence for admin override actions | Admin action completed | Query evidence by `trace_id` | Append-only evidence for each action step | `Gate C` |
 | `TC-PORTAL-ALT-07` | Taxpayer visibility after admin lifecycle actions | Admin lifecycle completed | Taxpayer refreshes status views | Timeline/state reflects alter/undo/redo outcomes | `Gate C` |
-| `TC-PORTAL-TRN-01` | Assessment explainability payload includes mandatory fields | Assessment exists | Query transparency payload | Required explanation fields present and typed | `Gate C` |
+| `TC-PORTAL-TRN-01` | Assessment explainability payload includes mandatory fields | Assessment exists | Query transparency payload | Required transparency fields present and typed: `calculation_stages`, `result_type`, `claim_amount`, `rule_version_id`, `applied_rule_ids`, `explanation` | `Gate C` |
 | `TC-PORTAL-TRN-02` | Transparency payload aligns with assessment outcome | Assessment result exists | Compare outcome vs explainability payload | Values are coherent and reconcilable | `Gate C` |
 | `TC-PORTAL-TRN-03` | Claims transparency reflects latest dispatch status | Claim events exist | Query claims tab payload | Latest status and references are returned | `Gate C` |
 | `TC-PORTAL-TRN-04` | Readability/summary payload contract stable | Transparency payload produced | Validate summary section fields | Stable summary contract for UI rendering | `Gate C` |
@@ -320,3 +325,35 @@ Governance rule:
 - `Ready = Yes` only if all mandatory commands are `Pass` in the same cycle.
 - Any single fail or missing evidence => `Ready = No (Blocked)`.
 
+
+### 6.10 Phase 4 Prep Consecutive Pack Evidence (2026-02-25)
+
+Pack execution (consecutive):
+| Pack | Linked Backlog IDs | Validation Commands | Result |
+|---|---|---|---|
+| Pack 1 | `TB-S4B-01`, `TB-S4B-02` | `npm run test -- src/core/auth/service.test.ts src/core/rbac/route-guards.test.ts`; `playwright --config playwright.config.ts --grep '@mocked login page loads'` | Pass |
+| Pack 2 | `TB-S4B-03`, `TB-S4B-04`, `TB-S4B-05` | `npm run test -- src/core/api/http.test.ts`; `playwright --config playwright.config.ts --grep '@mocked .*'`; `playwright --config playwright.live.config.ts --grep '@live-backend admin can create and retrieve taxpayer registration'` | Pass |
+| Pack 3 | `TB-S4B-06`, `TB-S4B-07` | `npm run test -- src/features/claims/status-mapper.test.ts`; `playwright --config playwright.config.ts --grep '@mocked (login page loads|sidebar hides obligations and new vat return links for taxpayer)'`; `playwright --config playwright.live.config.ts --grep '@live-backend critical taxpayer/admin flow against live backend'` | Pass |
+
+Execution note:
+- These runs provide current pre-build evidence for the requested three-pack sequence.
+- Governance remains unchanged: final Gate C promotion still requires complete case-pack closure per `TC-PORTAL-*` and `TC-REM-AUTHADM-*` policy.
+
+### 6.11 Phase 4 Mandatory Gate Matrix (Same-Cycle Governance)
+
+Purpose:
+- Convert Phase 4 readiness into one enforceable validation cycle with a binary pass/block outcome.
+
+Mandatory commands and coverage mapping:
+| Command | Coverage Target | Blocking |
+|---|---|---|
+| `cd build && npm run ci:migration-compat` | staging/prod-like migration smoke compatibility baseline | Yes |
+| `cd build && npm run test:gate-b` | core build regression baseline | Yes |
+| `cd build && npm run test:svc-integration` | service integration regression baseline | Yes |
+| `cd frontend/portal && npm run test:gate-c-portal-regression -- --include-live` | full portal acceptance + negative suite (`TC-PORTAL-*`) | Yes |
+| `cd build && npm run test:gate-c-remediation` | full auth/admin remediation suite (`TC-REM-AUTHADM-*`) | Yes |
+
+Phase 4 decision policy:
+- Record runs as `P4-RUN-<n>-A..E` in append-only form.
+- `Ready = Yes` only when all five commands are `Pass` in the same validation cycle.
+- Any single fail or missing evidence row => `Ready = No (Blocked)`.

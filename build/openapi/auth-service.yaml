@@ -6,7 +6,7 @@ info:
     Authentication and session management for the VATRI self-service portal.
     Provides JWT-based access tokens + refresh token rotation with PostgreSQL persistence.
     Seeded admin account available in local/dev only (ADMIN_SEED_ENABLED env guard).
-    Startup fails if SESSION_SIGNING_KEY is missing.
+    Startup fails if SESSION_SIGNING_KEY or SESSION_ENCRYPTION_KEY is missing.
     Aligned with ADR-009 (portal BFF + API-first ingress) and design/portal/02-auth-and-rbac-contract.md.
 
 servers:
@@ -192,6 +192,9 @@ components:
 
     ErrorEnvelope:
       type: object
+      required:
+        - error
+        - trace_id
       properties:
         error:
           type: string

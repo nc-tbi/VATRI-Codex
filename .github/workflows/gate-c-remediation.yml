@@ -1,0 +1,38 @@
+name: Gate C - Remediation
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  gate-c-remediation:
+    name: gate-c-remediation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: build/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Gate C remediation command pack
+        run: npm run test:gate-c-remediation
+
+      - name: Publish remediation artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-c-remediation-artifacts
+          path: build/reports/gate-c-remediation-summary.json

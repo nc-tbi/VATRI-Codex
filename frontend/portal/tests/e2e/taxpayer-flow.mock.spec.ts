@@ -35,6 +35,7 @@ test("@mocked sidebar hides obligations and new vat return links for taxpayer", 
   await loginAsTaxpayer(page);
   await expect(page.getByRole("link", { name: /Forpligtelser|Obligations/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Ny momsangivelse|New VAT return/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Ny Ã¦ndringsangivelse|New amendment return/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Open VAT obligation|momsforpligtelse/i })).toBeVisible();
 });
 
@@ -103,4 +104,13 @@ test("@mocked submitted filing page keeps original immutable and starts amendmen
   const originalFilingInput = page.getByLabel(/Originalt momsangivelses-id|Original filing ID/i);
   await expect(originalFilingInput).toHaveValue("f1111111-1111-4111-8111-111111111111");
   await expect(originalFilingInput).toHaveAttribute("readonly", "");
+});
+
+test("@mocked amendment page requires filing context from overview/submission flow", async ({ page }) => {
+  await mockPortalApis(page, {});
+  await loginAsTaxpayer(page);
+  await page.goto("/amendments/new");
+  await expect(page.getByRole("heading", { name: /Ny|New amendment return/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Indsend Ã¦ndringsangivelse|Submit amendment return/i })).toHaveCount(0);
+  await expect(page.locator("main").getByRole("link", { name: /overblik|overview/i }).last()).toBeVisible();
 });

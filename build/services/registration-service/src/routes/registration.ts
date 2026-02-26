@@ -35,6 +35,12 @@ interface TransferBody {
   to_taxpayer_id: string;
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_PATTERN.test(value);
+}
+
 export async function registrationRoutes(
   app: FastifyInstance,
   options: RouteOptions,
@@ -80,6 +86,13 @@ export async function registrationRoutes(
   // GET /registrations/:registration_id
   app.get("/:registration_id", async (req: FastifyRequest, reply: FastifyReply) => {
     const { registration_id } = req.params as { registration_id: string };
+    if (!isUuid(registration_id)) {
+      return reply.status(422).send({
+        error: "VALIDATION_FAILED",
+        message: "registration_id must be a UUID",
+        trace_id: req.id,
+      });
+    }
     const record = await repo.findRegistration(registration_id);
     if (!record) return reply.notFound(`Registration not found: ${registration_id}`);
     return reply.send(record);
@@ -89,6 +102,9 @@ export async function registrationRoutes(
   app.post("/:registration_id/promote", async (req: FastifyRequest, reply: FastifyReply) => {
     const { registration_id } = req.params as { registration_id: string };
     const traceId = req.id;
+    if (!isUuid(registration_id)) {
+      return reply.status(422).send({ error: "VALIDATION_FAILED", message: "registration_id must be a UUID", trace_id: traceId });
+    }
 
     await repo.loadIntoMemory(registration_id);
     const registration = promoteToRegistered(registration_id, traceId);
@@ -103,6 +119,9 @@ export async function registrationRoutes(
   app.post("/:registration_id/deregister", async (req: FastifyRequest, reply: FastifyReply) => {
     const { registration_id } = req.params as { registration_id: string };
     const traceId = req.id;
+    if (!isUuid(registration_id)) {
+      return reply.status(422).send({ error: "VALIDATION_FAILED", message: "registration_id must be a UUID", trace_id: traceId });
+    }
 
     await repo.loadIntoMemory(registration_id);
     const registration = deregister(registration_id, traceId);
@@ -121,6 +140,9 @@ export async function registrationRoutes(
     const traceId = req.id;
 
     if (!to_taxpayer_id) return reply.badRequest("to_taxpayer_id is required");
+    if (!isUuid(registration_id)) {
+      return reply.status(422).send({ error: "VALIDATION_FAILED", message: "registration_id must be a UUID", trace_id: traceId });
+    }
 
     await repo.loadIntoMemory(registration_id);
     const registration = transferRegistration(registration_id, to_taxpayer_id, traceId);

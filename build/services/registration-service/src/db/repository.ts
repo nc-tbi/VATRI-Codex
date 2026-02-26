@@ -38,7 +38,7 @@ export class RegistrationRepository {
 
   async findRegistration(registrationId: string): Promise<Record<string, unknown> | null> {
     const rows = await this.sql`
-      SELECT * FROM registration.registrations WHERE registration_id = ${registrationId}
+      SELECT * FROM registration.registrations WHERE registration_id = ${registrationId}::uuid
     `;
     return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
   }
@@ -63,7 +63,7 @@ export class RegistrationRepository {
       SET status = ${status},
           registered_at = COALESCE(${extra.registered_at as string | null ?? null}, registered_at),
           deregistered_at = COALESCE(${extra.deregistered_at as string | null ?? null}, deregistered_at)
-      WHERE registration_id = ${registrationId}
+      WHERE registration_id = ${registrationId}::uuid
     `;
   }
 

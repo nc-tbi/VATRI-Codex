@@ -86,6 +86,8 @@ paths:
                 $ref: "#/components/schemas/RegistrationRecord"
         "404":
           $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
 
   /registrations/{registration_id}/promote:
     post:
@@ -187,6 +189,7 @@ components:
       required: true
       schema:
         type: string
+        format: uuid
 
   schemas:
     CreateRegistrationRequest:
@@ -221,6 +224,7 @@ components:
       properties:
         registration_id:
           type: string
+          format: uuid
         taxpayer_id:
           type: string
         status:
@@ -237,6 +241,7 @@ components:
       properties:
         registration_id:
           type: string
+          format: uuid
         taxpayer_id:
           type: string
         cvr_number:
@@ -270,6 +275,7 @@ components:
       properties:
         registration_id:
           type: string
+          format: uuid
         status:
           type: string
         trace_id:

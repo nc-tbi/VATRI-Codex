@@ -23,3 +23,4 @@ CREATE TABLE IF NOT EXISTS registration.registrations (
 
 CREATE INDEX IF NOT EXISTS idx_registration_taxpayer ON registration.registrations (taxpayer_id);
 CREATE INDEX IF NOT EXISTS idx_registration_cvr ON registration.registrations (cvr_number);
+CREATE INDEX IF NOT EXISTS idx_registration_taxpayer_cvr ON registration.registrations (taxpayer_id, cvr_number);

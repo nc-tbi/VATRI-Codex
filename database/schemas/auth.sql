@@ -24,3 +24,9 @@ CREATE TABLE IF NOT EXISTS auth.refresh_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_auth_refresh_subject ON auth.refresh_tokens(subject_id);
 CREATE INDEX IF NOT EXISTS idx_auth_refresh_active ON auth.refresh_tokens(expires_at) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_auth_users_taxpayer_scope_taxpayer
+  ON auth.users (taxpayer_scope)
+  WHERE role = 'taxpayer';
+CREATE UNIQUE INDEX IF NOT EXISTS uq_auth_users_taxpayer_scope_taxpayer
+  ON auth.users (taxpayer_scope)
+  WHERE role = 'taxpayer' AND taxpayer_scope IS NOT NULL;

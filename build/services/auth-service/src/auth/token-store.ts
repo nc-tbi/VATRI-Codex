@@ -56,6 +56,16 @@ export class AuthTokenStore {
       ON auth.refresh_tokens(expires_at)
       WHERE revoked_at IS NULL
     `;
+    await this.sql`
+      CREATE INDEX IF NOT EXISTS idx_auth_users_taxpayer_scope_taxpayer
+      ON auth.users (taxpayer_scope)
+      WHERE role = 'taxpayer'
+    `;
+    await this.sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS uq_auth_users_taxpayer_scope_taxpayer
+      ON auth.users (taxpayer_scope)
+      WHERE role = 'taxpayer' AND taxpayer_scope IS NOT NULL
+    `;
   }
 
   async seedAdminUser(username: string, password: string): Promise<void> {
@@ -76,6 +86,19 @@ export class AuthTokenStore {
     `;
   }
 
+  async isValidTaxpayerRegistrationIdentity(taxpayerId: string, cvrNumber: string): Promise<boolean> {
+    // Boundary decision: read-only identity check against registration is allowed.
+    // No cross-schema FK or join is introduced; auth still owns auth.users writes.
+    const rows = await this.sql`
+      SELECT 1
+      FROM registration.registrations
+      WHERE taxpayer_id = ${taxpayerId}
+        AND cvr_number = ${cvrNumber}
+      LIMIT 1
+    `;
+    return rows.length > 0;
+  }
+
   async findUserByUsername(username: string): Promise<UserRecord | null> {
     const rows = await this.sql`
       SELECT subject_id, username, role, password_hash, taxpayer_scope, password_change_required
@@ -93,6 +116,46 @@ export class AuthTokenStore {
       taxpayer_scope: row.taxpayer_scope ? String(row.taxpayer_scope) : null,
       password_change_required: Boolean(row.password_change_required),
     };
+  }
+
+  async findTaxpayerUserByScope(taxpayerId: string): Promise<UserRecord | null> {
+    const rows = await this.sql`
+      SELECT subject_id, username, role, password_hash, taxpayer_scope, password_change_required
+      FROM auth.users
+      WHERE role = 'taxpayer'
+        AND taxpayer_scope = ${taxpayerId}
+      ORDER BY created_at DESC
+      LIMIT 1
+    `;
+    if (rows.length === 0) return null;
+    const row = rows[0] as Record<string, unknown>;
+    return {
+      subject_id: String(row.subject_id),
+      username: String(row.username),
+      role: row.role as UserRole,
+      passwordHash: String(row.password_hash),
+      taxpayer_scope: row.taxpayer_scope ? String(row.taxpayer_scope) : null,
+      password_change_required: Boolean(row.password_change_required),
+    };
+  }
+
+  async createTaxpayerUserWithPassword(taxpayerId: string, password: string): Promise<UserRecord> {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const subjectId = randomUUID();
+    await this.sql`
+      INSERT INTO auth.users (
+        subject_id, username, role, password_hash, taxpayer_scope, password_change_required, is_seeded_admin
+      ) VALUES (
+        ${subjectId}, ${taxpayerId}, 'taxpayer', ${passwordHash}, ${taxpayerId}, FALSE, FALSE
+      )
+      ON CONFLICT DO NOTHING
+    `;
+
+    const created = await this.findTaxpayerUserByScope(taxpayerId);
+    if (!created) {
+      throw new Error(`Could not create taxpayer auth user for taxpayer_id=${taxpayerId}`);
+    }
+    return created;
   }
 
   async findUserById(subject_id: string): Promise<UserRecord | null> {

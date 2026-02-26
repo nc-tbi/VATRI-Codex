@@ -53,6 +53,16 @@ Historical defect: `assessment-service/src/db/repository.ts::findByTaxpayerId` p
 ### F-005 — Preserve audit append-only controls as schema evolves
 The blueprint (`architecture/01-target-architecture-blueprint.md §4`) shows an `AUD` (Audit Store) as a distinct downstream target. Authoritative DDL now exists in `database/schemas/audit.sql`; the active risk is drift or accidental weakening of append-only trigger controls.
 
+### F-006 - Auth-to-registration read coupling (accepted with constraints)
+`auth-service` performs a read-only registration identity check against `registration.registrations` during taxpayer credential provisioning.
+
+**Boundary decision:** acceptable for current release because:
+- no cross-schema FK constraint is introduced,
+- no cross-schema JOIN is used for auth read models,
+- source-of-truth ownership remains with `registration` for taxpayer registration data and with `auth` for credentials.
+
+**Control:** keep this path read-only and treat as a contract-validation lookup only. If coupling expands beyond identity checks, move to API/event-based validation.
+
 ---
 
 ## 4. Assumptions
@@ -536,6 +546,7 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 - Repositories must not issue `UPDATE` or `DELETE` on append-only tables.
 - `assessment-service/src/db/repository.ts` is aligned to DBDR-002 (`ON CONFLICT (filing_id, assessment_version) DO NOTHING` and denormalized `taxpayer_id` / `tax_period_end`).
 - No cross-schema JOINs in any repository.
+- Cross-schema read-only lookups are allowed only for explicit contract-validation cases (F-006), with no cross-schema FK ownership.
 
 ### DevOps
 - All `database/schemas/*.sql` files are the authoritative source. Docker init scripts must source from this location.
@@ -560,6 +571,7 @@ For `GET /assessments/by-filing/{filing_id}` the query returns the **latest** as
 | F-001 | Assessment upsert defect (historical) — closed via DBDR-002 implementation | Code Builder | ADR-003, ADR-005 |
 | F-002 | Cross-schema JOIN in assessment service (historical) — closed in current repository implementation | Code Builder | ADR-001 |
 | F-003 | claim_id/claim_status in filing table — tech debt | Code Builder (Phase 4) | ADR-001 |
+| F-006 | Auth read-only registration identity check — accepted with constraints (no join/FK ownership) | Architect + Code Builder | ADR-001 |
 | R-02 | Rule catalog runtime alignment to persistent `rule_catalog` schema required | Architect + Code Builder | ADR-002 |
 | R-05 | Migration tooling decision | Database Architect + DevOps | ADR-008 |
 | R-08 | Release evidence completeness for domain-impacting database changes | Product Owner + Test Manager + DevOps | ADR-006 |

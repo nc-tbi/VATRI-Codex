@@ -8,8 +8,59 @@ import { listAmendments, listFilings } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
+type VatField = {
+  key: string;
+  labelKey: string;
+  rubrik?: string;
+};
+
+const SECTION_FIELDS: Array<{ titleKey: string; fields: VatField[] }> = [
+  {
+    titleKey: "filings_new.section_domestic",
+    fields: [
+      { key: "output_vat_amount_domestic", labelKey: "filings_new.output_vat" },
+      { key: "input_vat_deductible_amount_total", labelKey: "filings_new.input_vat" },
+    ],
+  },
+  {
+    titleKey: "filings_new.section_trade_abroad",
+    fields: [
+      { key: "reverse_charge_output_vat_goods_abroad_amount", labelKey: "filings_new.reverse_goods_vat" },
+      { key: "reverse_charge_output_vat_services_abroad_amount", labelKey: "filings_new.reverse_services_vat" },
+      { key: "rubrik_a_goods_eu_purchase_value", labelKey: "filings_new.rubrik_a_goods", rubrik: "A" },
+      { key: "rubrik_a_services_eu_purchase_value", labelKey: "filings_new.rubrik_a_services", rubrik: "A" },
+      { key: "rubrik_b_goods_eu_sale_value_reportable", labelKey: "filings_new.rubrik_b_goods_reported", rubrik: "B" },
+      { key: "rubrik_b_goods_eu_sale_value_non_reportable", labelKey: "filings_new.rubrik_b_goods_not_reported", rubrik: "B" },
+      { key: "rubrik_b_services_eu_sale_value", labelKey: "filings_new.rubrik_b_services", rubrik: "B" },
+      { key: "rubrik_c_other_vat_exempt_supplies_value", labelKey: "filings_new.rubrik_c", rubrik: "C" },
+    ],
+  },
+  {
+    titleKey: "filings_new.section_energy_refund",
+    fields: [
+      { key: "reimbursement_oil_and_bottled_gas_duty_amount", labelKey: "filings_new.energy_oil_gas" },
+      { key: "reimbursement_electricity_duty_amount", labelKey: "filings_new.energy_electricity" },
+    ],
+  },
+];
+
 function readNumber(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function formatAmount(value: number): string {
+  return new Intl.NumberFormat("da-DK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function periodText(start: unknown, end: unknown): string {
+  const startText = typeof start === "string" ? start : "";
+  const endText = typeof end === "string" ? end : "";
+  if (startText && endText) return `${startText} - ${endText}`;
+  if (endText) return endText;
+  return "-";
 }
 
 export default function SubmissionDetailsPage() {
@@ -39,13 +90,11 @@ export default function SubmissionDetailsPage() {
 
   const filing = filingQuery.data;
   const amendments = amendmentQuery.data ?? [];
-  const netVat = readNumber(filing?.output_vat_amount_domestic) + readNumber(filing?.reverse_charge_output_vat_goods_abroad_amount) + readNumber(filing?.reverse_charge_output_vat_services_abroad_amount) - readNumber(filing?.input_vat_deductible_amount_total) + readNumber(filing?.adjustments_amount);
+  const period = periodText(filing?.tax_period_start, filing?.tax_period_end);
 
   return (
     <section>
-      <h2 className="text-2xl font-semibold">
-        {t("submissions.filing_details")}: {filingId}
-      </h2>
+      <h2 className="text-2xl font-semibold">{t("shared.vat_return_period", { period })}</h2>
       <p className="mt-2 text-[var(--muted)]">{t("submissions.filing_details_description")}</p>
       {filingQuery.isLoading ? <p className="mt-4 text-sm">{t("shared.loading")}</p> : null}
       {filingQuery.error ? <p className="mt-4 text-sm text-danger">{t("shared.fetch_error")}</p> : null}
@@ -54,21 +103,27 @@ export default function SubmissionDetailsPage() {
           <article className="rounded border border-[var(--border)] p-4">
             <h3 className="text-lg font-medium">{t("submissions.original_filing")}</h3>
             <p className="mt-2 text-sm text-[var(--muted)]">{t("submissions.original_read_only")}</p>
-            <dl className="mt-3 grid gap-2 text-sm">
-              <div className="flex justify-between gap-4">
-                <dt>{t("filings_new.output_vat")}</dt>
-                <dd>{String(filing.output_vat_amount_domestic ?? 0)}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>{t("filings_new.input_vat")}</dt>
-                <dd>{String(filing.input_vat_deductible_amount_total ?? 0)}</dd>
-              </div>
-              <div className="flex justify-between gap-4 border-t pt-2 font-medium">
-                <dt>{t("submissions.net_vat_result")}</dt>
-                <dd>{String(netVat)}</dd>
-              </div>
-            </dl>
+            <div className="mt-4 space-y-6">
+              {SECTION_FIELDS.map((section) => (
+                <section key={section.titleKey} className="space-y-3">
+                  <h4 className="text-base font-medium">{t(section.titleKey)}</h4>
+                  {section.fields.map((field) => (
+                    <div key={field.key} className="grid grid-cols-[1fr_140px_36px] items-center gap-3 rounded border border-[var(--border)] px-3 py-2 text-sm">
+                      <span>
+                        {field.rubrik ? <span className="mr-2 rounded bg-slate-100 px-2 py-0.5 text-xs font-medium">{field.rubrik}</span> : null}
+                        {t(field.labelKey)}
+                      </span>
+                      <span className="rounded border border-[var(--border)] bg-slate-50 px-3 py-2 text-right">
+                        {formatAmount(readNumber(filing[field.key]))}
+                      </span>
+                      <span className="text-[var(--muted)]">kr.</span>
+                    </div>
+                  ))}
+                </section>
+              ))}
+            </div>
           </article>
+
           <article className="rounded border border-[var(--border)] p-4">
             <h3 className="text-lg font-medium">{t("submissions.amendments_for_filing")}</h3>
             <p className="mt-2 text-sm text-[var(--muted)]">{t("submissions.amendments_description")}</p>
@@ -77,7 +132,9 @@ export default function SubmissionDetailsPage() {
             <ul className="mt-3 space-y-2 text-sm">
               {amendments.map((amendment) => (
                 <li key={amendment.amendment_id} className="rounded border border-[var(--border)] p-3">
-                  <p className="font-medium">{amendment.amendment_id}</p>
+                  <p className="font-medium">
+                    {t("shared.amendment_period", { period: periodText(undefined, amendment.tax_period_end) })}
+                  </p>
                   <p className="text-[var(--muted)]">{String(amendment.delta_classification)}</p>
                 </li>
               ))}

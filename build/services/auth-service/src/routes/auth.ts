@@ -221,6 +221,23 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
     return reply.status(200).send({ trace_id: traceId, message: "logged out" });
   });
 
+  app.post("/admin/wipe-user-data", async (req, reply) => {
+    const traceId = req.id;
+    const auth = await resolveAuthenticatedUser(req.headers.authorization);
+    if (!auth.ok) {
+      return sendError(reply, auth.statusCode, traceId, auth.code, auth.message);
+    }
+    if (auth.user.role !== "admin") {
+      return sendError(reply, 403, traceId, "FORBIDDEN", "only admin can wipe user data");
+    }
+    const admins_preserved = await store.wipeUserDataPreservingAdmin();
+    return reply.status(200).send({
+      trace_id: traceId,
+      message: "user data wiped; admin users preserved",
+      admins_preserved,
+    });
+  });
+
   app.post<{ Body: { refresh_token: string } }>("/refresh", async (req, reply) => {
     const { refresh_token } = req.body ?? {};
     const traceId = req.id;

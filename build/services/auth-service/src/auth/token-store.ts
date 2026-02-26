@@ -210,6 +210,27 @@ export class AuthTokenStore {
     `;
   }
 
+  async wipeUserDataPreservingAdmin(): Promise<number> {
+    await this.sql`DELETE FROM auth.refresh_tokens`;
+    await this.sql.unsafe(`
+      TRUNCATE TABLE
+        filing.filing_admin_alter_events,
+        filing.filings,
+        amendment.amendment_admin_alter_events,
+        amendment.amendments,
+        claim.claim_intents,
+        assessment.assessments,
+        obligation.preliminary_assessments,
+        obligation.obligations,
+        registration.registrations,
+        audit.evidence_entries
+      RESTART IDENTITY CASCADE
+    `);
+    await this.sql`DELETE FROM auth.users WHERE role <> 'admin'`;
+    const adminRows = await this.sql`SELECT COUNT(*)::int AS count FROM auth.users WHERE role = 'admin'`;
+    return Number((adminRows[0] as Record<string, unknown>)?.count ?? 0);
+  }
+
   async lookupRefreshToken(token: string): Promise<RefreshEntry | null> {
     const rows = await this.sql`
       SELECT subject_id, issued_at, expires_at

@@ -7,6 +7,14 @@ import { listAmendments, listFilings } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
+function periodText(start: unknown, end: unknown): string {
+  const startText = typeof start === "string" ? start : "";
+  const endText = typeof end === "string" ? end : "";
+  if (startText && endText) return `${startText} - ${endText}`;
+  if (endText) return endText;
+  return "-";
+}
+
 export default function SubmissionsPage() {
   const { user } = useAuth();
   const { t } = useOverlayI18n();
@@ -49,7 +57,7 @@ export default function SubmissionsPage() {
             {(filingsQuery.data ?? []).map((f) => (
               <li key={String(f.filing_id)} className="rounded border p-3">
                 <Link className="underline" href={`/submissions/${encodeURIComponent(String(f.filing_id))}`}>
-                  {String(f.filing_id)}
+                  {t("shared.vat_return_period", { period: periodText(f.tax_period_start, f.tax_period_end) })}
                 </Link>{" "}
                 - {typeof f.state === "string" ? statusLabel(f.state) : t("shared.unknown")}
               </li>
@@ -61,7 +69,8 @@ export default function SubmissionsPage() {
           <ul className="mt-2 space-y-2 text-sm">
             {(amendmentsQuery.data ?? []).map((a) => (
               <li key={String(a.amendment_id)} className="rounded border p-3">
-                {String(a.amendment_id)} - {String(a.delta_classification ?? t("shared.unknown"))}
+                {t("shared.amendment_period", { period: periodText(undefined, a.tax_period_end) })} -{" "}
+                {String(a.delta_classification ?? t("shared.unknown"))}
               </li>
             ))}
           </ul>

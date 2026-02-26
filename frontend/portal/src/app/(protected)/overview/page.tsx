@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useQueries } from "@tanstack/react-query";
-import { listFilings, listObligations } from "@/core/api/tax-core";
+import { listFilings, listObligations, wipeUserDataPreservingAdmin } from "@/core/api/tax-core";
+import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
 import { StatusChip } from "@/features/shared/status-chip";
 import { useOverlayI18n } from "@/overlays/common/i18n";
@@ -12,10 +13,21 @@ function isOpenable(state: string): boolean {
   return state === "due" || state === "overdue" || state === "draft";
 }
 
+function periodText(start: unknown, end: unknown): string {
+  const startText = typeof start === "string" ? start : "";
+  const endText = typeof end === "string" ? end : "";
+  if (startText && endText) return `${startText} - ${endText}`;
+  if (endText) return endText;
+  return "-";
+}
+
 export default function OverviewPage() {
   const { user } = useAuth();
   const { t } = useOverlayI18n();
   const [taxpayerInput, setTaxpayerInput] = useState(user?.taxpayer_scope ?? "");
+  const [wipePending, setWipePending] = useState(false);
+  const [wipeMessage, setWipeMessage] = useState<string | null>(null);
+  const [wipeError, setWipeError] = useState<string | null>(null);
   const taxpayerId = useMemo(() => (user?.role === "taxpayer" ? (user.taxpayer_scope ?? "") : taxpayerInput), [taxpayerInput, user]);
 
   const [obligationsQuery, filingsQuery] = useQueries({
@@ -39,15 +51,46 @@ export default function OverviewPage() {
     return translated === key ? status : translated;
   };
 
+  const onWipeUserData = async (): Promise<void> => {
+    if (user?.role !== "admin") return;
+    if (!window.confirm(t("overview.admin_wipe_confirm"))) return;
+    setWipePending(true);
+    setWipeError(null);
+    setWipeMessage(null);
+    try {
+      const result = await wipeUserDataPreservingAdmin(user);
+      setWipeMessage(t("overview.admin_wipe_success", { count: String(result.admins_preserved) }));
+      await Promise.all([obligationsQuery.refetch(), filingsQuery.refetch()]);
+    } catch (err) {
+      setWipeError(formatApiError(err, t("overview.admin_wipe_error")));
+    } finally {
+      setWipePending(false);
+    }
+  };
+
   return (
     <section>
       <h2 className="text-2xl font-semibold">{t("overview.title")}</h2>
       <p className="mt-2 text-[var(--muted)]">{t("overview.description")}</p>
       {user?.role === "admin" ? (
-        <label className="mt-4 block max-w-sm">
-          <span className="mb-1 block text-sm">{t("shared.taxpayer_id")}</span>
-          <input className="w-full rounded border border-[var(--border)] px-3 py-2" value={taxpayerInput} onChange={(e) => setTaxpayerInput(e.target.value)} />
-        </label>
+        <div className="mt-4 space-y-3">
+          <label className="block max-w-sm">
+            <span className="mb-1 block text-sm">{t("shared.taxpayer_id")}</span>
+            <input className="w-full rounded border border-[var(--border)] px-3 py-2" value={taxpayerInput} onChange={(e) => setTaxpayerInput(e.target.value)} />
+          </label>
+          <div className="max-w-sm rounded border border-danger bg-red-50 p-3">
+            <button
+              className="rounded bg-danger px-3 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => void onWipeUserData()}
+              type="button"
+              disabled={wipePending}
+            >
+              {wipePending ? t("shared.loading") : t("overview.admin_wipe_button")}
+            </button>
+            {wipeMessage ? <p className="mt-2 text-sm text-success">{wipeMessage}</p> : null}
+            {wipeError ? <p className="mt-2 text-sm text-danger">{wipeError}</p> : null}
+          </div>
+        </div>
       ) : null}
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <article className="rounded border border-[var(--border)] p-4">
@@ -85,11 +128,15 @@ export default function OverviewPage() {
             {(filingsQuery.data ?? []).map((filing) => (
               <li key={filing.filing_id} className="rounded border border-[var(--border)] p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-medium">{filing.filing_id}</p>
+                  <p className="text-sm font-medium">
+                    {t("shared.vat_return_period", {
+                      period: periodText(filing.tax_period_start, filing.tax_period_end),
+                    })}
+                  </p>
                   {typeof filing.state === "string" ? <StatusChip text={statusLabel(filing.state)} /> : null}
                 </div>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  {t("obligations.period")}: {String(filing.tax_period_end ?? "-")}
+                  {t("obligations.period")}: {periodText(filing.tax_period_start, filing.tax_period_end)}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <Link className="inline-block text-sm text-action underline" href={`/submissions/${encodeURIComponent(filing.filing_id)}`}>

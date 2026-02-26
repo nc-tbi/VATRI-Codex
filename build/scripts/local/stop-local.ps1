@@ -11,15 +11,20 @@ $ErrorActionPreference = "Stop"
 
 $InfraCompose    = "local/docker-compose.local.yml"
 $ServicesCompose = "docker-compose.services.yml"
+$PortalEnvFile   = ".env.portal.local"
 
 Write-Host "Stopping Tax Core services..." -ForegroundColor Cyan
 
 # Stop services stack if running
 if (Test-Path $ServicesCompose) {
+    $serviceDownArgs = @("-f", $ServicesCompose, "down")
+    if (Test-Path $PortalEnvFile) {
+        $serviceDownArgs = @("--env-file", $PortalEnvFile) + $serviceDownArgs
+    }
     if ($RemoveVolumes) {
-        docker compose -f $ServicesCompose down -v 2>$null
+        docker compose @serviceDownArgs -v 2>$null
     } else {
-        docker compose -f $ServicesCompose down 2>$null
+        docker compose @serviceDownArgs 2>$null
     }
 }
 

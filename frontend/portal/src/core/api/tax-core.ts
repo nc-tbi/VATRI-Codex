@@ -235,6 +235,17 @@ export async function getCadencePolicy(turnoverDkk: number, user?: UserClaims): 
   return apiGet<Record<string, unknown>>("registration", `/registrations/cadence-policy?turnover_dkk=${encodeURIComponent(String(turnoverDkk))}`, user);
 }
 
+export async function wipeUserDataPreservingAdmin(
+  user?: UserClaims,
+): Promise<{ trace_id: string; message: string; admins_preserved: number }> {
+  return apiPost<{ trace_id: string; message: string; admins_preserved: number }>(
+    "auth",
+    "/auth/admin/wipe-user-data",
+    {},
+    user,
+  );
+}
+
 export async function filingAlter(filingId: string, fieldDeltas: Record<string, unknown>, user?: UserClaims): Promise<Record<string, unknown>> {
   return apiPost<Record<string, unknown>>("filing", `/vat-filings/${encodeURIComponent(filingId)}/alter`, { field_deltas: fieldDeltas }, user);
 }

@@ -1,7 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
-
 type UserClaims = {
   subject_id: string;
   role: "admin" | "taxpayer";
@@ -158,13 +156,18 @@ test("@live-backend critical taxpayer/admin flow against live backend", async ({
   await obligationLink.click();
   await expect(page).toHaveURL(new RegExp(`/filings/new\\?obligation_id=${obligationId}`));
 
+  const filingSubmitResponsePromise = page.waitForResponse(
+    (response) => response.url().includes("/vat-filings") && response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: /Indsend momsangivelse|Submit VAT return/i }).click();
   const filingSuccess = page.locator("p").filter({ hasText: /trace|sporings/i }).first();
   await expect(filingSuccess).toBeVisible({ timeout: 45000 });
-  const filingSuccessText = (await filingSuccess.innerText()).trim();
-  const filingId = filingSuccessText.match(UUID_RE)?.[0];
-  expect(filingId, `Could not parse filing resource_id from success message: ${filingSuccessText}`).toBeDefined();
-  expect(filingSuccessText).toMatch(/trace|sporings/i);
+  const filingSubmitBody = (await (await filingSubmitResponsePromise).json()) as Record<string, unknown>;
+  const filingNested = filingSubmitBody.filing as Record<string, unknown> | undefined;
+  const filingId =
+    (typeof filingSubmitBody.filing_id === "string" ? filingSubmitBody.filing_id : undefined) ??
+    (typeof filingNested?.filing_id === "string" ? filingNested.filing_id : undefined);
+  expect(filingId, "Could not parse filing resource_id from submit response body").toBeDefined();
 
   try {
     await expect
@@ -293,13 +296,14 @@ test("@live-backend critical taxpayer/admin flow against live backend", async ({
   await expect(page.getByRole("heading", { name: /^Krav$|^Claims$/i })).toBeVisible();
 
   await page.goto(`/amendments/new?original_filing_id=${encodeURIComponent(String(filingId))}`);
-  await page.getByLabel(/Nyt nettoresultat|New net result/i).fill("25");
+  await page.getByRole("textbox").nth(1).fill("25");
+  const amendmentSubmitResponsePromise = page.waitForResponse(
+    (response) => response.url().includes("/amendments") && response.request().method() === "POST",
+  );
   await page.getByRole("button", { name: /Indsend ændringsangivelse|Submit amendment return/i }).click();
   const amendmentSuccess = page.locator("p").filter({ hasText: /trace|sporings/i }).first();
   await expect(amendmentSuccess).toBeVisible({ timeout: 45000 });
-  const amendmentSuccessText = (await amendmentSuccess.innerText()).trim();
-  const amendmentId = amendmentSuccessText.match(UUID_RE)?.[0];
-  expect(amendmentId, `Could not parse amendment id from success message: ${amendmentSuccessText}`).toBeDefined();
+  await amendmentSubmitResponsePromise;
 
   const amendmentsPayload = await getJson<{ amendments: Array<{ amendment_id: string; original_filing_id: string }> }>(
     request,

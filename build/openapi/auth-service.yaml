@@ -83,6 +83,41 @@ paths:
                     type: string
                     example: logged out
 
+  /auth/admin/wipe-user-data:
+    post:
+      summary: Wipe non-admin user data while preserving administrator users
+      operationId: wipeUserDataPreservingAdmin
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User data wiped, administrators preserved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - trace_id
+                  - message
+                  - admins_preserved
+                properties:
+                  trace_id:
+                    type: string
+                  message:
+                    type: string
+                    example: user data wiped; admin users preserved
+                  admins_preserved:
+                    type: integer
+                    minimum: 1
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Forbidden (caller is not admin)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   /auth/refresh:
     post:
       summary: Rotate refresh token and issue new access token

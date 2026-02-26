@@ -81,12 +81,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4800,
+                  "duration": 6312,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:15.099Z",
+                  "startTime": "2026-02-26T13:42:18.180Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -125,12 +125,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 4671,
+                  "duration": 6788,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:15.150Z",
+                  "startTime": "2026-02-26T13:42:18.605Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -161,12 +161,12 @@
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 2211,
+                  "duration": 3615,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:20.407Z",
+                  "startTime": "2026-02-26T13:42:26.446Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -205,12 +205,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 1733,
+                  "duration": 3551,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:15.156Z",
+                  "startTime": "2026-02-26T13:42:18.126Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -241,12 +241,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 3430,
+                  "duration": 4953,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:17.490Z",
+                  "startTime": "2026-02-26T13:42:22.845Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -277,12 +277,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 1652,
+                  "duration": 2386,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:20.997Z",
+                  "startTime": "2026-02-26T13:42:27.845Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -313,12 +313,12 @@
                   "workerIndex": 2,
                   "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 1860,
+                  "duration": 1533,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:22.680Z",
+                  "startTime": "2026-02-26T13:42:30.279Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -357,12 +357,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 3,
                   "status": "passed",
-                  "duration": 3012,
+                  "duration": 4315,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:15.110Z",
+                  "startTime": "2026-02-26T13:42:18.768Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -393,12 +393,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 3,
                   "status": "passed",
-                  "duration": 3460,
+                  "duration": 3653,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:18.577Z",
+                  "startTime": "2026-02-26T13:42:24.267Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -429,12 +429,12 @@
                   "workerIndex": 3,
                   "parallelIndex": 3,
                   "status": "passed",
-                  "duration": 4179,
+                  "duration": 4816,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:22.067Z",
+                  "startTime": "2026-02-26T13:42:28.029Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -449,7 +449,7 @@
         },
         {
           "title": "@mocked amendment page requires filing context from overview/submission flow",
-          "ok": false,
+          "ok": true,
           "tags": [
             "mocked"
           ],
@@ -464,42 +464,18 @@
                 {
                   "workerIndex": 3,
                   "parallelIndex": 3,
-                  "status": "failed",
-                  "duration": 8046,
-                  "error": {
-                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/overview/\u001b[39m\nReceived string:  \u001b[31m\"chrome-error://chromewebdata/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    6 × unexpected value \"http://127.0.0.1:3000/login\"\u001b[22m\n\u001b[2m    3 × unexpected value \"chrome-error://chromewebdata/\"\u001b[22m\n",
-                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/overview/\u001b[39m\nReceived string:  \u001b[31m\"chrome-error://chromewebdata/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    6 × unexpected value \"http://127.0.0.1:3000/login\"\u001b[22m\n\u001b[2m    3 × unexpected value \"chrome-error://chromewebdata/\"\u001b[22m\n\n    at loginAsTaxpayer (C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts:9:22)\n    at C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts:111:3",
-                    "location": {
-                      "file": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts",
-                      "column": 22,
-                      "line": 9
-                    },
-                    "snippet": "\u001b[0m \u001b[90m  7 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[35m/Adgangskode|Password/i\u001b[39m)\u001b[33m.\u001b[39mfill(\u001b[32m\"secret\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  8 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/Log ind|Sign in/i\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  9 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page)\u001b[33m.\u001b[39mtoHaveURL(\u001b[35m/\\/overview/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 10 |\u001b[39m }\n \u001b[90m 11 |\u001b[39m\n \u001b[90m 12 |\u001b[39m test(\u001b[32m\"@mocked sidebar hides obligations and new vat return links for taxpayer\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m ({ page }) \u001b[33m=>\u001b[39m {\u001b[0m"
-                  },
-                  "errors": [
-                    {
-                      "location": {
-                        "file": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts",
-                        "column": 22,
-                        "line": 9
-                      },
-                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/overview/\u001b[39m\nReceived string:  \u001b[31m\"chrome-error://chromewebdata/\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 5000ms\u001b[22m\n\u001b[2m    6 × unexpected value \"http://127.0.0.1:3000/login\"\u001b[22m\n\u001b[2m    3 × unexpected value \"chrome-error://chromewebdata/\"\u001b[22m\n\n\n   7 |   await page.getByLabel(/Adgangskode|Password/i).fill(\"secret\");\n   8 |   await page.getByRole(\"button\", { name: /Log ind|Sign in/i }).click();\n>  9 |   await expect(page).toHaveURL(/\\/overview/);\n     |                      ^\n  10 | }\n  11 |\n  12 | test(\"@mocked sidebar hides obligations and new vat return links for taxpayer\", async ({ page }) => {\n    at loginAsTaxpayer (C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts:9:22)\n    at C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts:111:3"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 1709,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T13:38:26.276Z",
+                  "startTime": "2026-02-26T13:42:32.895Z",
                   "annotations": [],
-                  "attachments": [],
-                  "errorLocation": {
-                    "file": "C:\\Users\\tbi\\OneDrive - Netcompany\\Documents\\Projects\\VATRI\\Codex\\frontend\\portal\\tests\\e2e\\taxpayer-flow.mock.spec.ts",
-                    "column": 22,
-                    "line": 9
-                  }
+                  "attachments": []
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "ae8c3856dd56355374c4-4376498dfa16f28a96a6",
@@ -512,11 +488,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-26T13:38:11.565Z",
-    "duration": 22956.937,
-    "expected": 10,
+    "startTime": "2026-02-26T13:42:03.414Z",
+    "duration": 32057.152000000002,
+    "expected": 11,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

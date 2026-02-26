@@ -10,6 +10,7 @@ export interface UserRecord {
   role: UserRole;
   passwordHash: string;
   taxpayer_scope: string | null;
+  password_change_required: boolean;
 }
 
 export interface RefreshEntry {
@@ -30,9 +31,14 @@ export class AuthTokenStore {
         role TEXT NOT NULL CHECK (role IN ('admin', 'taxpayer')),
         password_hash TEXT NOT NULL,
         taxpayer_scope TEXT NULL,
+        password_change_required BOOLEAN NOT NULL DEFAULT TRUE,
         is_seeded_admin BOOLEAN NOT NULL DEFAULT FALSE,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
+    `;
+    await this.sql`
+      ALTER TABLE auth.users
+      ADD COLUMN IF NOT EXISTS password_change_required BOOLEAN NOT NULL DEFAULT TRUE
     `;
     await this.sql`
       CREATE TABLE IF NOT EXISTS auth.refresh_tokens (
@@ -56,14 +62,15 @@ export class AuthTokenStore {
     const passwordHash = await bcrypt.hash(password, 10);
     await this.sql`
       INSERT INTO auth.users (
-        subject_id, username, role, password_hash, taxpayer_scope, is_seeded_admin
+        subject_id, username, role, password_hash, taxpayer_scope, password_change_required, is_seeded_admin
       ) VALUES (
-        ${randomUUID()}, ${username}, 'admin', ${passwordHash}, NULL, TRUE
+        ${randomUUID()}, ${username}, 'admin', ${passwordHash}, NULL, TRUE, TRUE
       )
       ON CONFLICT (username) DO UPDATE
       SET role = 'admin',
           password_hash = EXCLUDED.password_hash,
           taxpayer_scope = NULL,
+          password_change_required = TRUE,
           is_seeded_admin = TRUE
       WHERE auth.users.is_seeded_admin = TRUE
     `;
@@ -71,7 +78,7 @@ export class AuthTokenStore {
 
   async findUserByUsername(username: string): Promise<UserRecord | null> {
     const rows = await this.sql`
-      SELECT subject_id, username, role, password_hash, taxpayer_scope
+      SELECT subject_id, username, role, password_hash, taxpayer_scope, password_change_required
       FROM auth.users
       WHERE username = ${username}
       LIMIT 1
@@ -84,12 +91,13 @@ export class AuthTokenStore {
       role: row.role as UserRole,
       passwordHash: String(row.password_hash),
       taxpayer_scope: row.taxpayer_scope ? String(row.taxpayer_scope) : null,
+      password_change_required: Boolean(row.password_change_required),
     };
   }
 
   async findUserById(subject_id: string): Promise<UserRecord | null> {
     const rows = await this.sql`
-      SELECT subject_id, username, role, password_hash, taxpayer_scope
+      SELECT subject_id, username, role, password_hash, taxpayer_scope, password_change_required
       FROM auth.users
       WHERE subject_id = ${subject_id}::uuid
       LIMIT 1
@@ -102,11 +110,22 @@ export class AuthTokenStore {
       role: row.role as UserRole,
       passwordHash: String(row.password_hash),
       taxpayer_scope: row.taxpayer_scope ? String(row.taxpayer_scope) : null,
+      password_change_required: Boolean(row.password_change_required),
     };
   }
 
   async verifyPassword(plaintext: string, hash: string): Promise<boolean> {
     return bcrypt.compare(plaintext, hash);
+  }
+
+  async changePassword(subject_id: string, newPassword: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.sql`
+      UPDATE auth.users
+      SET password_hash = ${passwordHash},
+          password_change_required = FALSE
+      WHERE subject_id = ${subject_id}::uuid
+    `;
   }
 
   async storeRefreshToken(token: string, entry: RefreshEntry): Promise<void> {

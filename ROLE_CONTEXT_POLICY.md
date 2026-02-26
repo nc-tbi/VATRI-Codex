@@ -30,6 +30,7 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Coding Optimizer: `optimization/`
 - Code Builder: `mcp-server/`
 - Front-End Developer: `build/`
+- UX Designer: `design/`
 - DevOps: `build/`
 - Test Manager: `testing/`
 - Tester: `testing/`
@@ -133,6 +134,21 @@ Ensure each role consumes only role-relevant documents and does not load the ent
 - Secondary (only when needed): selected `analysis/*.md` for UI/legal wording and validation semantics
 - Standards policy: implement self-service portal UX on approved API/event contracts; do not embed legally binding tax decision logic in UI.
 
+### UX Designer
+- Primary:
+  - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `FRONTEND_DEVELOPER.md`, `UX_DESIGNER.md`, `CODE_BUILDER.md`, `TEST_MANAGER.md`, `TESTER.md`
+  - UX-driving architecture/design sources:
+    - `architecture/01-target-architecture-blueprint.md`
+    - `architecture/02-architectural-principles.md`
+    - `architecture/adr/*.md`
+    - `architecture/traceability/*.md`
+    - `architecture/designer/*.md`
+    - `design/*.md` and `design/**/*.md`
+    - `design/portal/*.md`
+  - testing governance artifacts: `testing/*.md` and `testing/**/*.md`
+- Secondary (only when needed): selected `analysis/*.md` for wording/legal semantics in UX content and validation messaging
+- Standards policy: define user experience and interaction contracts that remain consistent with approved architecture/design/testing scope; do not relocate legal VAT decision logic to UX rules.
+
 ### DevOps
 - Primary:
   - role/governance contracts: `ROLE_CONTEXT_POLICY.md`, `CLAUDE.md`, `README.md`, `ARCHITECT.md`, `DESIGNER.md`, `CODE_BUILDER.md`, `FRONTEND_DEVELOPER.md`, `DEVOPS.md`, `TEST_MANAGER.md`, `TESTER.md`
@@ -200,6 +216,9 @@ Ensure each role consumes only role-relevant documents and does not load the ent
   - Use `get_role_context_bundle` with `role=test_manager` and explicit `paths` when possible
 - Front-End Developer:
   - Use `get_role_context_bundle` with `role=frontend_developer` and explicit `paths` when possible
+- UX Designer:
+  - Use `get_role_context_bundle` with `role=designer` and explicit `paths` for UX/design context
+  - Use `get_role_context_bundle` with `role=frontend_developer` for implementation-alignment checks when needed
 - DevOps:
   - Use `get_role_context_bundle` with `role=frontend_developer` for `build/**` deployment assets and targeted `paths`
   - Use `get_role_context_bundle` with `role=architect` and `role=test_manager` for architecture/NFR and release-gate constraints
@@ -219,7 +238,6 @@ This is a living policy. Update it whenever role scope, folder ownership, source
   - checkpoint 1: findings accepted and prioritized
   - checkpoint 2: remediation patch set prepared
   - checkpoint 3: post-change validation and synchronization report against `README.md` and `CLAUDE.md`
-
 
 
 

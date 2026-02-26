@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-02-26T10:27:09.511Z",
+  "checks": [
+    {
+      "name": "portal-example-auth-origin",
+      "status": "pass",
+      "detail": ".env.portal.example PORTAL_API_BASE_URL must be http://localhost:3009"
+    },
+    {
+      "name": "portal-example-bff-origin",
+      "status": "pass",
+      "detail": ".env.portal.example PORTAL_BFF_BASE_URL must be http://localhost:3009"
+    },
+    {
+      "name": "portal-local-auth-origin",
+      "status": "pass",
+      "detail": ".env.portal.local PORTAL_API_BASE_URL must be http://localhost:3009"
+    },
+    {
+      "name": "portal-local-bff-origin",
+      "status": "pass",
+      "detail": ".env.portal.local PORTAL_BFF_BASE_URL must be http://localhost:3009"
+    },
+    {
+      "name": "release-direct-auth-origin",
+      "status": "pass",
+      "detail": "NEXT_PUBLIC_AUTH_SERVICE_BASE_URL must be http://localhost:3009 in direct-routing mode"
+    },
+    {
+      "name": "release-direct-registration-origin",
+      "status": "pass",
+      "detail": "NEXT_PUBLIC_REGISTRATION_SERVICE_BASE_URL must be http://localhost:3008 in direct-routing mode"
+    }
+  ],
+  "passed": true
+}

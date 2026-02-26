@@ -1,0 +1,155 @@
+openapi: "3.1.0"
+info:
+  title: Rule Engine Service API
+  version: "1.0.0"
+  description: |
+    Tax Core rule engine — effective-dated Danish VAT rule evaluation (ADR-002, ADR-006).
+    Bounded context: Tax Rule & Assessment. Stateless.
+
+servers:
+  - url: http://localhost:3003
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /rule-evaluations:
+    post:
+      operationId: evaluateRules
+      summary: Evaluate Danish VAT rules against a filing
+      description: |
+        Runs all active DK VAT rules (DK-VAT-001 through DK-VAT-007) against the provided
+        filing facts as of the evaluated_at timestamp.
+      tags: [RuleEvaluations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RuleEvaluationRequest"
+      responses:
+        "200":
+          description: Rule evaluation completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RuleEngineOutput"
+
+  /rules:
+    get:
+      operationId: listActiveRules
+      summary: List active Danish VAT rules
+      description: Returns rules active as of the given timestamp (defaults to now).
+      tags: [Rules]
+      parameters:
+        - name: at
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Timestamp to resolve rules at (ISO 8601). Defaults to now.
+      responses:
+        "200":
+          description: Active rules
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActiveRulesResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    RuleEvaluationRequest:
+      type: object
+      required: [filing]
+      properties:
+        filing:
+          type: object
+          description: Canonical filing (CanonicalFiling shape)
+        evaluated_at:
+          type: string
+          format: date-time
+          description: Override evaluation timestamp. Defaults to now.
+
+    RuleEvaluationResult:
+      type: object
+      required: [rule_id, rule_name, legal_ref, applied, notes]
+      properties:
+        rule_id:
+          type: string
+        rule_name:
+          type: string
+        legal_ref:
+          type: string
+        applied:
+          type: boolean
+        notes:
+          type: string
+
+    RuleEngineOutput:
+      type: object
+      required: [trace_id, rule_version_id, evaluated_at, results]
+      properties:
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        evaluated_at:
+          type: string
+          format: date-time
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleEvaluationResult"
+
+    RuleInfo:
+      type: object
+      required: [rule_id, rule_name, legal_ref, effective_from]
+      properties:
+        rule_id:
+          type: string
+        rule_name:
+          type: string
+        legal_ref:
+          type: string
+        effective_from:
+          type: string
+          format: date
+        effective_to:
+          type: string
+          format: date
+          nullable: true
+
+    ActiveRulesResponse:
+      type: object
+      required: [trace_id, evaluated_at, rules]
+      properties:
+        trace_id:
+          type: string
+        evaluated_at:
+          type: string
+          format: date-time
+        rules:
+          type: array
+          items:
+            $ref: "#/components/schemas/RuleInfo"

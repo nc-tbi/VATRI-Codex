@@ -1,0 +1,2 @@
+OpenAPI release artifacts generated: 10
+manifest=build/reports/openapi-release/manifest.json

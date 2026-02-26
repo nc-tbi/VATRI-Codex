@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-02-26T10:27:10.213Z",
+  "lane": "openapi-release",
+  "files": [
+    {
+      "file": "amendment-service.yaml",
+      "source": "build/openapi/amendment-service.yaml",
+      "artifact": "build/reports/openapi-release/amendment-service.yaml",
+      "sha256": "dd79d9e3feea971cbd3f425fbb8c68ca450a0f7e9e595407e15247b58351a4fa",
+      "size_bytes": 11443
+    },
+    {
+      "file": "assessment-service.yaml",
+      "source": "build/openapi/assessment-service.yaml",
+      "artifact": "build/reports/openapi-release/assessment-service.yaml",
+      "sha256": "dc9ce54bfd7a6ce8e98b9d6126cafd11ad55adcaebf23d76576a757dd0f9b4af",
+      "size_bytes": 11602
+    },
+    {
+      "file": "auth-service.yaml",
+      "source": "build/openapi/auth-service.yaml",
+      "artifact": "build/reports/openapi-release/auth-service.yaml",
+      "sha256": "d78cc4072dd0213be892a0531ab5233fd525169a0447467b594cf15b32240f65",
+      "size_bytes": 7218
+    },
+    {
+      "file": "claim-orchestrator.yaml",
+      "source": "build/openapi/claim-orchestrator.yaml",
+      "artifact": "build/reports/openapi-release/claim-orchestrator.yaml",
+      "sha256": "b33cdb43b5270d6f5ef7ec7af691fefb5e1badf564d1f4aee629268b903106f1",
+      "size_bytes": 9364
+    },
+    {
+      "file": "filing-service.yaml",
+      "source": "build/openapi/filing-service.yaml",
+      "artifact": "build/reports/openapi-release/filing-service.yaml",
+      "sha256": "5260cbcef05159e5a3192515b4e176fa8a704d5340a5f2141cb58159f5040b0f",
+      "size_bytes": 17211
+    },
+    {
+      "file": "obligation-service.yaml",
+      "source": "build/openapi/obligation-service.yaml",
+      "artifact": "build/reports/openapi-release/obligation-service.yaml",
+      "sha256": "d9e725fca4bbfb85d2c54d2533d80baad97749c386491e80852ae0f9fa3d8202",
+      "size_bytes": 11221
+    },
+    {
+      "file": "registration-service.yaml",
+      "source": "build/openapi/registration-service.yaml",
+      "artifact": "build/reports/openapi-release/registration-service.yaml",
+      "sha256": "cd344f7b3a46aa7e5fda1eb3d3870936b66b2710a93bbac16dfcdd48fded80c2",
+      "size_bytes": 8636
+    },
+    {
+      "file": "rule-engine-service.yaml",
+      "source": "build/openapi/rule-engine-service.yaml",
+      "artifact": "build/reports/openapi-release/rule-engine-service.yaml",
+      "sha256": "3c8f100d508fb598951ef7694e81b3a886a55227a164416d43c1897ebaa09381",
+      "size_bytes": 3980
+    },
+    {
+      "file": "validation-service.yaml",
+      "source": "build/openapi/validation-service.yaml",
+      "artifact": "build/reports/openapi-release/validation-service.yaml",
+      "sha256": "49c190f2912b7dd0ba5fd24ce8db55e127e1641bf3507e884d7928be2b9d6b0c",
+      "size_bytes": 4146
+    },
+    {
+      "file": "index.html",
+      "source": "build/openapi/index.html",
+      "artifact": "build/reports/openapi-release/index.html",
+      "sha256": "b611b90053c344cf2160391c1d97e0c815683f25c77181ac738d11b258c034a4",
+      "size_bytes": 2719
+    }
+  ]
+}

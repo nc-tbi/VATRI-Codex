@@ -1,0 +1,360 @@
+openapi: "3.1.0"
+info:
+  title: Assessment Service API
+  version: "1.1.0"
+  description: |
+    Tax Core assessment service - staged net-VAT derivation (S1-S4, ADR-006).
+    Bounded context: Tax Rule and Assessment.
+    Sole authoritative publisher of tax-core.filing.assessed (Phase 3 freeze — design/03-phase-3-contract-freeze.md).
+    v1.1.0: assessment_version added to required; assessment_type field added; AssessmentRequest.filing shape frozen.
+
+servers:
+  - url: http://localhost:3004
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /assessments:
+    get:
+      operationId: listAssessments
+      summary: List assessments by taxpayer
+      tags: [Assessments]
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tax_period_end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Assessments for the taxpayer (includes transparency envelope)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  assessments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AssessmentWithTransparency"
+        "400":
+          description: Missing taxpayer_id
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: computeAssessment
+      summary: Compute a staged VAT assessment
+      description: |
+        Runs staged derivation (S1-S4) for a canonical filing.
+        Stage 1: gross output VAT | Stage 2: deductible input VAT |
+        Stage 3: pre-adjustment net | Stage 4: final net VAT + adjustments.
+        The response includes assessment_id for direct retrieval by identifier.
+      tags: [Assessments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssessmentRequest"
+      responses:
+        "201":
+          description: Assessment computed and persisted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentCreatedResponse"
+        "500":
+          description: Internal error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /assessments/by-filing/{filing_id}:
+    get:
+      operationId: getAssessmentByFilingId
+      summary: Retrieve the current assessment by filing ID
+      description: Primary operational retrieval endpoint for filing-driven workflows.
+      tags: [Assessments]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Assessment record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /assessments/{assessment_id}:
+    get:
+      operationId: getAssessment
+      summary: Retrieve an assessment by ID
+      description: Audit and deep-link retrieval endpoint.
+      tags: [Assessments]
+      parameters:
+        - name: assessment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Assessment record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AssessmentResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    AssessmentRequest:
+      type: object
+      required: [filing, rule_version_id]
+      properties:
+        filing:
+          type: object
+          description: Canonical filing (CanonicalFiling shape — matches filing-service CanonicalFilingRequest)
+          required:
+            - filing_id
+            - taxpayer_id
+            - cvr_number
+            - tax_period_start
+            - tax_period_end
+            - filing_type
+            - submission_timestamp
+            - contact_reference
+            - source_channel
+            - rule_version_id
+            - assessment_version
+            - output_vat_amount_domestic
+            - reverse_charge_output_vat_goods_abroad_amount
+            - reverse_charge_output_vat_services_abroad_amount
+            - input_vat_deductible_amount_total
+            - adjustments_amount
+            - reimbursement_oil_and_bottled_gas_duty_amount
+            - reimbursement_electricity_duty_amount
+            - rubrik_a_goods_eu_purchase_value
+            - rubrik_a_services_eu_purchase_value
+            - rubrik_b_goods_eu_sale_value_reportable
+            - rubrik_b_goods_eu_sale_value_non_reportable
+            - rubrik_b_services_eu_sale_value
+            - rubrik_c_other_vat_exempt_supplies_value
+          properties:
+            filing_id: { type: string, format: uuid }
+            taxpayer_id: { type: string }
+            cvr_number: { type: string, pattern: "^[0-9]{8}$" }
+            tax_period_start: { type: string, format: date }
+            tax_period_end: { type: string, format: date }
+            filing_type: { type: string, enum: [regular, zero, amendment] }
+            submission_timestamp: { type: string, format: date-time }
+            contact_reference: { type: string }
+            source_channel: { type: string, enum: [portal, api, import] }
+            rule_version_id: { type: string }
+            assessment_version: { type: integer, minimum: 1 }
+            prior_filing_id: { type: string, format: uuid, nullable: true }
+            output_vat_amount_domestic: { type: number }
+            reverse_charge_output_vat_goods_abroad_amount: { type: number }
+            reverse_charge_output_vat_services_abroad_amount: { type: number }
+            input_vat_deductible_amount_total: { type: number }
+            adjustments_amount: { type: number }
+            reimbursement_oil_and_bottled_gas_duty_amount: { type: number }
+            reimbursement_electricity_duty_amount: { type: number }
+            rubrik_a_goods_eu_purchase_value: { type: number }
+            rubrik_a_services_eu_purchase_value: { type: number }
+            rubrik_b_goods_eu_sale_value_reportable: { type: number }
+            rubrik_b_goods_eu_sale_value_non_reportable: { type: number }
+            rubrik_b_services_eu_sale_value: { type: number }
+            rubrik_c_other_vat_exempt_supplies_value: { type: number }
+        rule_version_id:
+          type: string
+
+    StagedAssessment:
+      type: object
+      required:
+        - assessment_id
+        - filing_id
+        - trace_id
+        - rule_version_id
+        - assessment_version
+        - assessment_type
+        - assessed_at
+        - stage1_gross_output_vat
+        - stage2_total_deductible_input_vat
+        - stage3_pre_adjustment_net_vat
+        - stage4_net_vat
+        - result_type
+        - claim_amount
+      properties:
+        assessment_id:
+          type: string
+          format: uuid
+        filing_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        assessment_version:
+          type: integer
+          minimum: 1
+          description: Monotonically increasing version per taxpayer+period. 1 for original; incremented per amendment.
+        assessment_type:
+          type: string
+          enum: [regular, preliminary, final]
+          description: |
+            Assessment type. regular — standard filing-driven assessment.
+            preliminary — issued when obligation is overdue (D-17, ADR-004).
+            final — replaces a preliminary after the taxpayer files.
+          default: regular
+        assessed_at:
+          type: string
+          format: date-time
+        stage1_gross_output_vat:
+          type: number
+        stage2_total_deductible_input_vat:
+          type: number
+        stage3_pre_adjustment_net_vat:
+          type: number
+        stage4_net_vat:
+          type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+
+    TransparencyEnvelope:
+      type: object
+      description: Portal transparency payload — server-provided explanation of assessment result
+      properties:
+        calculation_stages:
+          type: array
+          items:
+            type: object
+            properties:
+              stage:
+                type: string
+              label:
+                type: string
+              value:
+                type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+        rule_version_id:
+          type: string
+        applied_rule_ids:
+          type: array
+          items:
+            type: string
+          description: Rule IDs applied (enriched in Gate C; empty [] in current release)
+        explanation:
+          type: string
+          description: Human-readable explanation block (server-provided)
+
+    AssessmentWithTransparency:
+      type: object
+      properties:
+        assessment:
+          $ref: "#/components/schemas/StagedAssessment"
+        transparency:
+          $ref: "#/components/schemas/TransparencyEnvelope"
+
+    AssessmentResponse:
+      type: object
+      required: [trace_id, assessment]
+      properties:
+        trace_id:
+          type: string
+        assessment:
+          $ref: "#/components/schemas/StagedAssessment"
+        transparency:
+          $ref: "#/components/schemas/TransparencyEnvelope"
+
+    AssessmentCreatedResponse:
+      type: object
+      description: |
+        Canonical POST /assessments response. Includes identifiers required for
+        both retrieval paths:
+        - GET /assessments/{assessment_id}
+        - GET /assessments/by-filing/{filing_id}
+      required: [trace_id, assessment_id, filing_id, assessment]
+      properties:
+        trace_id:
+          type: string
+        assessment_id:
+          type: string
+          format: uuid
+        filing_id:
+          type: string
+          format: uuid
+        assessment:
+          $ref: "#/components/schemas/StagedAssessment"
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+

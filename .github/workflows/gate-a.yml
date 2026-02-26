@@ -33,9 +33,6 @@ jobs:
   frontend-openapi-release-validation:
     name: frontend-openapi-release-validation
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend/portal
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,13 +42,48 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: frontend/portal/package-lock.json
+          cache-dependency-path: |
+            build/package-lock.json
+            frontend/portal/package-lock.json
 
-      - name: Install dependencies
+      - name: Install build dependencies
+        working-directory: build
         run: npm ci
 
+      - name: Generate OpenAPI release artifacts
+        working-directory: build
+        run: npm run ci:openapi:release
+
+      - name: Publish OpenAPI release artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-release-artifacts
+          path: build/reports/openapi-release
+
+      - name: Install portal dependencies
+        working-directory: frontend/portal
+        run: npm ci
+
+      - name: Validate portal routing/env parity
+        working-directory: frontend/portal
+        env:
+          NEXT_PUBLIC_AUTH_SERVICE_BASE_URL: http://localhost:3009
+          NEXT_PUBLIC_REGISTRATION_SERVICE_BASE_URL: http://localhost:3008
+        run: npm run validate:routing:env-parity
+
       - name: Validate portal release contract against generated OpenAPI artifacts
+        working-directory: frontend/portal
         run: npm run validate:openapi:release
+
+      - name: Publish frontend release validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-release-validation-reports
+          path: |
+            build/reports/openapi-release/frontend-routing-env-parity.json
+            build/reports/openapi-release/frontend-openapi-release-validation.json
 
   migration-compat:
     name: migration-compat

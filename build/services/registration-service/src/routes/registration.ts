@@ -65,6 +65,18 @@ export async function registrationRoutes(
     });
   });
 
+  // GET /registrations?taxpayer_id=
+  app.get("/", async (req: FastifyRequest, reply: FastifyReply) => {
+    const { taxpayer_id } = req.query as { taxpayer_id?: string };
+    if (!taxpayer_id) return reply.badRequest("taxpayer_id query parameter is required");
+    const registrations = await repo.findRegistrationsByTaxpayerId(taxpayer_id);
+    return reply.send({
+      trace_id: req.id,
+      taxpayer_id,
+      registrations,
+    });
+  });
+
   // GET /registrations/:registration_id
   app.get("/:registration_id", async (req: FastifyRequest, reply: FastifyReply) => {
     const { registration_id } = req.params as { registration_id: string };

@@ -1,0 +1,415 @@
+openapi: "3.1.0"
+info:
+  title: Obligation Service
+  version: "1.0.0"
+  description: |
+    Manages VAT filing obligation lifecycle and preliminary assessment supersession.
+    Phase 2: Epic E5 F5.2/F5.4 — obligation lifecycle states and preliminary assessment chain.
+servers:
+  - url: http://localhost:3007
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: obligation-service
+
+  /obligations:
+    get:
+      operationId: listObligations
+      summary: List obligations by taxpayer
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Obligations for the taxpayer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  obligations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ObligationRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+    post:
+      operationId: createObligation
+      summary: Create a filing obligation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateObligationRequest"
+      responses:
+        "201":
+          description: Obligation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObligationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+  /obligations/{obligation_id}:
+    get:
+      operationId: getObligation
+      summary: Get obligation by ID
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+      responses:
+        "200":
+          description: Obligation record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ObligationRecord"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /obligations/{obligation_id}/submit:
+    post:
+      operationId: submitObligation
+      summary: Mark obligation as submitted (filing received)
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [filing_id]
+              properties:
+                filing_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Obligation submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /obligations/{obligation_id}/overdue:
+    post:
+      operationId: markObligationOverdue
+      summary: Mark obligation as overdue (deadline missed)
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+      responses:
+        "200":
+          description: Obligation marked overdue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StateResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /obligations/{obligation_id}/preliminary:
+    post:
+      operationId: triggerPreliminaryAssessment
+      summary: Trigger a preliminary assessment for an overdue obligation
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estimated_net_vat]
+              properties:
+                estimated_net_vat:
+                  type: number
+      responses:
+        "201":
+          description: Preliminary assessment triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreliminaryResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /obligations/{obligation_id}/preliminary/{id}/issue:
+    post:
+      operationId: issuePreliminaryAssessment
+      summary: Issue a preliminary assessment (formal notification)
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Preliminary assessment ID
+      responses:
+        "200":
+          description: Preliminary assessment issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreliminaryStateResponse"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+  /obligations/{obligation_id}/preliminary/{id}/supersede:
+    post:
+      operationId: supersedeByFiling
+      summary: Supersede preliminary assessment with a filed return
+      parameters:
+        - $ref: "#/components/parameters/ObligationId"
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Preliminary assessment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [filing_id, final_assessment]
+              properties:
+                filing_id:
+                  type: string
+                  format: uuid
+                final_assessment:
+                  $ref: "#/components/schemas/StagedAssessment"
+      responses:
+        "200":
+          description: Preliminary assessment superseded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupersedeResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+
+components:
+  parameters:
+    ObligationId:
+      name: obligation_id
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    CreateObligationRequest:
+      type: object
+      required: [taxpayer_id, tax_period_start, tax_period_end, cadence, due_date]
+      properties:
+        taxpayer_id:
+          type: string
+        tax_period_start:
+          type: string
+          format: date
+        tax_period_end:
+          type: string
+          format: date
+        cadence:
+          type: string
+          enum: [monthly, quarterly, half_yearly, annual]
+        due_date:
+          type: string
+          format: date
+
+    ObligationResponse:
+      type: object
+      properties:
+        obligation_id:
+          type: string
+        state:
+          type: string
+          enum: [due, submitted, overdue]
+        cadence:
+          type: string
+        due_date:
+          type: string
+        trace_id:
+          type: string
+
+    ObligationRecord:
+      type: object
+      properties:
+        obligation_id:
+          type: string
+        taxpayer_id:
+          type: string
+        tax_period_start:
+          type: string
+        tax_period_end:
+          type: string
+        due_date:
+          type: string
+        cadence:
+          type: string
+        state:
+          type: string
+        filing_id:
+          type: string
+          format: uuid
+        preliminary_assessment_id:
+          type: string
+
+    StateResponse:
+      type: object
+      properties:
+        obligation_id:
+          type: string
+        state:
+          type: string
+        trace_id:
+          type: string
+
+    PreliminaryResponse:
+      type: object
+      properties:
+        preliminary_assessment_id:
+          type: string
+        state:
+          type: string
+        estimated_net_vat:
+          type: number
+        trace_id:
+          type: string
+
+    PreliminaryStateResponse:
+      type: object
+      properties:
+        preliminary_assessment_id:
+          type: string
+        state:
+          type: string
+        issued_at:
+          type: string
+        trace_id:
+          type: string
+
+    SupersedeResponse:
+      type: object
+      properties:
+        preliminary_assessment_id:
+          type: string
+        state:
+          type: string
+        superseding_filing_id:
+          type: string
+          format: uuid
+        superseded_at:
+          type: string
+        trace_id:
+          type: string
+
+    StagedAssessment:
+      type: object
+      required: [filing_id, trace_id, rule_version_id, assessed_at, stage1_gross_output_vat,
+                 stage2_total_deductible_input_vat, stage3_pre_adjustment_net_vat,
+                 stage4_net_vat, result_type, claim_amount]
+      properties:
+        filing_id:
+          type: string
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        assessed_at:
+          type: string
+        stage1_gross_output_vat:
+          type: number
+        stage2_total_deductible_input_vat:
+          type: number
+        stage3_pre_adjustment_net_vat:
+          type: number
+        stage4_net_vat:
+          type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+
+  responses:
+    BadRequest:
+      description: Bad request — missing or invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    UnprocessableEntity:
+      description: Invalid state transition
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

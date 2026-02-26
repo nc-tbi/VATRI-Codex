@@ -1,0 +1,413 @@
+openapi: "3.1.0"
+info:
+  title: Amendment Service API
+  version: "1.2.1"
+  description: |
+    Tax Core amendment service - versioned VAT filing amendments (ADR-005, ADR-006).
+    Bounded context: Amendment. No in-place mutation; each amendment increments assessment_version.
+    Publishes to tax-core.amendment.created.
+    v1.2.0: StagedAssessment renamed to AssessmentSnapshot (disambiguation from assessment-service);
+    required[] added to AlterResponse and UndoRedoResponse.
+    v1.2.1: AmendmentRequest required-fields aligned with runtime (tax_period_end required);
+    AmendmentResponse aligned with runtime fields (idempotent, amendment_id).
+
+servers:
+  - url: http://localhost:3005
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /amendments:
+    post:
+      operationId: createAmendment
+      summary: Create a versioned amendment
+      tags: [Amendments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AmendmentRequest"
+      responses:
+        "201":
+          description: Amendment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AmendmentResponse"
+        "422":
+          $ref: "#/components/responses/Unprocessable"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    get:
+      operationId: listAmendments
+      summary: List amendments by taxpayer
+      tags: [Amendments]
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: tax_period_end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Amendments for the taxpayer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  amendments:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AmendmentRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /amendments/{filing_id}:
+    get:
+      operationId: getAmendmentsForFiling
+      summary: List amendments for an original filing
+      tags: [Amendments]
+      parameters:
+        - name: filing_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Amendment history for the filing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AmendmentListResponse"
+
+  /amendments/{amendment_id}/alter:
+    post:
+      operationId: alterAmendment
+      summary: Admin - override amendment fields
+      description: |
+        Applies a partial field override for the canonical amendment resource identified by amendment_id.
+        Persists append-only alter events with before/after snapshot hashes.
+      tags: [Admin]
+      parameters:
+        - name: amendment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlterRequest"
+      responses:
+        "200":
+          description: Alter applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlterResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /amendments/{amendment_id}/undo:
+    post:
+      operationId: undoAmendmentAlter
+      summary: Admin - revert last applied alter
+      tags: [Admin]
+      parameters:
+        - name: amendment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Undo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UndoRedoResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Nothing to undo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /amendments/{amendment_id}/redo:
+    post:
+      operationId: redoAmendmentAlter
+      summary: Admin - re-apply last undone alter
+      tags: [Admin]
+      parameters:
+        - name: amendment_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Redo applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UndoRedoResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Nothing to redo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    AssessmentSnapshot:
+      type: object
+      description: |
+        Assessment snapshot carried in an amendment request. Subset of assessment-service StagedAssessment.
+        Renamed from StagedAssessment (v1.2.0) to disambiguate from the full assessment-service schema.
+      required: [filing_id, trace_id, rule_version_id, assessed_at, stage4_net_vat, result_type, claim_amount]
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        trace_id:
+          type: string
+        rule_version_id:
+          type: string
+        assessed_at:
+          type: string
+          format: date-time
+        stage4_net_vat:
+          type: number
+        result_type:
+          type: string
+          enum: [payable, refund, zero]
+        claim_amount:
+          type: number
+          minimum: 0
+
+    AmendmentRequest:
+      type: object
+      required: [original_filing_id, taxpayer_id, tax_period_end, original_assessment, new_assessment]
+      properties:
+        original_filing_id:
+          type: string
+          format: uuid
+        taxpayer_id:
+          type: string
+        original_assessment:
+          $ref: "#/components/schemas/AssessmentSnapshot"
+        new_assessment:
+          $ref: "#/components/schemas/AssessmentSnapshot"
+
+    AmendmentRecord:
+      type: object
+      required:
+        - amendment_id
+        - original_filing_id
+        - prior_assessment_version
+        - new_assessment_version
+        - taxpayer_id
+        - tax_period_end
+        - delta_net_vat
+        - delta_classification
+        - new_claim_required
+        - created_at
+        - trace_id
+      properties:
+        amendment_id:
+          type: string
+          format: uuid
+        original_filing_id:
+          type: string
+          format: uuid
+        prior_assessment_version:
+          type: integer
+        new_assessment_version:
+          type: integer
+        taxpayer_id:
+          type: string
+        tax_period_end:
+          type: string
+          format: date
+        delta_net_vat:
+          type: number
+        delta_classification:
+          type: string
+          enum: [increase, decrease, neutral]
+        new_claim_required:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+
+    AmendmentResponse:
+      type: object
+      required: [trace_id, idempotent, amendment_id, amendment]
+      properties:
+        trace_id:
+          type: string
+        idempotent:
+          type: boolean
+          enum: [false]
+        amendment_id:
+          type: string
+          format: uuid
+        amendment:
+          $ref: "#/components/schemas/AmendmentRecord"
+
+    AmendmentListResponse:
+      type: object
+      required: [trace_id, filing_id, amendments]
+      properties:
+        trace_id:
+          type: string
+        filing_id:
+          type: string
+          format: uuid
+        amendments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AmendmentRecord"
+
+    AlterRequest:
+      type: object
+      required: [field_deltas]
+      properties:
+        field_deltas:
+          type: object
+          additionalProperties: true
+
+    AlterResponse:
+      type: object
+      required: [trace_id, amendment_id, alter_id, effective_state]
+      properties:
+        trace_id:
+          type: string
+        amendment_id:
+          type: string
+          format: uuid
+        alter_id:
+          type: string
+          format: uuid
+        effective_state:
+          type: object
+          description: The amendment record state after applying the alter.
+
+    UndoRedoResponse:
+      type: object
+      required: [trace_id, amendment_id, effective_state]
+      properties:
+        trace_id:
+          type: string
+        amendment_id:
+          type: string
+          format: uuid
+        undone_alter_id:
+          type: string
+          format: uuid
+          description: Present when responding to an undo operation.
+        redone_alter_id:
+          type: string
+          format: uuid
+          description: Present when responding to a redo operation.
+        effective_state:
+          type: object
+          description: The amendment record state after applying the undo/redo.
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Forbidden - admin role required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unprocessable:
+      description: Domain validation failure
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"

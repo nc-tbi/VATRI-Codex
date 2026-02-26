@@ -3,19 +3,20 @@
 Reference date: 2026-02-25
 
 ## Purpose
-Define the portal-critical API deltas required for front-end implementation readiness.
+Define the portal-critical API contracts required for front-end implementation readiness.
 
 ## Contract Policy
 - OpenAPI and runtime behavior must be updated together.
 - Portal consumes API-first contracts only (via gateway/BFF), never service internals.
 - Legal/tax decision logic remains server-side.
 
-## Delta A - Auth and Session Endpoints (Missing)
+## Delta A - Auth and Session Endpoints (Approved)
 Required endpoints:
 - `POST /auth/login`
 - `POST /auth/logout`
 - `POST /auth/refresh` (if refresh-token model is used)
 - `GET /auth/me`
+- `POST /auth/first-login/password`
 
 Required response fields:
 - `trace_id`
@@ -25,10 +26,16 @@ Required response fields:
   - `role` (`admin` | `taxpayer`)
   - `taxpayer_scope` (nullable for admin)
 
-Status:
-- Not present in current `build/openapi/*` set.
+First-login flow contract:
+- endpoint accepts temporary credential/token + new password payload
+- returns `200` on successful password creation and challenge clear
+- returns `401` for invalid/expired temporary credential
+- returns `409` when first-login is already completed
 
-## Delta B - Admin Alter/Undo/Redo APIs (Missing)
+Status:
+- Approved as mandatory contract baseline.
+
+## Delta B - Admin Alter/Undo/Redo APIs (Approved)
 Required actions:
 - Filing alter/undo/redo
 - Amendment alter/undo/redo
@@ -40,20 +47,25 @@ Minimum contract requirements:
 - side-effect guarantees explicitly stated in endpoint description
 
 Status:
-- Not present in current filing/amendment OpenAPI paths.
+- Approved and frozen via `design/08-phase-4-contract-freeze.md`.
 
-## Delta C - List/Query Endpoints for Portal Tabs (Partially Missing)
+## Delta C - List/Query Endpoints for Portal Tabs (Approved)
 Required read/query endpoints:
 - obligations by taxpayer
 - filings by taxpayer and period
 - amendments by taxpayer and period
 - assessments and claims by taxpayer and period
+- registration lookup by taxpayer id
+
+Registration lookup by taxpayer id (approved contract):
+- `GET /registration/parties?taxpayer_id={id}` (or equivalent canonical query parameter on registration lookup endpoint)
+- `200` response must include deterministic `trace_id`, requested `taxpayer_id`, and matching party payload(s)
+- `404` allowed for no match when endpoint is single-resource style; `200` with empty collection allowed for list style, but behavior must be consistent and documented
 
 Status summary:
-- Core entity lookup endpoints exist.
-- taxpayer/period list views required by portal tabs are not fully represented in current OpenAPI contracts.
+- Approved as required for admin/taxpayer management workflows.
 
-## Delta D - Transparency Payload for Assessments and Claims (Partially Missing)
+## Delta D - Transparency Payload for Assessments and Claims (Approved)
 Portal transparency view requires payload fields for:
 - calculation stage summary
 - selected rule identifiers and version
@@ -62,8 +74,7 @@ Portal transparency view requires payload fields for:
 - user-readable explanation text blocks (server-provided, not generated client-side)
 
 Status summary:
-- Assessment staged values exist.
-- Dedicated explainability/transparency envelope is not yet fully standardized across assessment/claim responses.
+- Approved and frozen for Phase 4B scope via `design/08-phase-4-contract-freeze.md`.
 
 ## Delta F - DK Filing Form Surface Alignment (Now Mandatory)
 Required canonical request fields for DK filing UI alignment:
@@ -93,7 +104,7 @@ Required env guard:
 ## Error Envelope Requirements (Portal-Wide)
 For all portal-critical endpoints:
 - include `trace_id`
-- stable `error_code`
+- stable `error` machine code
 - human-readable `message`
 - optional `details[]` for field errors
 
@@ -104,15 +115,27 @@ For all portal-critical endpoints:
   - `409 Conflict` with machine-readable reason code.
 - No duplicate event side effects on idempotent replay.
 
-## Recommended OpenAPI Worklist
-1. Add `auth` API spec and runtime implementation.
-2. Extend filing/amendment specs with admin action routes and conflict/idempotency semantics.
-3. Add taxpayer/period query routes for portal tab reads.
-4. Publish unified transparency schema used by assessments + claims tab.
-5. Add explicit non-production seeding behavior and env guard notes in API/docs.
+## Delta G - Amendment Access Policy (Approved)
+Policy contract:
+- Amendment create must be context-only from an existing submitted filing.
+- Required input linkage:
+  - `original_filing_id` must reference a submitted filing accessible by caller scope.
+  - caller scope must match filing taxpayer scope unless admin with explicit management context.
+- Requests outside this context are rejected with policy/validation errors (`403` or `422`) using standard error envelope.
+
+## Delta H - ADR Impact Decision
+- No ADR added for this update.
+- Reason: first-login flow, taxpayer-id lookup, and amendment context policy are non-breaking contract refinements inside existing ADR-009/010 boundary.
+
+## Contract Freeze Alignment Checklist
+1. Keep auth/session and first-login endpoints OpenAPI/runtime-parity locked.
+2. Keep filing/amendment alter/undo/redo semantics aligned with `design/08-phase-4-contract-freeze.md`.
+3. Keep taxpayer-id registration lookup behavior deterministic and documented.
+4. Keep assessment/claim transparency payload field names stable for portal rendering.
+5. Keep seeded-admin and environment guard behavior explicitly documented in API/docs.
 
 ## Acceptance Criteria
-- Each delta is represented in OpenAPI and executable runtime behavior.
+- Each approved delta is represented in OpenAPI and executable runtime behavior.
 - Portal route needs are covered without undocumented payload assumptions.
 - Idempotency/conflict semantics are explicit for admin actions.
 

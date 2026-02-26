@@ -60,6 +60,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io) server (`tax-core-mc
 |-- CODING_OPTIMIZER.md              # Coding optimizer operating contract
 |-- CODE_BUILDER.md                  # Code builder operating contract
 |-- FRONTEND_DEVELOPER.md            # Front-end developer operating contract
+|-- UX_DESIGNER.md                   # UX designer operating contract
 |-- DEVOPS.md                        # DevOps operating contract
 |-- TEST_MANAGER.md                  # Test manager operating contract
 |-- TESTER.md                        # Tester operating contract
@@ -193,6 +194,7 @@ Role-based contracts define how AI agents must operate in this repository:
 - **[CODING_OPTIMIZER.md](CODING_OPTIMIZER.md)** - Coding Optimizer role.
 - **[CODE_BUILDER.md](CODE_BUILDER.md)** - Code Builder role.
 - **[FRONTEND_DEVELOPER.md](FRONTEND_DEVELOPER.md)** - Front-End Developer role.
+- **[UX_DESIGNER.md](UX_DESIGNER.md)** - UX Designer role.
 - **[DEVOPS.md](DEVOPS.md)** - DevOps role.
 - **[TEST_MANAGER.md](TEST_MANAGER.md)** - Test Manager role.
 - **[TESTER.md](TESTER.md)** - Tester role.
@@ -278,6 +280,5 @@ Helpful docs:
 - `documentation/designer/README.md` (designer documentation pack index)
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
-
 
 

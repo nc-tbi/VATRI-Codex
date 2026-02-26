@@ -10,6 +10,18 @@ interface AuthRouteOptions extends FastifyPluginOptions {
   store: AuthTokenStore;
 }
 
+function sendError(
+  reply: {
+    status: (statusCode: number) => { send: (body: unknown) => unknown };
+  },
+  statusCode: number,
+  traceId: string,
+  error: string,
+  message: string,
+) {
+  return reply.status(statusCode).send({ error, message, trace_id: traceId });
+}
+
 function getSigningKey(): Uint8Array {
   const key = process.env.SESSION_SIGNING_KEY?.trim();
   if (!key) {
@@ -42,22 +54,22 @@ async function issueRefreshToken(store: AuthTokenStore, subject_id: string): Pro
 
 export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): Promise<void> {
   const store = opts.store;
+  type ErrorReply = Parameters<typeof sendError>[0];
+  type AuthenticatedUserResult =
+    | { ok: true; user: UserRecord }
+    | { ok: false; statusCode: number; code: string; message: string };
 
   app.post<{ Body: { username: string; password: string } }>("/login", async (req, reply) => {
     const { username, password } = req.body ?? {};
     const traceId = req.id;
 
     if (!username || !password) {
-      return reply.status(400).send({
-        error: "BAD_REQUEST",
-        message: "username and password are required",
-        trace_id: traceId,
-      });
+      return sendError(reply, 400, traceId, "BAD_REQUEST", "username and password are required");
     }
 
     const user = await store.findUserByUsername(username);
     if (!user || !(await store.verifyPassword(password, user.passwordHash))) {
-      return reply.status(401).send({ error: "INVALID_CREDENTIALS", trace_id: traceId });
+      return sendError(reply, 401, traceId, "INVALID_CREDENTIALS", "username or password is incorrect");
     }
 
     const access_token = await signAccessToken(user, traceId);
@@ -70,9 +82,75 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
       access_token,
       refresh_token,
       expires_in: ACCESS_TOKEN_EXPIRY_SECONDS,
+      password_change_required: user.password_change_required,
       user: { subject_id: user.subject_id, role: user.role, taxpayer_scope: user.taxpayer_scope },
     });
   });
+
+  async function resolveAuthenticatedUser(authHeader: string | undefined): Promise<AuthenticatedUserResult> {
+    if (!authHeader?.startsWith("Bearer ")) {
+      return { ok: false, statusCode: 401, code: "MISSING_TOKEN", message: "missing bearer token" };
+    }
+    try {
+      const { payload } = await jwtVerify(authHeader.slice(7), getSigningKey());
+      if (typeof payload.sub !== "string" || payload.sub.length === 0) {
+        return { ok: false, statusCode: 401, code: "INVALID_TOKEN", message: "token subject is missing" };
+      }
+      const user = await store.findUserById(payload.sub);
+      if (!user) {
+        return { ok: false, statusCode: 401, code: "USER_NOT_FOUND", message: "authenticated user not found" };
+      }
+      return { ok: true, user };
+    } catch {
+      return { ok: false, statusCode: 401, code: "INVALID_TOKEN", message: "bearer token is invalid or expired" };
+    }
+  }
+
+  async function handlePasswordChange(
+    req: { body?: { current_password?: string; new_password?: string }; headers: { authorization?: string }; id: string },
+    reply: ErrorReply,
+  ) {
+    const traceId = req.id;
+    const auth = await resolveAuthenticatedUser(req.headers.authorization);
+    if (!auth.ok) {
+      return sendError(reply, auth.statusCode, traceId, auth.code, auth.message);
+    }
+
+    const { current_password, new_password } = req.body ?? {};
+    if (!current_password || !new_password) {
+      return sendError(
+        reply,
+        400,
+        traceId,
+        "BAD_REQUEST",
+        "current_password and new_password are required",
+      );
+    }
+    if (new_password.length < 8) {
+      return sendError(reply, 400, traceId, "BAD_REQUEST", "new_password must be at least 8 characters");
+    }
+
+    const passwordMatches = await store.verifyPassword(current_password, auth.user.passwordHash);
+    if (!passwordMatches) {
+      return sendError(reply, 401, traceId, "INVALID_CREDENTIALS", "current_password is incorrect");
+    }
+
+    await store.changePassword(auth.user.subject_id, new_password);
+    return reply.status(200).send({
+      trace_id: traceId,
+      message: "password changed",
+      password_change_required: false,
+    });
+  }
+
+  app.post<{ Body: { current_password: string; new_password: string } }>("/change-password", async (req, reply) =>
+    handlePasswordChange(req, reply),
+  );
+
+  // Backwards-compatible alias used by older portal clients.
+  app.post<{ Body: { current_password: string; new_password: string } }>("/password", async (req, reply) =>
+    handlePasswordChange(req, reply),
+  );
 
   app.post<{ Body: { refresh_token?: string } }>("/logout", async (req, reply) => {
     const { refresh_token } = req.body ?? {};
@@ -86,21 +164,21 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
     const traceId = req.id;
 
     if (!refresh_token) {
-      return reply.status(400).send({ error: "BAD_REQUEST", message: "refresh_token is required", trace_id: traceId });
+      return sendError(reply, 400, traceId, "BAD_REQUEST", "refresh_token is required");
     }
 
     const entry = await store.lookupRefreshToken(refresh_token);
     if (!entry) {
-      return reply.status(401).send({ error: "INVALID_REFRESH_TOKEN", trace_id: traceId });
+      return sendError(reply, 401, traceId, "INVALID_REFRESH_TOKEN", "refresh_token is invalid");
     }
     if (new Date(entry.expires_at) < new Date()) {
       await store.revokeRefreshToken(refresh_token);
-      return reply.status(401).send({ error: "REFRESH_TOKEN_EXPIRED", trace_id: traceId });
+      return sendError(reply, 401, traceId, "REFRESH_TOKEN_EXPIRED", "refresh_token has expired");
     }
 
     const user = await store.findUserById(entry.subject_id);
     if (!user) {
-      return reply.status(401).send({ error: "USER_NOT_FOUND", trace_id: traceId });
+      return sendError(reply, 401, traceId, "USER_NOT_FOUND", "user no longer exists");
     }
 
     await store.revokeRefreshToken(refresh_token);
@@ -114,6 +192,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
       access_token,
       refresh_token: new_refresh_token,
       expires_in: ACCESS_TOKEN_EXPIRY_SECONDS,
+      password_change_required: user.password_change_required,
       user: { subject_id: user.subject_id, role: user.role, taxpayer_scope: user.taxpayer_scope },
     });
   });
@@ -123,7 +202,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
-      return reply.status(401).send({ error: "MISSING_TOKEN", trace_id: traceId });
+      return sendError(reply, 401, traceId, "MISSING_TOKEN", "missing bearer token");
     }
 
     try {
@@ -137,7 +216,7 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
         },
       });
     } catch {
-      return reply.status(401).send({ error: "INVALID_TOKEN", trace_id: traceId });
+      return sendError(reply, 401, traceId, "INVALID_TOKEN", "bearer token is invalid or expired");
     }
   });
 }

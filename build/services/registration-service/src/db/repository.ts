@@ -43,6 +43,16 @@ export class RegistrationRepository {
     return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
   }
 
+  async findRegistrationsByTaxpayerId(taxpayerId: string): Promise<Record<string, unknown>[]> {
+    const rows = await this.sql`
+      SELECT *
+      FROM registration.registrations
+      WHERE taxpayer_id = ${taxpayerId}
+      ORDER BY created_at ASC, registration_id ASC
+    `;
+    return rows as Record<string, unknown>[];
+  }
+
   async updateRegistrationStatus(
     registrationId: string,
     status: string,

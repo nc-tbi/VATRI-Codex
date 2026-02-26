@@ -346,3 +346,25 @@ Defect tracker update (this cycle):
 | Defect ID | Linked Run IDs | Severity | Owner | Status | Disposition |
 |---|---|---|---|---|---|
 | `P4-DEF-20260226-100156-000` | `P4-RUN-20260226-100156-A..E` | N/A | Code Builder | Closed | No command failures observed; no blocker defect opened in this cycle. |
+
+## Portal Front-End Test Evidence (Coverage Maintenance Rerun 2026-02-26)
+
+| Run ID | Date | Command | Result | Scope |
+|---|---|---|---|---|
+| `PF-RUN-015` | 2026-02-26 | `cd frontend/portal && npm run validate:openapi:release` | Pass | Frontend OpenAPI release validation (`35 checks`) |
+| `PF-RUN-016` | 2026-02-26 | `cd frontend/portal && npm run test:e2e:mocked` | Pass (`9/9`) | Mocked lane with first-login, registration required/optional, taxpayer fallback, amendment context guard coverage |
+| `PF-RUN-017` | 2026-02-26 | `cd frontend/portal && npm run test:e2e:live` | Pass (`2/2`) | Live lane with backend + DB behavior |
+
+Coverage closure mapping (this rerun):
+- First-login password creation happy + negative paths: covered (`login.spec.ts`) and passing in `PF-RUN-016`.
+- Registration required vs optional behavior: covered (`admin-taxpayers.mock.spec.ts`) and passing in `PF-RUN-016`.
+- Find-taxpayer registration-id lookup + taxpayer-id fallback: covered (`admin-taxpayers.mock.spec.ts`) and passing in `PF-RUN-016`.
+- Amendment context-only guard (no context, no taxpayer sidebar shortcut): covered (`taxpayer-flow.mock.spec.ts`) and passing in `PF-RUN-016`.
+
+Release exit criteria check (portal subset):
+- Auth first-login password creation + persistence: **Pass**.
+- Registration taxpayer-id fallback behavior: **Pass**.
+- Frontend OpenAPI release validation: **Pass**.
+- `test:e2e:mocked`: **Pass**.
+- `test:e2e:live`: **Pass**.
+- Amendment context-only/non-sidebar for taxpayers: **Pass**.

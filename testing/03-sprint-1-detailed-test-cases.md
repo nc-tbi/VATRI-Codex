@@ -357,3 +357,27 @@ Phase 4 decision policy:
 - Record runs as `P4-RUN-<n>-A..E` in append-only form.
 - `Ready = Yes` only when all five commands are `Pass` in the same validation cycle.
 - Any single fail or missing evidence row => `Ready = No (Blocked)`.
+
+### 6.12 Portal Coverage Addendum (2026-02-26)
+
+New/maintained executable coverage:
+| Coverage Focus | Test Artifact | Command Lane | Result |
+|---|---|---|---|
+| First-login password creation happy path + persistence | `frontend/portal/tests/e2e/login.spec.ts` (`@mocked first-login password creation happy path persists session and redirects`) | `npm run test:e2e:mocked` | Pass |
+| First-login password creation negative paths (length/mismatch) | `frontend/portal/tests/e2e/login.spec.ts` (`@mocked first-login password creation rejects short and mismatched passwords`) | `npm run test:e2e:mocked` | Pass |
+| Registration required vs optional field behavior | `frontend/portal/tests/e2e/admin-taxpayers.mock.spec.ts` (`@mocked registration required fields block submit and optional fields are omitted when blank`) | `npm run test:e2e:mocked` | Pass |
+| Find-taxpayer by registration-id and taxpayer-id fallback | `frontend/portal/tests/e2e/admin-taxpayers.mock.spec.ts` (`@mocked find-taxpayer supports registration-id direct lookup and taxpayer-id fallback`) | `npm run test:e2e:mocked` | Pass |
+| Amendment context guard without context | `frontend/portal/tests/e2e/taxpayer-flow.mock.spec.ts` (`@mocked amendment page requires filing context from overview/submission flow`) | `npm run test:e2e:mocked` | Pass |
+
+Lane evidence refresh:
+- `2026-02-26T12:03:11+01:00` `cd frontend/portal && npm run validate:openapi:release` -> Pass (`Frontend release OpenAPI validation passed (35 checks).`)
+- `2026-02-26T12:05:04+01:00` `cd frontend/portal && npm run test:e2e:mocked` -> Pass (`9 passed`)
+- `2026-02-26T12:05:36+01:00` `cd frontend/portal && npm run test:e2e:live` -> Pass (`2 passed`)
+
+Release-exit checklist state:
+- First-login password creation and persistence: **Pass**.
+- Taxpayer-id lookup support or explicit fallback policy: **Pass** (fallback behavior covered).
+- Frontend OpenAPI release validation: **Pass**.
+- `test:e2e:mocked`: **Pass**.
+- `test:e2e:live`: **Pass**.
+- Amendment context-only and non-sidebar for taxpayers: **Pass**.

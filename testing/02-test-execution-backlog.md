@@ -459,3 +459,36 @@ Update (2026-02-26, same cycle):
 - `P4-RUN-2026-02-26-02-E`: `cd build && npm run test:gate-c-remediation` -> Pass.
 - Supporting focused phase-4 run: `cd build && npm run test:phase4-core` -> Pass (`2/2` files, `4/4` tests).
 
+
+## 13. Phase 4 Portal Coverage Maintenance (2026-02-26)
+
+Scope covered in this refresh:
+- First-login password creation happy and negative paths.
+- Registration required vs optional field behavior.
+- Find-taxpayer by registration id and taxpayer id fallback behavior.
+- Amendment context guard remains enforced (`/amendments/new` without context).
+
+Implemented/maintained test assets:
+- `frontend/portal/tests/e2e/login.spec.ts`
+  - `@mocked first-login password creation happy path persists session and redirects`
+  - `@mocked first-login password creation rejects short and mismatched passwords`
+- `frontend/portal/tests/e2e/admin-taxpayers.mock.spec.ts`
+  - `@mocked registration required fields block submit and optional fields are omitted when blank`
+  - `@mocked find-taxpayer supports registration-id direct lookup and taxpayer-id fallback`
+- `frontend/portal/tests/e2e/taxpayer-flow.mock.spec.ts`
+  - `@mocked amendment page requires filing context from overview/submission flow` (guard retained)
+
+Lane evidence (current):
+| Command | Timestamp | Result | Evidence Snippet |
+|---|---|---|---|
+| `cd frontend/portal && npm run validate:openapi:release` | 2026-02-26T12:03:11+01:00 | Pass | `Frontend release OpenAPI validation passed (35 checks).` |
+| `cd frontend/portal && npm run test:e2e:mocked` | 2026-02-26T12:05:04+01:00 | Pass | `9 passed` |
+| `cd frontend/portal && npm run test:e2e:live` | 2026-02-26T12:05:36+01:00 | Pass | `2 passed` |
+
+Release exit criteria status (this evidence cycle):
+- Auth supports first-login password creation and persistence: **Pass** (mocked flow + localStorage persistence assertion).
+- Registration supports taxpayer-id lookup fallback: **Pass** (mocked fallback from registration-id lookup `404` to taxpayer query).
+- Frontend OpenAPI release validation passes: **Pass**.
+- `npm run test:e2e:mocked` passes: **Pass**.
+- `npm run test:e2e:live` passes: **Pass**.
+- Amendment remains context-only and non-sidebar for taxpayers: **Pass** (`taxpayer-flow.mock.spec.ts` guard assertions).

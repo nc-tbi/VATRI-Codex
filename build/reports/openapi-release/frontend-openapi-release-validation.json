@@ -1,0 +1,181 @@
+{
+  "generated_at": "2026-02-26T11:03:12.568Z",
+  "checks": [
+    {
+      "name": "auth-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "registration-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "obligation-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "filing-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "amendment-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "assessment-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "claim-openapi-version",
+      "status": "pass",
+      "detail": "OpenAPI 3.1 artifact present"
+    },
+    {
+      "name": "auth-login-path",
+      "status": "pass",
+      "detail": "Auth login route documented"
+    },
+    {
+      "name": "auth-me-path",
+      "status": "pass",
+      "detail": "Auth me route documented"
+    },
+    {
+      "name": "auth-logout-path",
+      "status": "pass",
+      "detail": "Auth logout route documented"
+    },
+    {
+      "name": "registration-create-path",
+      "status": "pass",
+      "detail": "Registration create/list route documented"
+    },
+    {
+      "name": "registration-cadence-path",
+      "status": "pass",
+      "detail": "Cadence policy route documented"
+    },
+    {
+      "name": "obligation-list-path",
+      "status": "pass",
+      "detail": "Obligation list route documented"
+    },
+    {
+      "name": "obligation-submit-path",
+      "status": "pass",
+      "detail": "Obligation submit route documented"
+    },
+    {
+      "name": "obligation-submit-422",
+      "status": "pass",
+      "detail": "Obligation submit exposes 422 validation response"
+    },
+    {
+      "name": "filing-submit-path",
+      "status": "pass",
+      "detail": "Filing submit/list route documented"
+    },
+    {
+      "name": "filing-submit-200",
+      "status": "pass",
+      "detail": "Filing POST exposes 200"
+    },
+    {
+      "name": "filing-submit-201",
+      "status": "pass",
+      "detail": "Filing POST exposes 201"
+    },
+    {
+      "name": "filing-submit-409",
+      "status": "pass",
+      "detail": "Filing POST exposes 409"
+    },
+    {
+      "name": "filing-submit-422",
+      "status": "pass",
+      "detail": "Filing POST exposes 422"
+    },
+    {
+      "name": "filing-submit-500",
+      "status": "pass",
+      "detail": "Filing POST exposes 500"
+    },
+    {
+      "name": "filing-idempotent-contract",
+      "status": "pass",
+      "detail": "Filing response requires filing_id/state/trace_id/idempotent"
+    },
+    {
+      "name": "filing-uuid-contract",
+      "status": "pass",
+      "detail": "Canonical filing_id is UUID in OpenAPI"
+    },
+    {
+      "name": "amendment-submit-path",
+      "status": "pass",
+      "detail": "Amendment submit/list route documented"
+    },
+    {
+      "name": "amendment-submit-400",
+      "status": "pass",
+      "detail": "Amendment POST exposes 400"
+    },
+    {
+      "name": "amendment-submit-422",
+      "status": "pass",
+      "detail": "Amendment POST exposes 422"
+    },
+    {
+      "name": "amendment-submit-500",
+      "status": "pass",
+      "detail": "Amendment POST exposes 500"
+    },
+    {
+      "name": "amendment-submit-envelope",
+      "status": "pass",
+      "detail": "Amendment response includes trace_id + idempotent + amendment_id + amendment"
+    },
+    {
+      "name": "assessment-path",
+      "status": "pass",
+      "detail": "Assessment list/create route documented"
+    },
+    {
+      "name": "claim-path",
+      "status": "pass",
+      "detail": "Claim list/create route documented"
+    },
+    {
+      "name": "filing-error-codes",
+      "status": "pass",
+      "detail": "Filing POST declares deterministic 400/409/422/500 contract"
+    },
+    {
+      "name": "amendment-error-codes",
+      "status": "pass",
+      "detail": "Amendment POST declares deterministic 400/422/500 contract"
+    },
+    {
+      "name": "obligation-submit-error-codes",
+      "status": "pass",
+      "detail": "Obligation submit declares deterministic 400/422 contract"
+    },
+    {
+      "name": "filing-error-envelope",
+      "status": "pass",
+      "detail": "Filing error envelope includes required error + trace_id"
+    },
+    {
+      "name": "amendment-error-envelope",
+      "status": "pass",
+      "detail": "Amendment error envelope includes required error + trace_id"
+    }
+  ],
+  "passed": true
+}

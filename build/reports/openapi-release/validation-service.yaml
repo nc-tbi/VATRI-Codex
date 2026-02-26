@@ -1,0 +1,155 @@
+openapi: "3.1.0"
+info:
+  title: Validation Service API
+  version: "1.0.0"
+  description: |
+    Tax Core validation service — stateless VAT filing validation (ADR-006).
+    Bounded context: Validation. Applies identity, amount, and consistency checks.
+
+servers:
+  - url: http://localhost:3002
+    description: Local development
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      tags: [Health]
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /validations:
+    post:
+      operationId: validateFiling
+      summary: Validate a canonical VAT filing
+      description: |
+        Runs identity validation (S01–S03), amount validation (S04–S06),
+        and consistency validation (S07–S08). Returns validation result with issues.
+        Stateless — results are not persisted.
+      tags: [Validations]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CanonicalFilingRequest"
+      responses:
+        "200":
+          description: Filing is valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+        "422":
+          description: Filing has validation errors
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+        service:
+          type: string
+
+    CanonicalFilingRequest:
+      type: object
+      required: [filing_id, taxpayer_id, cvr_number, tax_period_start, tax_period_end, filing_type]
+      properties:
+        filing_id:
+          type: string
+          format: uuid
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+          pattern: "^[0-9]{8}$"
+        tax_period_start:
+          type: string
+          format: date
+        tax_period_end:
+          type: string
+          format: date
+        filing_type:
+          type: string
+          enum: [regular, zero, amendment]
+        output_vat_amount_domestic:
+          type: number
+        reverse_charge_output_vat_goods_abroad_amount:
+          type: number
+        reverse_charge_output_vat_services_abroad_amount:
+          type: number
+        input_vat_deductible_amount_total:
+          type: number
+        adjustments_amount:
+          type: number
+        reimbursement_oil_and_bottled_gas_duty_amount:
+          type: number
+        reimbursement_electricity_duty_amount:
+          type: number
+        rubrik_a_goods_eu_purchase_value:
+          type: number
+        rubrik_a_services_eu_purchase_value:
+          type: number
+        rubrik_b_goods_eu_sale_value_reportable:
+          type: number
+        rubrik_b_goods_eu_sale_value_non_reportable:
+          type: number
+        rubrik_b_services_eu_sale_value:
+          type: number
+        rubrik_c_other_vat_exempt_supplies_value:
+          type: number
+
+    ValidationIssue:
+      type: object
+      required: [code, field, message, severity]
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+        severity:
+          type: string
+          enum: [error, warning]
+
+    ValidationResponse:
+      type: object
+      required: [trace_id, filing_id, valid, issues]
+      properties:
+        trace_id:
+          type: string
+        filing_id:
+          type: string
+          format: uuid
+        valid:
+          type: boolean
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationIssue"
+
+    ErrorResponse:
+      type: object
+      required: [error, trace_id]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+

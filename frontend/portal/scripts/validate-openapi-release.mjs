@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const repoRoot = join(__dirname, "..", "..", "..");
 const openapiDir = join(repoRoot, "build", "openapi");
+const reportsDir = join(repoRoot, "build", "reports", "openapi-release");
 
 function load(file) {
   return readFileSync(join(openapiDir, file), "utf8");
@@ -182,13 +183,22 @@ checks.push(
 );
 
 const failures = checks.filter((c) => c.status === "fail");
+mkdirSync(reportsDir, { recursive: true });
+const reportPath = join(reportsDir, "frontend-openapi-release-validation.json");
+writeFileSync(
+  reportPath,
+  `${JSON.stringify({ generated_at: new Date().toISOString(), checks, passed: failures.length === 0 }, null, 2)}\n`,
+  "utf8",
+);
 
 if (failures.length > 0) {
   console.error("Frontend release OpenAPI validation failed.");
   for (const failure of failures) {
     console.error(` - ${failure.name}: ${failure.detail}`);
   }
+  console.error(`Report written: ${reportPath}`);
   process.exit(1);
 }
 
 console.log(`Frontend release OpenAPI validation passed (${checks.length} checks).`);
+console.log(`Report written: ${reportPath}`);

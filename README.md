@@ -89,7 +89,7 @@ Tax Core covers the complete VAT lifecycle for Danish businesses:
 
 ## Danish VAT Calculation Coverage Matrix
 
-Status snapshot date: **2026-02-25**
+Status snapshot date: **2026-02-26**
 
 Legend:
 - `Implemented` = deterministic logic exists in code and has automated test evidence.
@@ -130,7 +130,7 @@ Status snapshot date: **2026-02-25**
 | Phase 1A - Service Integration Lane | Service-level API/DB/event integration quality gates for idempotency, contract parity, and audit durability. | **Completed** (`test:svc-integration` implemented and passing; `TB-S1-SVC-01..08` marked Done) |
 | Phase 2 - Assessment Core | Rule-engine runtime, VAT domain rule packs, and obligation lifecycle engine. | **Completed** (`test:gate-b` passing; 190/190 tests, 9/9 workspaces typecheck) |
 | Phase 3 - Claims Integration | Claim orchestration, outbox/queue connector reliability, reconciliation, and operational controls. | **Completed** (Gate C-Phase3 pass verified on 2026-02-25; `test:gate-b` pass with `212/212` tests + workspace typecheck, plus Phase 3 suites `12/12` passing) |
-| Phase 4 - Amendments and Controls | Amendment lineage/versioning, adjustment claims, and compliance dashboards. | **Planned** |
+| Phase 4 - Amendments and Controls | Amendment lineage/versioning, adjustment claims, and compliance dashboards. | **Completed** (Sprint 4/4B/4C closure validated on 2026-02-26 via same-cycle command set `ci:migration-compat`, `test:gate-b`, `test:svc-integration`, `test:gate-c-portal-regression -- --include-live`, `test:gate-c-remediation`) |
 | Phase 4A - Integration Boundaries | Customs/external contracts, failure handling, and contract-level VAT semantic enforcement. | **Planned** |
 | Phase 5 - Advanced Scenarios | Needs-module coverage, manual/legal routing, and coexistence governance. | **Planned** |
 | Phase 6 - ViDA Step 1-3 Enablement | ViDA ingestion/verification, high-risk handling, prefill controls, and settlement lifecycle enablement. | **Planned** |
@@ -278,7 +278,6 @@ Helpful docs:
 - `documentation/designer/README.md` (designer documentation pack index)
 
 *Part of the Netcompany VATRI initiative - Danish VAT modernisation.*
-
 
 
 

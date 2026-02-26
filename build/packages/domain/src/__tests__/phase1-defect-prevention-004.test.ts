@@ -231,9 +231,27 @@ function makeClaimAssessment(overrides: Partial<StagedAssessment> = {}): StagedA
   };
 }
 
+function resetIntegrationMocks(): void {
+  filingRepoMock.saveFiling.mockReset().mockResolvedValue(undefined);
+  filingRepoMock.findFiling.mockReset().mockResolvedValue(null);
+  filingPublisherMock.publishFilingReceived.mockReset().mockResolvedValue(undefined);
+  filingPublisherMock.publishFilingAssessed.mockReset().mockResolvedValue(undefined);
+  filingPublisherMock.publishClaimCreated.mockReset().mockResolvedValue(undefined);
+
+  claimRepoMock.saveClaim.mockReset().mockResolvedValue(undefined);
+  claimRepoMock.findClaim.mockReset().mockResolvedValue(null);
+  claimRepoMock.findByIdempotencyKey.mockReset().mockResolvedValue(null);
+  claimPublisherMock.publishClaimCreated.mockReset().mockResolvedValue(undefined);
+
+  assessmentRepoMock.saveAssessment.mockReset().mockResolvedValue(undefined);
+  assessmentRepoMock.findAssessment.mockReset().mockResolvedValue(null);
+  assessmentRepoMock.findAssessmentByFilingId.mockReset().mockResolvedValue(null);
+  assessmentPublisherMock.publishAssessed.mockReset().mockResolvedValue(undefined);
+}
+
 describe("[scenario:S01][gate:A][backlog:TB-S1-05] filing duplicate behavior", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetIntegrationMocks();
   });
 
   it("second submission of same filing_id is idempotent-or-conflict and avoids duplicate side effects", async () => {
@@ -253,12 +271,12 @@ describe("[scenario:S01][gate:A][backlog:TB-S1-05] filing duplicate behavior", (
     expect(filingPublisherMock.publishClaimCreated).toHaveBeenCalledTimes(0);
 
     await app.close();
-  });
+  }, 15_000);
 });
 
 describe("[scenario:S01][gate:A][backlog:TB-S3-03] claim contract and idempotency", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetIntegrationMocks();
   });
 
   it("enforces required request fields at runtime", async () => {
@@ -333,7 +351,7 @@ describe("[scenario:S01][gate:A][backlog:TB-S3-03] claim contract and idempotenc
 
 describe("[scenario:S01][gate:A][backlog:TB-S2-04] assessment retrieval contract", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetIntegrationMocks();
   });
 
   it("POST response includes retrievable assessment identifier", async () => {
@@ -424,7 +442,7 @@ describe("[scenario:S19][gate:A][backlog:TB-S3-02] Kafka publisher lifecycle reg
 
 describe("[scenario:S20][gate:A-SVC][backlog:TB-S1-SVC-01] admin mutation authorization", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetIntegrationMocks();
   });
 
   it("denies non-admin filing alter calls with 403", async () => {

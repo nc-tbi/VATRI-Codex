@@ -115,13 +115,14 @@ async function loginAdmin() {
   return login.body;
 }
 
-function makeAssessment(filingId, traceId, netVat) {
+function makeAssessment(filingId, traceId, netVat, assessmentVersion) {
   const claimAmount = Math.abs(netVat);
   return {
     filing_id: filingId,
     trace_id: traceId,
     rule_version_id: "DK-VAT-001",
     assessed_at: new Date().toISOString(),
+    assessment_version: assessmentVersion,
     stage1_gross_output_vat: 10000,
     stage2_total_deductible_input_vat: 3000,
     stage3_pre_adjustment_net_vat: netVat,
@@ -139,8 +140,8 @@ async function createAmendmentFixture() {
     original_filing_id: filingId,
     taxpayer_id: "TXP-REM-001",
     tax_period_end: "2026-01-31",
-    original_assessment: makeAssessment(filingId, `${traceId}-orig`, 7000),
-    new_assessment: makeAssessment(amendedFilingId, `${traceId}-new`, 7200),
+    original_assessment: makeAssessment(filingId, `${traceId}-orig`, 7000, 1),
+    new_assessment: makeAssessment(amendedFilingId, `${traceId}-new`, 7200, 2),
   };
   const res = await requestJson("http://localhost:3005/amendments", {
     method: "POST",

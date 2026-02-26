@@ -9,7 +9,7 @@ import type {
   AmendmentRecord,
   DeltaClassification,
 } from "../shared/types.js";
-import { AmendmentError } from "../shared/errors.js";
+import { AmendmentError, ManualLegalRoutingRequiredError } from "../shared/errors.js";
 
 /** In-memory amendment store (append-only).
  *  ADR-005: no in-place mutation — new version record only. */
@@ -19,6 +19,25 @@ function classifyDelta(delta: number): DeltaClassification {
   const EPSILON = 0.000001;
   if (Math.abs(delta) < EPSILON) return "neutral";
   return delta > 0 ? "increase" : "decrease";
+}
+
+function parseIsoDate(date: string): Date {
+  const parsed = new Date(`${date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new AmendmentError("tax_period_end must be an ISO date (YYYY-MM-DD).");
+  }
+  return parsed;
+}
+
+function isPastPeriodBeyondThreeYears(
+  taxPeriodEnd: string,
+  referenceDate: Date = new Date(),
+): boolean {
+  const periodEnd = parseIsoDate(taxPeriodEnd);
+  const cutoff = new Date(referenceDate);
+  cutoff.setUTCHours(0, 0, 0, 0);
+  cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 3);
+  return periodEnd < cutoff;
 }
 
 /**
@@ -42,14 +61,27 @@ export function createAmendment(
   amended: StagedAssessment,
   traceId: string,
 ): AmendmentRecord {
-  // Guard: version must increment by exactly 1
-  const expectedVersion = original.filing_id === amended.filing_id
-    ? -1  // same filing_id is disallowed for amendments
-    : -1;
-
   if (original.filing_id === amended.filing_id) {
     throw new AmendmentError(
       "Amendment must reference a different filing_id from the original.",
+    );
+  }
+
+  if (isPastPeriodBeyondThreeYears(originalPeriodEnd)) {
+    const cutoff = new Date();
+    cutoff.setUTCHours(0, 0, 0, 0);
+    cutoff.setUTCFullYear(cutoff.getUTCFullYear() - 3);
+    throw new ManualLegalRoutingRequiredError(
+      originalPeriodEnd,
+      cutoff.toISOString().slice(0, 10),
+    );
+  }
+
+  // Guard: assessment version must increment by exactly 1.
+  const expectedVersion = original.assessment_version + 1;
+  if (amended.assessment_version !== expectedVersion) {
+    throw new AmendmentError(
+      `Amended assessment_version must be ${expectedVersion} (got ${amended.assessment_version}).`,
     );
   }
 
@@ -64,8 +96,8 @@ export function createAmendment(
   const record: AmendmentRecord = {
     amendment_id: randomUUID(),
     original_filing_id: original.filing_id,
-    prior_assessment_version: 1, // original is always v1 unless chained
-    new_assessment_version: 2,
+    prior_assessment_version: original.assessment_version,
+    new_assessment_version: amended.assessment_version,
     taxpayer_id: originalTaxpayerId,
     tax_period_end: originalPeriodEnd,
     delta_net_vat: delta,
@@ -77,8 +109,6 @@ export function createAmendment(
 
   // ADR-005: append only — never overwrite existing records.
   amendmentStore.push(record);
-
-  void expectedVersion; // suppress unused variable warning
 
   return record;
 }

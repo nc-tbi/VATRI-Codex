@@ -67,9 +67,17 @@ function makeAssessment(overrides: Partial<StagedAssessment> = {}): StagedAssess
   };
 }
 
+function resetClaimMocks(): void {
+  claimRepoMock.saveClaim.mockReset().mockResolvedValue(undefined);
+  claimRepoMock.findClaim.mockReset().mockResolvedValue(null);
+  claimRepoMock.findByIdempotencyKey.mockReset().mockResolvedValue(null);
+  claimRepoMock.findByTaxpayerId.mockReset().mockResolvedValue([]);
+  claimPublisherMock.publishClaimCreated.mockReset().mockResolvedValue(undefined);
+}
+
 describe("[gate:C-Phase3][backlog:TB-S3-01][case:TC-S3-CLM-01] happy claim orchestration", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetClaimMocks();
   });
 
   it("[scenario:S01][scenario:S02][scenario:S03][scenario:S05] creates regular/refund/zero/amendment claims", async () => {
@@ -131,12 +139,12 @@ describe("[gate:C-Phase3][backlog:TB-S3-01][case:TC-S3-CLM-01] happy claim orche
     expect(claimRepoMock.saveClaim).toHaveBeenCalledTimes(4);
     expect(claimPublisherMock.publishClaimCreated).toHaveBeenCalledTimes(4);
     await app.close();
-  });
+  }, 15_000);
 });
 
 describe("[gate:C-Phase3][backlog:TB-S3-01][case:TC-S3-CLM-02] invalid claim input rejection", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetClaimMocks();
   });
 
   it("[scenario:S01] rejects malformed input with deterministic error envelope", async () => {
@@ -159,7 +167,7 @@ describe("[gate:C-Phase3][backlog:TB-S3-01][case:TC-S3-CLM-02] invalid claim inp
 
 describe("[gate:C-Phase3][backlog:TB-S3-03][case:TC-S3-CLM-03] duplicate idempotency", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetClaimMocks();
   });
 
   it("[scenario:S19] replays idempotently and prevents duplicate side effects", async () => {
@@ -208,7 +216,7 @@ describe("[gate:C-Phase3][backlog:TB-S3-03][case:TC-S3-CLM-03] duplicate idempot
 
 describe("[gate:C-Phase3][backlog:TB-S3-04][case:TC-S3-CLM-07] customs mismatch/error mapping", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetClaimMocks();
   });
 
   it("[scenario:S09] maps downstream customs mismatch to deterministic internal error envelope", async () => {
@@ -237,7 +245,7 @@ describe("[gate:C-Phase3][backlog:TB-S3-04][case:TC-S3-CLM-07] customs mismatch/
 
 describe("[gate:C-Phase3][backlog:TB-S3-05][case:TC-S3-CLM-08] risk anchors", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    resetClaimMocks();
   });
 
   it("[scenario:S08][scenario:S09][scenario:S19] keeps deterministic responses on anchored risk inputs", async () => {

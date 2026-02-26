@@ -47,6 +47,7 @@ export {
   RuleResolutionError,
   IdempotencyConflictError,
   AmendmentError,
+  ManualLegalRoutingRequiredError,
   // Phase 2 errors
   ObligationStateError,
   RegistrationError,

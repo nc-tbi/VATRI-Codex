@@ -11,7 +11,7 @@ import {
   _clearAmendmentStore,
 } from "../amendment/index.js";
 import { computeStagedAssessment } from "../assessment/index.js";
-import { AmendmentError } from "../shared/errors.js";
+import { AmendmentError, ManualLegalRoutingRequiredError } from "../shared/errors.js";
 import type { CanonicalFiling } from "../shared/types.js";
 
 function makeFiling(overrides: Partial<CanonicalFiling> = {}): CanonicalFiling {
@@ -61,6 +61,7 @@ describe("S04 — Amendment increases liability", () => {
     const amended = computeStagedAssessment(
       makeFiling({
         filing_id: "f-002",
+        assessment_version: 2,
         output_vat_amount_domestic: 15000,
         input_vat_deductible_amount_total: 3000,
       }),
@@ -78,6 +79,7 @@ describe("S04 — Amendment increases liability", () => {
     const amended = computeStagedAssessment(
       makeFiling({
         filing_id: "f-002",
+        assessment_version: 2,
         output_vat_amount_domestic: 15000,
         input_vat_deductible_amount_total: 3000,
       }),
@@ -100,6 +102,7 @@ describe("S05 — Amendment decreases liability", () => {
     const amended = computeStagedAssessment(
       makeFiling({
         filing_id: "f-002",
+        assessment_version: 2,
         output_vat_amount_domestic: 10000,
         input_vat_deductible_amount_total: 8000,
       }),
@@ -117,6 +120,7 @@ describe("S05 — Amendment decreases liability", () => {
     const amended = computeStagedAssessment(
       makeFiling({
         filing_id: "f-002",
+        assessment_version: 2,
         output_vat_amount_domestic: 5000,
         input_vat_deductible_amount_total: 15000,
       }),
@@ -136,8 +140,18 @@ describe("ADR-005 — amendment versioning and immutability", () => {
   it("creates a unique amendment_id for each record", () => {
     const base = makeFiling();
     const original = computeStagedAssessment(base);
-    const amended = computeStagedAssessment(makeFiling({ filing_id: "f-002", output_vat_amount_domestic: 12000, input_vat_deductible_amount_total: 3000 }));
-    const amended2 = computeStagedAssessment(makeFiling({ filing_id: "f-003", output_vat_amount_domestic: 14000, input_vat_deductible_amount_total: 3000 }));
+    const amended = computeStagedAssessment(makeFiling({
+      filing_id: "f-002",
+      assessment_version: 2,
+      output_vat_amount_domestic: 12000,
+      input_vat_deductible_amount_total: 3000,
+    }));
+    const amended2 = computeStagedAssessment(makeFiling({
+      filing_id: "f-003",
+      assessment_version: 2,
+      output_vat_amount_domestic: 14000,
+      input_vat_deductible_amount_total: 3000,
+    }));
 
     const r1 = createAmendment("tp-001", "2024-03-31", original, amended, "trace-1");
     const r2 = createAmendment("tp-001", "2024-03-31", original, amended2, "trace-2");
@@ -147,7 +161,12 @@ describe("ADR-005 — amendment versioning and immutability", () => {
 
   it("stores the original filing_id on the amendment record", () => {
     const original = computeStagedAssessment(makeFiling({ filing_id: "f-original" }));
-    const amended = computeStagedAssessment(makeFiling({ filing_id: "f-amended", output_vat_amount_domestic: 12000, input_vat_deductible_amount_total: 3000 }));
+    const amended = computeStagedAssessment(makeFiling({
+      filing_id: "f-amended",
+      assessment_version: 2,
+      output_vat_amount_domestic: 12000,
+      input_vat_deductible_amount_total: 3000,
+    }));
 
     const record = createAmendment("tp-001", "2024-03-31", original, amended, "trace-amend");
     expect(record.original_filing_id).toBe("f-original");
@@ -162,10 +181,20 @@ describe("ADR-005 — amendment versioning and immutability", () => {
 
   it("getAmendmentsForFiling returns only records for that filing", () => {
     const orig1 = computeStagedAssessment(makeFiling({ filing_id: "f-alpha" }));
-    const amend1 = computeStagedAssessment(makeFiling({ filing_id: "f-alpha-v2", output_vat_amount_domestic: 12000, input_vat_deductible_amount_total: 3000 }));
+    const amend1 = computeStagedAssessment(makeFiling({
+      filing_id: "f-alpha-v2",
+      assessment_version: 2,
+      output_vat_amount_domestic: 12000,
+      input_vat_deductible_amount_total: 3000,
+    }));
 
     const orig2 = computeStagedAssessment(makeFiling({ filing_id: "f-beta" }));
-    const amend2 = computeStagedAssessment(makeFiling({ filing_id: "f-beta-v2", output_vat_amount_domestic: 9000, input_vat_deductible_amount_total: 3000 }));
+    const amend2 = computeStagedAssessment(makeFiling({
+      filing_id: "f-beta-v2",
+      assessment_version: 2,
+      output_vat_amount_domestic: 9000,
+      input_vat_deductible_amount_total: 3000,
+    }));
 
     createAmendment("tp-001", "2024-03-31", orig1, amend1, "trace-alpha");
     createAmendment("tp-001", "2024-03-31", orig2, amend2, "trace-beta");
@@ -179,11 +208,57 @@ describe("ADR-005 — amendment versioning and immutability", () => {
     const original = computeStagedAssessment(makeFiling({ output_vat_amount_domestic: 10000, input_vat_deductible_amount_total: 3000 }));
     const amended = computeStagedAssessment(makeFiling({
       filing_id: "f-neutral",
+      assessment_version: 2,
       output_vat_amount_domestic: 10000,
       input_vat_deductible_amount_total: 3000,
     }));
 
     const record = createAmendment("tp-001", "2024-03-31", original, amended, "trace-neutral");
     expect(record.delta_classification).toBe("neutral");
+  });
+
+  it("uses prior/new assessment versions from the supplied lineage chain", () => {
+    const originalV2 = computeStagedAssessment(makeFiling({
+      filing_id: "f-v2",
+      assessment_version: 2,
+      output_vat_amount_domestic: 13000,
+      input_vat_deductible_amount_total: 3000,
+    }));
+    const amendedV3 = computeStagedAssessment(makeFiling({
+      filing_id: "f-v3",
+      assessment_version: 3,
+      output_vat_amount_domestic: 14000,
+      input_vat_deductible_amount_total: 3000,
+    }));
+
+    const record = createAmendment("tp-001", "2024-03-31", originalV2, amendedV3, "trace-v3");
+    expect(record.prior_assessment_version).toBe(2);
+    expect(record.new_assessment_version).toBe(3);
+  });
+
+  it("throws AmendmentError when amended assessment_version is not prior+1", () => {
+    const original = computeStagedAssessment(makeFiling({ filing_id: "f-v1", assessment_version: 1 }));
+    const amended = computeStagedAssessment(makeFiling({
+      filing_id: "f-v3",
+      assessment_version: 3,
+      output_vat_amount_domestic: 11000,
+    }));
+
+    expect(() =>
+      createAmendment("tp-001", "2024-03-31", original, amended, "trace-invalid-version"),
+    ).toThrow(AmendmentError);
+  });
+
+  it("throws ManualLegalRoutingRequiredError for amendments older than 3 years (S21)", () => {
+    const original = computeStagedAssessment(makeFiling({ filing_id: "f-old-v1", assessment_version: 1 }));
+    const amended = computeStagedAssessment(makeFiling({
+      filing_id: "f-old-v2",
+      assessment_version: 2,
+      output_vat_amount_domestic: 11000,
+    }));
+
+    expect(() =>
+      createAmendment("tp-001", "2020-01-31", original, amended, "trace-old-period"),
+    ).toThrow(ManualLegalRoutingRequiredError);
   });
 });

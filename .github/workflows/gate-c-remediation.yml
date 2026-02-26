@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run Phase 4 core lineage suites
+        run: npm run test:phase4-core
+
       - name: Run Gate C remediation command pack
         run: npm run test:gate-c-remediation
 

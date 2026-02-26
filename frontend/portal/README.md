@@ -135,12 +135,13 @@ npm run test:e2e
 
 Current mocked coverage includes:
 - login page rendering and credential form visibility
-- taxpayer sidebar route visibility (obligations/new filing hidden from sidebar)
+- taxpayer sidebar route visibility (obligations/new filing/new amendment hidden from sidebar)
 - overview -> open VAT obligation -> contextual new filing flow
 - submission payload assertion that `obligation_id` is sent for new filings
 - submitted filing detail behavior:
   - original filing is immutable/read-only
   - amendment starts with `original_filing_id` route context
+  - direct `/amendments/new` access without context is blocked by UI guard
 
 Current live-backend coverage includes:
 - login -> open obligation from overview -> submit filing

@@ -6,6 +6,7 @@ import {
   createAmendment,
   type StagedAssessment,
   AmendmentError,
+  ManualLegalRoutingRequiredError,
 } from "@tax-core/domain";
 import { AmendmentRepository, type AmendmentAlterEventRecord } from "../db/repository.js";
 import { AmendmentEventPublisher } from "../events/publisher.js";
@@ -108,6 +109,15 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
         amendment,
       });
     } catch (err) {
+      if (err instanceof ManualLegalRoutingRequiredError) {
+        return reply.status(422).send({
+          error: "MANUAL_LEGAL_ROUTING_REQUIRED",
+          message: err.message,
+          trace_id: traceId,
+          tax_period_end: err.taxPeriodEnd,
+          cutoff_date: err.cutoffDate,
+        });
+      }
       if (err instanceof AmendmentError) {
         return reply.status(422).send({ error: "AMENDMENT_ERROR", message: err.message, trace_id: traceId });
       }

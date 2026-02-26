@@ -40,6 +40,18 @@ export class AmendmentError extends Error {
   }
 }
 
+export class ManualLegalRoutingRequiredError extends AmendmentError {
+  constructor(
+    public readonly taxPeriodEnd: string,
+    public readonly cutoffDate: string,
+  ) {
+    super(
+      `Amendment period ${taxPeriodEnd} is older than 3 years (cutoff ${cutoffDate}); manual/legal routing required.`,
+    );
+    this.name = "ManualLegalRoutingRequiredError";
+  }
+}
+
 // Phase 2 error types
 
 export class ObligationStateError extends Error {

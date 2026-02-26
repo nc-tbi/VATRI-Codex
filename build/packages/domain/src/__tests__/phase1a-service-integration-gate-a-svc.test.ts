@@ -76,6 +76,7 @@ describe("[gate:A-SVC][lane:service-integration] amendment/validation/rule-engin
       claim_amount: 8000,
       trace_id: "trace-amend-002",
       filing_id: "f-amend-002",
+      assessment_version: 2,
     });
 
     const createRes = await app.inject({
@@ -115,6 +116,35 @@ describe("[gate:A-SVC][lane:service-integration] amendment/validation/rule-engin
     });
 
     expect(res.statusCode).toBe(403);
+    await app.close();
+  });
+
+  it("[case:TC-S4-LIN-03][service:amendment][scenario:S21] routes >3y periods to manual/legal handling", async () => {
+    const { buildApp } = await import("../../../../services/amendment-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+    const original = makeAssessment({ stage4_net_vat: 10000, claim_amount: 10000, assessment_version: 1 });
+    const amended = makeAssessment({
+      stage4_net_vat: 9000,
+      claim_amount: 9000,
+      trace_id: "trace-amend-old-002",
+      filing_id: "f-amend-old-002",
+      assessment_version: 2,
+    });
+
+    const createRes = await app.inject({
+      method: "POST",
+      url: "/amendments",
+      payload: {
+        original_filing_id: original.filing_id,
+        taxpayer_id: "tp-amend-001",
+        tax_period_end: "2020-01-31",
+        original_assessment: original,
+        new_assessment: amended,
+      },
+    });
+
+    expect(createRes.statusCode).toBe(422);
+    expect(createRes.json().error).toBe("MANUAL_LEGAL_ROUTING_REQUIRED");
     await app.close();
   });
 

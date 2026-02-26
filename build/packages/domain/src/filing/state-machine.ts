@@ -40,7 +40,7 @@ export function transition(
       filing_id: ctx.filing.filing_id,
       from_state: ctx.state,
       to_state: toState,
-      ...snapshotUpdate(update),
+      ...snapshotUpdate(ctx.filing, update),
     },
   });
 
@@ -77,6 +77,7 @@ function stateToEventType(
 }
 
 function snapshotUpdate(
+  filing: FilingContext["filing"],
   update: Partial<Omit<FilingContext, "filing" | "state" | "events">>,
 ): Record<string, unknown> {
   const snap: Record<string, unknown> = {};
@@ -88,6 +89,17 @@ function snapshotUpdate(
     snap["result_type"] = update.assessment.result_type;
     snap["stage4_net_vat"] = update.assessment.stage4_net_vat;
     snap["rule_version_id"] = update.assessment.rule_version_id;
+    snap["source_reverse_charge_goods_vat"] = filing.reverse_charge_output_vat_goods_abroad_amount;
+    snap["source_reverse_charge_services_vat"] = filing.reverse_charge_output_vat_services_abroad_amount;
+    snap["source_input_vat_deductible_total"] = filing.input_vat_deductible_amount_total;
+    snap["source_rubrik_a_goods_value"] = filing.rubrik_a_goods_eu_purchase_value;
+    snap["source_rubrik_a_services_value"] = filing.rubrik_a_services_eu_purchase_value;
+    snap["source_exempt_supplies_value"] = filing.rubrik_c_other_vat_exempt_supplies_value;
+  }
+  if (update.rule_engine_output) {
+    snap["applied_rule_ids"] = update.rule_engine_output.results
+      .filter((entry) => entry.applied)
+      .map((entry) => entry.rule_id);
   }
   if (update.claim_intent) {
     snap["claim_id"] = update.claim_intent.claim_id;

@@ -1,0 +1,13 @@
+{
+    "trace_id":  "ddeac37e-756f-42a0-9d37-7696ed9f54c5",
+    "session_id":  "9c3dfb2d-2581-496e-b71f-e2fb5000df49",
+    "access_token":  "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1NTUyZTdhMy05YzBmLTQyNmItYjBhOS00OWUwNzgxYzZhOTgiLCJyb2xlIjoiYWRtaW4iLCJ0YXhwYXllcl9zY29wZSI6bnVsbCwidHlwZSI6ImFjY2VzcyIsInRyYWNlX2lkIjoiZGRlYWMzN2UtNzU2Zi00MmEwLTlkMzctNzY5NmVkOWY1NGM1IiwiaWF0IjoxNzcyMTEwMTUzLCJleHAiOjE3NzIxMTEwNTN9.b17vGXBd8WMheclU-eGdb3IpWZJNOwwtMKcqF-qZFN4",
+    "refresh_token":  "b2d1170a-61f3-450d-b3dc-318d39fc7c9e",
+    "expires_in":  900,
+    "password_change_required":  false,
+    "user":  {
+                 "subject_id":  "5552e7a3-9c0f-426b-b0a9-49e0781c6a98",
+                 "role":  "admin",
+                 "taxpayer_scope":  null
+             }
+}

@@ -53,7 +53,8 @@ Admin endpoints requiring enforcement are called with:
 - Admin mutation pages enforce defense-in-depth role checks in UI and rely on backend `403/FORBIDDEN` as source of truth.
 
 ## Route Surface
-- Shared: `/login`, `/overview`
+- Public: `/login`, `/first-time-password` (taxpayer onboarding only)
+- Shared protected: `/overview`
 - Taxpayer: `/submissions`, `/submissions/[filingId]`, `/assessments-claims`
 - Taxpayer contextual-only routes (not shown in sidebar): `/obligations`, `/filings/new`, `/amendments/new`
 - Amendment creation is context-only: `/amendments/new` requires `original_filing_id` from a submitted filing path.
@@ -67,9 +68,13 @@ Admin endpoints requiring enforcement are called with:
   - `business_profile`
   - `contact`
   - `address`
+- Active registration behavior:
+  - when `business_profile.status=active` and the registration is registrable, backend auto-promotes to `registered`
+  - backend auto-creates recurring VAT obligations for the current and future cadence periods
+  - create response includes `obligations_created` count
 - Find taxpayer supports registration lookup by:
   - `registration_id` (primary path)
-  - `taxpayer_id` fallback (when backend exposes lookup by taxpayer)
+  - `taxpayer_id` fallback (used by portal automatically for non-UUID lookup input)
 - Admin: `/admin/taxpayers/new`, `/admin/taxpayers`, `/admin/cadence`, `/admin/filings-alter`, `/admin/amendments-alter`
 
 ## Environment
@@ -110,6 +115,10 @@ Release-focused frontend validation shortcut:
 ```bash
 npm run release:validate
 ```
+This now includes targeted mocked Playwright coverage for:
+- first-time taxpayer password setup flow
+- first-login password-change-required flow after sign in
+- admin non-UUID taxpayer lookup fallback
 
 `validate:openapi:release` validates the portal contract assumptions directly against the final generated OpenAPI artifacts in `build/openapi/*.yaml` (canonical release source), including:
 - required portal-consumed paths (`/auth/*`, `/registrations*`, `/obligations*`, `/vat-filings`, `/amendments`, `/assessments`, `/claims`)
@@ -138,6 +147,9 @@ npm run test:e2e
 
 Current mocked coverage includes:
 - login page rendering and credential form visibility
+- first-time taxpayer onboarding route and password setup UX
+- first-login password-change-required completion and session persistence
+- admin find-taxpayer fallback for non-UUID input (`registration_id` lookup fallback to taxpayer lookup)
 - taxpayer sidebar route visibility (obligations/new filing/new amendment hidden from sidebar)
 - overview -> open VAT obligation -> contextual new filing flow
 - submission payload assertion that `obligation_id` is sent for new filings
@@ -158,6 +170,7 @@ Implementation notes:
 - mocked fixtures: `tests/e2e/utils/session-mocks.ts`.
 - specs:
   - `tests/e2e/login.spec.ts`
+  - `tests/e2e/admin-taxpayer-search.mock.spec.ts`
   - `tests/e2e/taxpayer-flow.mock.spec.ts`
   - `tests/e2e/live-backend.spec.ts`
 - live lane environment (defaults shown):

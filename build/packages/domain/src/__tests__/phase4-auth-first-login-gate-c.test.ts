@@ -12,6 +12,11 @@ interface AuthUser {
 const usersByUsername = new Map<string, AuthUser>();
 const usersById = new Map<string, AuthUser>();
 const refreshTokens = new Map<string, { subject_id: string; issued_at: string; expires_at: string }>();
+const validRegistrationIdentity = new Set<string>();
+
+function registrationKey(taxpayerId: string, cvrNumber: string): string {
+  return `${taxpayerId}::${cvrNumber}`;
+}
 
 function seedUser(): AuthUser {
   const user: AuthUser = {
@@ -30,7 +35,31 @@ function seedUser(): AuthUser {
 const authStoreMock = {
   ensureSchema: vi.fn(async () => {}),
   seedAdminUser: vi.fn(async () => {}),
+  isValidTaxpayerRegistrationIdentity: vi.fn(async (taxpayerId: string, cvrNumber: string) =>
+    validRegistrationIdentity.has(registrationKey(taxpayerId, cvrNumber))
+  ),
   findUserByUsername: vi.fn(async (username: string) => usersByUsername.get(username) ?? null),
+  findTaxpayerUserByScope: vi.fn(async (taxpayerId: string) => {
+    for (const user of usersById.values()) {
+      if (user.role === "taxpayer" && user.taxpayer_scope === taxpayerId) {
+        return user;
+      }
+    }
+    return null;
+  }),
+  createTaxpayerUserWithPassword: vi.fn(async (taxpayerId: string, password: string) => {
+    const user: AuthUser = {
+      subject_id: "22222222-2222-2222-2222-222222222222",
+      username: taxpayerId,
+      role: "taxpayer",
+      passwordHash: password,
+      taxpayer_scope: taxpayerId,
+      password_change_required: false,
+    };
+    usersByUsername.set(user.username, user);
+    usersById.set(user.subject_id, user);
+    return user;
+  }),
   findUserById: vi.fn(async (subject_id: string) => usersById.get(subject_id) ?? null),
   verifyPassword: vi.fn(async (plaintext: string, hash: string) => plaintext === hash),
   storeRefreshToken: vi.fn(
@@ -59,8 +88,17 @@ vi.mock("../../../../services/auth-service/src/auth/token-store.js", () => {
       async seedAdminUser(...args: unknown[]): Promise<void> {
         await authStoreMock.seedAdminUser(...args);
       }
+      async isValidTaxpayerRegistrationIdentity(...args: unknown[]): Promise<boolean> {
+        return authStoreMock.isValidTaxpayerRegistrationIdentity(...args);
+      }
       async findUserByUsername(...args: unknown[]): Promise<unknown> {
         return authStoreMock.findUserByUsername(...args);
+      }
+      async findTaxpayerUserByScope(...args: unknown[]): Promise<unknown> {
+        return authStoreMock.findTaxpayerUserByScope(...args);
+      }
+      async createTaxpayerUserWithPassword(...args: unknown[]): Promise<unknown> {
+        return authStoreMock.createTaxpayerUserWithPassword(...args);
       }
       async findUserById(...args: unknown[]): Promise<unknown> {
         return authStoreMock.findUserById(...args);
@@ -90,7 +128,9 @@ describe("Phase 4 auth first-login contract [gate:C][backlog:TB-S4B-01]", () => 
     usersByUsername.clear();
     usersById.clear();
     refreshTokens.clear();
+    validRegistrationIdentity.clear();
     seedUser();
+    validRegistrationIdentity.add(registrationKey("TXP-NEW-001", "12345678"));
     process.env.SESSION_SIGNING_KEY = "local-dev-signing-key-20260225-min-32-characters";
     process.env.ADMIN_SEED_ENABLED = "false";
   });
@@ -185,6 +225,55 @@ describe("Phase 4 auth first-login contract [gate:C][backlog:TB-S4B-01]", () => 
     expect(change.json().error).toBe("INVALID_CREDENTIALS");
     expect(change.json().message).toBeTypeOf("string");
     expect(change.json().trace_id).toBeTypeOf("string");
+    await app.close();
+  });
+
+  it("[case:TC-PORTAL-AUTH-05] creates taxpayer user via first-login password setup", async () => {
+    const { buildApp } = await import("../../../../services/auth-service/src/app.js");
+    const app = buildApp({ sql: {} as never });
+
+    const setup = await app.inject({
+      method: "POST",
+      url: "/auth/first-login/password",
+      payload: {
+        taxpayer_id: "TXP-NEW-001",
+        cvr_number: "12345678",
+        new_password: "new-pass-001A!",
+      },
+    });
+
+    expect(setup.statusCode).toBe(200);
+    expect(setup.json().password_change_required).toBe(false);
+    expect(authStoreMock.createTaxpayerUserWithPassword).toHaveBeenCalledTimes(1);
+
+    const login = await app.inject({
+      method: "POST",
+      url: "/auth/login",
+      payload: { username: "TXP-NEW-001", password: "new-pass-001A!" },
+    });
+    expect(login.statusCode).toBe(200);
+    expect(login.json().password_change_required).toBe(false);
+    expect(login.json().user.role).toBe("taxpayer");
+    await app.close();
+  });
+
+  it("[case:TC-PORTAL-AUTH-06] rejects first-login setup when taxpayer identity cannot be verified", async () => {
+    const { buildApp } = await import("../../../../services/auth-service/src/app.js");
+    const app = buildApp({ sql: {} as never });
+
+    const setup = await app.inject({
+      method: "POST",
+      url: "/auth/first-login/password",
+      payload: {
+        taxpayer_id: "TXP-NOPE",
+        cvr_number: "00000000",
+        new_password: "new-pass-001A!",
+      },
+    });
+
+    expect(setup.statusCode).toBe(401);
+    expect(setup.json().error).toBe("INVALID_CREDENTIALS");
+    expect(setup.json().trace_id).toBeTypeOf("string");
     await app.close();
   });
 });

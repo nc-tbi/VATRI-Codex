@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
   createAssessmentFromFiling,
   createClaimFromAssessment,
+  listObligations,
   submitFiling,
   submitObligation,
 } from "@/core/api/tax-core";
@@ -28,16 +30,27 @@ function parseAmount(value: string): number {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function formatAmount(value: number): string {
+  return new Intl.NumberFormat("da-DK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 interface AmountFieldProps {
   label: string;
+  rubrik?: string;
   value: string;
   onChange: (value: string) => void;
 }
 
-function AmountField({ label, value, onChange }: AmountFieldProps) {
+function AmountField({ label, rubrik, value, onChange }: AmountFieldProps) {
   return (
-    <label className="grid grid-cols-[1fr_150px_36px] items-center gap-3 text-sm">
-      <span>{label}</span>
+    <label className="grid grid-cols-[1fr_140px_36px] items-center gap-3 rounded border border-[var(--border)] px-3 py-2 text-sm">
+      <span>
+        {rubrik ? <span className="mr-2 rounded bg-slate-100 px-2 py-0.5 text-xs font-medium">{rubrik}</span> : null}
+        {label}
+      </span>
       <input
         className="rounded border border-[var(--border)] px-3 py-2 text-right"
         inputMode="decimal"
@@ -55,6 +68,16 @@ export default function NewFilingPage() {
   const { user } = useAuth();
   const { t } = useOverlayI18n();
   const taxpayerId = useMemo(() => user?.taxpayer_scope ?? "TXP-12345678", [user]);
+
+  const obligationQuery = useQuery({
+    queryKey: ["filings-new", "obligation", taxpayerId, obligationId],
+    queryFn: async () => {
+      const obligations = await listObligations(taxpayerId, user ?? undefined);
+      return obligations.find((entry) => entry.obligation_id === obligationId) ?? null;
+    },
+    enabled: Boolean(taxpayerId && obligationId),
+  });
+
   const [outputVat, setOutputVat] = useState("0");
   const [inputVat, setInputVat] = useState("0");
   const [reverseGoodsVat, setReverseGoodsVat] = useState("0");
@@ -69,6 +92,16 @@ export default function NewFilingPage() {
   const [energyElectricity, setEnergyElectricity] = useState("0");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const stageSummary = useMemo(() => {
+    const stage1 = parseAmount(outputVat) + parseAmount(reverseGoodsVat) + parseAmount(reverseServicesVat);
+    const stage2 = parseAmount(inputVat);
+    const stage3 = stage1 - stage2;
+    const stage4 = stage3 - parseAmount(energyOilGas) - parseAmount(energyElectricity);
+    const result = stage4 > 0 ? t("status.payable") : stage4 < 0 ? t("status.refund") : t("status.zero");
+    const claimAmount = Math.abs(stage4);
+    return { stage1, stage2, stage3, stage4, result, claimAmount };
+  }, [energyElectricity, energyOilGas, inputVat, outputVat, reverseGoodsVat, reverseServicesVat, t]);
 
   const onSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -101,7 +134,6 @@ export default function NewFilingPage() {
         reverse_charge_output_vat_goods_abroad_amount: parseAmount(reverseGoodsVat),
         reverse_charge_output_vat_services_abroad_amount: parseAmount(reverseServicesVat),
         input_vat_deductible_amount_total: parseAmount(inputVat),
-        // No dedicated adjustments input in the current portal flow.
         adjustments_amount: 0,
         rubrik_a_goods_eu_purchase_value: parseAmount(rubrikAGoods),
         rubrik_a_services_eu_purchase_value: parseAmount(rubrikAServices),
@@ -126,7 +158,11 @@ export default function NewFilingPage() {
       );
       await submitObligation(obligationId, result.resource_id, user ?? undefined);
       const replay = result.status === 200 && result.idempotent;
-      setMessage(replay ? t("filings_new.replayed", { id: result.resource_id, trace: result.trace_id }) : t("filings_new.submitted", { id: result.resource_id, trace: result.trace_id }));
+      setMessage(
+        replay
+          ? t("filings_new.replayed", { id: result.resource_id, trace: result.trace_id })
+          : t("filings_new.submitted", { id: result.resource_id, trace: result.trace_id }),
+      );
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         if (err.code === "DUPLICATE_FILING") {
@@ -156,38 +192,88 @@ export default function NewFilingPage() {
         </p>
       ) : null}
       {obligationId ? (
-        <p className="mt-4 rounded border border-[var(--border)] bg-slate-50 p-3 text-sm">
-          {t("filings_new.obligation_context")}: <span className="font-medium">{obligationId}</span>
-        </p>
+        <div className="mt-4 rounded border border-[var(--border)] bg-slate-50 p-3 text-sm">
+          <p>
+            {t("filings_new.obligation_context")}: <span className="font-medium">{obligationId}</span>
+          </p>
+          {obligationQuery.data ? (
+            <p className="mt-1 text-[var(--muted)]">
+              {obligationQuery.data.tax_period_start} - {obligationQuery.data.tax_period_end} | {t("obligations.due_date")}:{" "}
+              {obligationQuery.data.due_date}
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {message ? <p className="mt-4 rounded border border-success bg-green-50 p-3 text-sm text-success">{message}</p> : null}
       {error ? <p className="mt-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</p> : null}
-      <form className="mt-6 space-y-8" onSubmit={(e) => void onSubmit(e)}>
-        <section className="space-y-4">
-          <h3 className="text-lg font-medium">{t("filings_new.section_domestic")}</h3>
-          <AmountField label={t("filings_new.output_vat")} value={outputVat} onChange={setOutputVat} />
-          <AmountField label={t("filings_new.input_vat")} value={inputVat} onChange={setInputVat} />
-        </section>
-        <section className="space-y-4">
-          <h3 className="text-lg font-medium">{t("filings_new.section_trade_abroad")}</h3>
-          <AmountField label={t("filings_new.reverse_goods_vat")} value={reverseGoodsVat} onChange={setReverseGoodsVat} />
-          <AmountField label={t("filings_new.reverse_services_vat")} value={reverseServicesVat} onChange={setReverseServicesVat} />
-          <AmountField label={t("filings_new.rubrik_a_goods")} value={rubrikAGoods} onChange={setRubrikAGoods} />
-          <AmountField label={t("filings_new.rubrik_a_services")} value={rubrikAServices} onChange={setRubrikAServices} />
-          <AmountField label={t("filings_new.rubrik_b_goods_reported")} value={rubrikBGoodsReported} onChange={setRubrikBGoodsReported} />
-          <AmountField label={t("filings_new.rubrik_b_goods_not_reported")} value={rubrikBGoodsNotReported} onChange={setRubrikBGoodsNotReported} />
-          <AmountField label={t("filings_new.rubrik_b_services")} value={rubrikBServices} onChange={setRubrikBServices} />
-          <AmountField label={t("filings_new.rubrik_c")} value={rubrikC} onChange={setRubrikC} />
-        </section>
-        <section className="space-y-4">
-          <h3 className="text-lg font-medium">{t("filings_new.section_energy_refund")}</h3>
-          <AmountField label={t("filings_new.energy_oil_gas")} value={energyOilGas} onChange={setEnergyOilGas} />
-          <AmountField label={t("filings_new.energy_electricity")} value={energyElectricity} onChange={setEnergyElectricity} />
-        </section>
-        <button className="rounded bg-action px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={!obligationId}>
-          {t("filings_new.submit")}
-        </button>
-      </form>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
+        <form className="space-y-6" onSubmit={(e) => void onSubmit(e)}>
+          <section className="space-y-3">
+            <h3 className="text-lg font-medium">{t("filings_new.section_domestic")}</h3>
+            <AmountField label={t("filings_new.output_vat")} value={outputVat} onChange={setOutputVat} />
+            <AmountField label={t("filings_new.input_vat")} value={inputVat} onChange={setInputVat} />
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-lg font-medium">{t("filings_new.section_trade_abroad")}</h3>
+            <AmountField label={t("filings_new.reverse_goods_vat")} value={reverseGoodsVat} onChange={setReverseGoodsVat} />
+            <AmountField label={t("filings_new.reverse_services_vat")} value={reverseServicesVat} onChange={setReverseServicesVat} />
+            <AmountField rubrik="A" label={t("filings_new.rubrik_a_goods")} value={rubrikAGoods} onChange={setRubrikAGoods} />
+            <AmountField rubrik="A" label={t("filings_new.rubrik_a_services")} value={rubrikAServices} onChange={setRubrikAServices} />
+            <AmountField rubrik="B" label={t("filings_new.rubrik_b_goods_reported")} value={rubrikBGoodsReported} onChange={setRubrikBGoodsReported} />
+            <AmountField rubrik="B" label={t("filings_new.rubrik_b_goods_not_reported")} value={rubrikBGoodsNotReported} onChange={setRubrikBGoodsNotReported} />
+            <AmountField rubrik="B" label={t("filings_new.rubrik_b_services")} value={rubrikBServices} onChange={setRubrikBServices} />
+            <AmountField rubrik="C" label={t("filings_new.rubrik_c")} value={rubrikC} onChange={setRubrikC} />
+          </section>
+
+          <section className="space-y-3">
+            <h3 className="text-lg font-medium">{t("filings_new.section_energy_refund")}</h3>
+            <AmountField label={t("filings_new.energy_oil_gas")} value={energyOilGas} onChange={setEnergyOilGas} />
+            <AmountField label={t("filings_new.energy_electricity")} value={energyElectricity} onChange={setEnergyElectricity} />
+          </section>
+
+          <button
+            className="rounded bg-action px-4 py-2 text-white disabled:cursor-not-allowed disabled:opacity-60"
+            type="submit"
+            disabled={!obligationId}
+          >
+            {t("filings_new.submit")}
+          </button>
+        </form>
+
+        <aside aria-labelledby="filing-summary-title" className="h-fit rounded border border-[var(--border)] bg-slate-50 p-4">
+          <h3 id="filing-summary-title" className="text-base font-semibold">
+            {t("filings_new.summary_title")}
+          </h3>
+          <dl className="mt-3 space-y-2 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt>Stage 1</dt>
+              <dd>{formatAmount(stageSummary.stage1)}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>Stage 2</dt>
+              <dd>{formatAmount(stageSummary.stage2)}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>Stage 3</dt>
+              <dd>{formatAmount(stageSummary.stage3)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 font-semibold">
+              <dt>Stage 4</dt>
+              <dd>{formatAmount(stageSummary.stage4)}</dd>
+            </div>
+            <div className="flex justify-between gap-4 border-t border-[var(--border)] pt-2">
+              <dt>{t("assessments_claims.result")}</dt>
+              <dd>{stageSummary.result}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>{t("assessments_claims.amount")}</dt>
+              <dd>{formatAmount(stageSummary.claimAmount)}</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
     </section>
   );
 }

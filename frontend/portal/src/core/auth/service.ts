@@ -67,6 +67,38 @@ export async function completeFirstLoginPasswordCreation(args: {
   throw lastError ?? new Error("Password setup failed");
 }
 
+export async function setupTaxpayerFirstLoginPassword(args: {
+  taxpayerId: string;
+  cvrNumber: string;
+  newPassword: string;
+}): Promise<void> {
+  const { taxpayerId, cvrNumber, newPassword } = args;
+  const res = await fetch(`${baseUrl()}/auth/first-login/password`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      taxpayer_id: taxpayerId,
+      cvr_number: cvrNumber,
+      new_password: newPassword,
+    }),
+  });
+
+  if (res.ok) {
+    return;
+  }
+
+  let message = "First-time password setup failed";
+  try {
+    const payload = (await res.json()) as { message?: string; trace_id?: string };
+    if (payload?.message) {
+      message = payload.trace_id ? `${payload.message} (trace_id: ${payload.trace_id})` : payload.message;
+    }
+  } catch {
+    // Ignore JSON parse failures and fall back to generic message.
+  }
+  throw new Error(message);
+}
+
 export async function me(accessToken: string): Promise<UserClaims> {
   const res = await fetch(`${baseUrl()}/auth/me`, {
     headers: { authorization: `Bearer ${accessToken}` },

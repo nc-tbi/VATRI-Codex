@@ -65,7 +65,7 @@ executions.push(
 executions.push(
   runCommand(
     "pack3-playwright-mocked-targeted",
-    'npm run test:e2e:mocked -- --grep "@mocked (login page loads|sidebar hides obligations and new vat return links for taxpayer)" --reporter=json',
+    'npm run test:e2e:mocked -- --grep "@mocked (login page loads|taxpayer first-time password page is reachable from login and returns to login|admin taxpayer search uses taxpayer fallback for non-uuid input|sidebar hides obligations and new vat return links for taxpayer)" --reporter=json',
     { env: { PLAYWRIGHT_JSON_OUTPUT_FILE: "../../build/reports/portal-regression/pack3-mocked-targeted.json" } },
   ),
 );

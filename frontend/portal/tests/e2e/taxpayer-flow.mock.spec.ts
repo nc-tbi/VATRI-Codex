@@ -35,7 +35,7 @@ test("@mocked sidebar hides obligations and new vat return links for taxpayer", 
   await loginAsTaxpayer(page);
   await expect(page.getByRole("link", { name: /Forpligtelser|Obligations/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Ny momsangivelse|New VAT return/i })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /Ny Ã¦ndringsangivelse|New amendment return/i })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Ny ændringsangivelse|New amendment return/i })).toHaveCount(0);
   await expect(page.getByRole("link", { name: /Open VAT obligation|momsforpligtelse/i })).toBeVisible();
 });
 
@@ -111,6 +111,6 @@ test("@mocked amendment page requires filing context from overview/submission fl
   await loginAsTaxpayer(page);
   await page.goto("/amendments/new");
   await expect(page.getByRole("heading", { name: /Ny|New amendment return/i })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Indsend Ã¦ndringsangivelse|Submit amendment return/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Indsend ændringsangivelse|Submit amendment return/i })).toHaveCount(0);
   await expect(page.locator("main").getByRole("link", { name: /overblik|overview/i }).last()).toBeVisible();
 });

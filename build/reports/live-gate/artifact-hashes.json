@@ -1,0 +1,34 @@
+[
+    {
+        "file":  "build/reports/live-gate/stack-health-report.json",
+        "sha256":  "C24B1E7C220B426B0604848D0772E63EE91E39BD33F5E7C639B8DAB20BB4126C"
+    },
+    {
+        "file":  "build/reports/live-gate/credential-seed-readiness.json",
+        "sha256":  "113163CF969B7B6E87C2D055B8194F8A0579E127D8B1E92ED661DC9C2252520A"
+    },
+    {
+        "file":  "build/reports/live-gate/portal-live-env-snapshot.json",
+        "sha256":  "181B2209B0EFCA42F0B0B4CD254A509DAC34275F64DD15B16D8BC0373AA072F0"
+    },
+    {
+        "file":  "build/reports/live-gate/frontend-openapi-release-validation.log",
+        "sha256":  "79B41A5B336BD972247DA650A30B1A6B81B4B03607899F637366EAF160655422"
+    },
+    {
+        "file":  "build/reports/live-gate/portal-regression-live-rerun.log",
+        "sha256":  "48966E10BA0E935867ACF836EB5F74FDF2E0A648DD2130C9C48ED56E2A54C7D7"
+    },
+    {
+        "file":  "build/reports/portal-regression/portal-regression-summary.json",
+        "sha256":  "F0C294162867F4844DA02AFF4B8360B8E1FA74434302E557BA2A6C628260FFFD"
+    },
+    {
+        "file":  "build/reports/portal-regression/portal-regression-coverage-matrix.md",
+        "sha256":  "540BB95272F69CA46A577B4FF399C5319A16DBE01B7943EA4E8B5D7BB3514F00"
+    },
+    {
+        "file":  "build/reports/live-gate/direct-auth-login-admin-after-fix.json",
+        "sha256":  "D03638C9AEE10C590DE8F5D5CC8EBD2D0345B5D95823835B331FC3C9F2BC7483"
+    }
+]

@@ -6,6 +6,29 @@ test("@mocked login page loads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Log ind|Sign in/i })).toBeVisible();
   await expect(page.getByLabel(/Brugernavn|Username/i)).toBeVisible();
   await expect(page.getByLabel(/Adgangskode|Password/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /Første login som skatteyder|First-time taxpayer login/i })).toBeVisible();
+  await expect(page.getByText(/administratorer.*almindeligt login|administrators.*regular sign in/i)).toBeVisible();
+});
+
+test("@mocked taxpayer first-time password page is reachable from login and returns to login", async ({ page }) => {
+  await page.route("**/auth/first-login/password", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ trace_id: "trace-ft-001", message: "password created", password_change_required: false }),
+    });
+  });
+
+  await page.goto("/login");
+  await page.getByRole("link", { name: /F.rste login som skatteyder|First-time taxpayer login/i }).click();
+  await expect(page).toHaveURL(/\/first-time-password/);
+  await page.getByLabel(/Skatteyder-id|Taxpayer ID/i).fill("TXP-12345678");
+  await page.getByLabel(/CVR-nummer|CVR number/i).fill("12345678");
+  await page.getByLabel(/^Ny adgangskode$|^New password$/i).fill("StrongPass123!");
+  await page.getByLabel(/^Bekræft ny adgangskode$|^Confirm new password$/i).fill("StrongPass123!");
+  await page.getByRole("button", { name: /Gem adgangskode|Save password/i }).click();
+  await expect(page).toHaveURL(/\/login\?first_time=done/);
+  await expect(page.getByRole("heading", { name: /Log ind|Sign in/i })).toBeVisible();
 });
 
 test("@mocked first-login password creation happy path persists session and redirects", async ({ page }) => {

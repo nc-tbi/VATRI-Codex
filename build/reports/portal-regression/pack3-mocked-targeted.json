@@ -11,7 +11,7 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 2
+      "actualWorkers": 3
     },
     "preserveOutput": "always",
     "projects": [
@@ -20,7 +20,7 @@
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 3
         },
         "id": "chromium",
         "name": "chromium",
@@ -58,6 +58,50 @@
   },
   "suites": [
     {
+      "title": "admin-taxpayer-search.mock.spec.ts",
+      "file": "admin-taxpayer-search.mock.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "@mocked admin taxpayer search uses taxpayer fallback for non-uuid input",
+          "ok": true,
+          "tags": [
+            "mocked"
+          ],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2631,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-26T13:13:48.029Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "668f8051b3090b335ad2-6fdab5c69452e281cfda",
+          "file": "admin-taxpayer-search.mock.spec.ts",
+          "line": 12,
+          "column": 5
+        }
+      ]
+    },
+    {
       "title": "login.spec.ts",
       "file": "login.spec.ts",
       "column": 0,
@@ -78,15 +122,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 0,
-                  "parallelIndex": 0,
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 1480,
+                  "duration": 1507,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T09:55:00.894Z",
+                  "startTime": "2026-02-26T13:13:48.014Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -96,7 +140,43 @@
           ],
           "id": "41d3fd2474a19feb00a1-06c8b0c8cfdb8230740b",
           "file": "login.spec.ts",
-          "line": 3,
+          "line": 4,
+          "column": 5
+        },
+        {
+          "title": "@mocked taxpayer first-time password page is reachable from login and returns to login",
+          "ok": true,
+          "tags": [
+            "mocked"
+          ],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 2109,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-26T13:13:49.956Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "41d3fd2474a19feb00a1-2222fab58150e8f4e67d",
+          "file": "login.spec.ts",
+          "line": 13,
           "column": 5
         }
       ]
@@ -122,15 +202,15 @@
               "projectName": "chromium",
               "results": [
                 {
-                  "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 2163,
+                  "duration": 2053,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T09:55:00.896Z",
+                  "startTime": "2026-02-26T13:13:48.025Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -148,9 +228,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-26T09:54:51.493Z",
-    "duration": 13016.162,
-    "expected": 2,
+    "startTime": "2026-02-26T13:13:45.237Z",
+    "duration": 7017.382,
+    "expected": 4,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

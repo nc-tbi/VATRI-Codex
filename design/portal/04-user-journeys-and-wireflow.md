@@ -9,6 +9,7 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 
 ### Shared
 - `/login`
+- `/first-time-password` (taxpayer-only onboarding)
 - `/overview`
 
 ### Taxpayer
@@ -56,6 +57,13 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
 10. Redirect `/submissions/{filingId}`
 11. Show status chip and latest assessment summary link
 
+UX parity requirement:
+- Filing view must follow Danish TastSelv mental model:
+  - grouped sections in the same business order
+  - Rubrik A/B/C labels visible in-field
+  - right-aligned amount entry with DKK suffix
+  - live stage summary (`stage_1`..`stage_4`) while typing
+
 ## Journey D - Taxpayer Amendment Submission
 1. Taxpayer opens `/overview`
 2. Opens a submitted filing from the submissions list on overview
@@ -83,6 +91,19 @@ Define required end-to-end journeys and route-level wireflow for `admin` and `ta
   - claim status timeline
   - explanation block (inputs, rules, result type)
   - claim amount derived from `stage_4_net_vat_amount`
+
+## Journey G - Taxpayer First-Time Password Setup (No Existing Password)
+1. Taxpayer opens `/login`
+2. Selects `First-time taxpayer login`
+3. Navigates to `/first-time-password`
+4. Enters `taxpayer_id`, `cvr_number`, and new password
+5. Portal calls `POST /auth/first-login/password`
+6. On success, redirect to `/login?first_time=done`
+7. Taxpayer signs in with new password
+
+Policy constraint:
+- This first-time route is taxpayer-only behavior.
+- Admin accounts are excluded from first-time password setup route.
 
 ## Required UI States
 - Filing/amendment:

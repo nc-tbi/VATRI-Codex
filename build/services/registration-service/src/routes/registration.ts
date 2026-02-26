@@ -41,6 +41,19 @@ function isUuid(value: string): boolean {
   return UUID_PATTERN.test(value);
 }
 
+function isActiveBusinessProfile(businessProfile: Record<string, unknown> | undefined): boolean {
+  const status = typeof businessProfile?.status === "string" ? businessProfile.status.toLowerCase() : "";
+  return status === "active";
+}
+
+function resolveEffectiveDate(businessProfile: Record<string, unknown> | undefined): string {
+  const dateValue = typeof businessProfile?.effective_date === "string" ? businessProfile.effective_date : "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return dateValue;
+  }
+  return new Date().toISOString().slice(0, 10);
+}
+
 export async function registrationRoutes(
   app: FastifyInstance,
   options: RouteOptions,
@@ -62,11 +75,33 @@ export async function registrationRoutes(
     await repo.saveRegistration(registration, { business_profile, contact, address });
     await publisher.publishRegistrationCreated(registration, traceId);
 
+    let registrationStatus = registration.status;
+    let obligationsCreated = 0;
+    const businessProfile = business_profile as Record<string, unknown> | undefined;
+
+    if (isActiveBusinessProfile(businessProfile) && registration.status === "pending_registration") {
+      const promoted = promoteToRegistered(registration.registration_id, traceId);
+      registrationStatus = promoted.status;
+      await repo.updateRegistrationStatus(registration.registration_id, promoted.status, {
+        registered_at: promoted.registered_at,
+      });
+
+      const effectiveDate = resolveEffectiveDate(businessProfile);
+      const obligations = await repo.ensureRecurringObligationsForTaxpayer({
+        taxpayer_id: registration.taxpayer_id,
+        cadence: registration.cadence,
+        effective_date: effectiveDate,
+        trace_id: traceId,
+      });
+      obligationsCreated = obligations.length;
+    }
+
     return reply.status(201).send({
       registration_id: registration.registration_id,
       taxpayer_id: registration.taxpayer_id,
-      status: registration.status,
+      status: registrationStatus,
       cadence: registration.cadence,
+      obligations_created: obligationsCreated,
       trace_id: traceId,
     });
   });
@@ -112,7 +147,24 @@ export async function registrationRoutes(
       registered_at: registration.registered_at,
     });
 
-    return reply.send({ registration_id, status: registration.status, trace_id: traceId });
+    let obligationsCreated = 0;
+    const persisted = await repo.findRegistration(registration_id);
+    if (persisted) {
+      const businessProfile =
+        typeof persisted.business_profile === "object" && persisted.business_profile !== null
+          ? (persisted.business_profile as Record<string, unknown>)
+          : undefined;
+      const effectiveDate = resolveEffectiveDate(businessProfile);
+      const obligations = await repo.ensureRecurringObligationsForTaxpayer({
+        taxpayer_id: registration.taxpayer_id,
+        cadence: registration.cadence,
+        effective_date: effectiveDate,
+        trace_id: traceId,
+      });
+      obligationsCreated = obligations.length;
+    }
+
+    return reply.send({ registration_id, status: registration.status, obligations_created: obligationsCreated, trace_id: traceId });
   });
 
   // POST /registrations/:registration_id/deregister

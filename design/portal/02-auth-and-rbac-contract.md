@@ -23,25 +23,24 @@ All endpoints are exposed via BFF/API gateway contracts, not direct service bypa
 
 ## First-Login Password Creation Flow (Approved)
 Contract intent:
-- A user created with temporary credentials must complete first-login password creation before normal login is allowed.
+- A newly registered taxpayer without an existing portal password must create a password before normal login.
 
 Endpoint:
 - `POST /auth/first-login/password`
 
 Request contract:
-- `subject_id` or one-time first-login token (implementation-specific)
-- `temporary_password`
+- `taxpayer_id`
+- `cvr_number`
 - `new_password`
-- `new_password_confirm`
 
 Response semantics:
-- `200` password created and first-login challenge cleared
+- `200` password created and onboarding challenge cleared
 - `400` malformed request payload
-- `401` invalid/expired first-login token or temporary credential
+- `401` invalid taxpayer identity proof
 - `409` first-login already completed
 
 Security constraints:
-- One-time first-login token/credential is invalidated after success.
+- Identity proof must match a valid registration record.
 - No password value is logged or returned in any response.
 
 ## Role Model
@@ -54,6 +53,7 @@ Gateway remains source-of-truth for coarse endpoint authorization. BFF applies r
 | Route | Taxpayer | Admin |
 |---|---|---|
 | `/login` | allow | allow |
+| `/first-time-password` | allow (taxpayer onboarding only) | deny (not applicable) |
 | `/overview` | allow | allow |
 | `/obligations` | allow (own taxpayer scope) | allow |
 | `/filings/new` | allow (own scope) | allow |
@@ -65,7 +65,7 @@ Gateway remains source-of-truth for coarse endpoint authorization. BFF applies r
 | `/admin/cadence` | deny | allow |
 | `/admin/filings-alter` | deny | allow |
 | `/admin/amendments-alter` | deny | allow |
-| `/auth/first-login/password` | allow (with first-login challenge) | allow (with first-login challenge) |
+| `/auth/first-login/password` | allow (taxpayer onboarding only) | deny |
 
 ## Forbidden Action Rules
 - Taxpayer cannot perform admin actions (`403`).

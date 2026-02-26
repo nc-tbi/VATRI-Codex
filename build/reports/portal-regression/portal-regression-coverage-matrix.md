@@ -1,6 +1,6 @@
 # Portal Regression Coverage Matrix
 
-- generated_at: 2026-02-26T09:57:11.147Z
+- generated_at: 2026-02-26T13:15:40.331Z
 - include_live: true
 
 | Backlog | Status | Case IDs | Evidence |

@@ -74,13 +74,13 @@ export class AuthTokenStore {
       INSERT INTO auth.users (
         subject_id, username, role, password_hash, taxpayer_scope, password_change_required, is_seeded_admin
       ) VALUES (
-        ${randomUUID()}, ${username}, 'admin', ${passwordHash}, NULL, TRUE, TRUE
+        ${randomUUID()}, ${username}, 'admin', ${passwordHash}, NULL, FALSE, TRUE
       )
       ON CONFLICT (username) DO UPDATE
       SET role = 'admin',
           password_hash = EXCLUDED.password_hash,
           taxpayer_scope = NULL,
-          password_change_required = TRUE,
+          password_change_required = FALSE,
           is_seeded_admin = TRUE
       WHERE auth.users.is_seeded_admin = TRUE
     `;

@@ -7,6 +7,8 @@ import { findRegistrationsByTaxpayerId, getRegistration } from "@/core/api/tax-c
 import { useAuth } from "@/core/auth/context";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function readString(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
@@ -29,23 +31,36 @@ export default function AdminTaxpayersPage() {
     const lookupValue = registrationId.trim();
     if (!lookupValue) return;
     try {
-      const payload = await getRegistration(lookupValue, user ?? undefined);
+      if (UUID_RE.test(lookupValue)) {
+        const payload = await getRegistration(lookupValue, user ?? undefined);
+        setResult(payload);
+        return;
+      }
+
+      const matches = await findRegistrationsByTaxpayerId(lookupValue, user ?? undefined);
+      const latest = matches.length > 0 ? matches[matches.length - 1] : null;
+      const resolvedRegistrationId = typeof latest?.registration_id === "string" ? latest.registration_id : null;
+      if (!resolvedRegistrationId) {
+        setError(t("admin.taxpayers.error"));
+        return;
+      }
+      const payload = await getRegistration(resolvedRegistrationId, user ?? undefined);
       setResult(payload);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 404) {
+      if (err instanceof ApiError && err.status === 404 && UUID_RE.test(lookupValue)) {
         try {
           const matches = await findRegistrationsByTaxpayerId(lookupValue, user ?? undefined);
-          const first = matches[0];
-          const resolvedRegistrationId = typeof first?.registration_id === "string" ? first.registration_id : null;
+          const latest = matches.length > 0 ? matches[matches.length - 1] : null;
+          const resolvedRegistrationId = typeof latest?.registration_id === "string" ? latest.registration_id : null;
           if (!resolvedRegistrationId) {
-            setError(formatApiError(err, t("admin.taxpayers.error")));
+            setError(t("admin.taxpayers.error"));
             return;
           }
           const payload = await getRegistration(resolvedRegistrationId, user ?? undefined);
           setResult(payload);
           return;
         } catch {
-          setError(formatApiError(err, t("admin.taxpayers.error")));
+          setError(t("admin.taxpayers.error"));
           return;
         }
       }

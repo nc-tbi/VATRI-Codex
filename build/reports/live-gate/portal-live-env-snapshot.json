@@ -1,0 +1,11 @@
+{
+    "generated_at":  "2026-02-26T13:41:37.9897939+01:00",
+    "portal_api_base_url":  "http://localhost:3009",
+    "portal_bff_base_url":  "http://localhost:3009",
+    "node_env":  "development",
+    "admin_seed_enabled":  "true",
+    "admin_seed_username":  "admin",
+    "admin_seed_password_present":  true,
+    "session_signing_key_present":  true,
+    "session_encryption_key_present":  true
+}

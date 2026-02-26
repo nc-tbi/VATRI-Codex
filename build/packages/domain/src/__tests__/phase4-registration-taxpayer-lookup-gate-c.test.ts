@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { _clearRegistrationStore } from "../registration/index.js";
 
 const registrationRepoMock = {
   saveRegistration: vi.fn(async () => {}),
@@ -6,6 +7,7 @@ const registrationRepoMock = {
   findRegistrationsByTaxpayerId: vi.fn(async () => []),
   updateRegistrationStatus: vi.fn(async () => {}),
   loadIntoMemory: vi.fn(async () => {}),
+  ensureRecurringObligationsForTaxpayer: vi.fn(async () => []),
 };
 
 const registrationPublisherMock = {
@@ -31,6 +33,9 @@ vi.mock("../../../../services/registration-service/src/db/repository.js", () => 
       }
       async loadIntoMemory(...args: unknown[]): Promise<void> {
         await registrationRepoMock.loadIntoMemory(...args);
+      }
+      async ensureRecurringObligationsForTaxpayer(...args: unknown[]): Promise<unknown[]> {
+        return registrationRepoMock.ensureRecurringObligationsForTaxpayer(...args);
       }
     },
   };
@@ -65,7 +70,9 @@ function makeKafkaStub() {
 describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _clearRegistrationStore();
     registrationRepoMock.findRegistrationsByTaxpayerId.mockResolvedValue([]);
+    registrationRepoMock.ensureRecurringObligationsForTaxpayer.mockResolvedValue([]);
   });
 
   it("[case:TC-PORTAL-ADM-01] returns empty list when taxpayer has no registrations", async () => {
@@ -142,6 +149,43 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
       "reg-a",
       "reg-b",
     ]);
+    await app.close();
+  });
+
+  it("[case:TC-PORTAL-ADM-04] creating active registration seeds recurring obligations", async () => {
+    registrationRepoMock.ensureRecurringObligationsForTaxpayer.mockResolvedValueOnce([
+      { obligation_id: "obl-1" },
+      { obligation_id: "obl-2" },
+    ]);
+
+    const { buildApp } = await import("../../../../services/registration-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/registrations",
+      payload: {
+        taxpayer_id: "tp-active-seed",
+        cvr_number: "12345678",
+        annual_turnover_dkk: 60000,
+        business_profile: {
+          status: "active",
+          effective_date: "2026-01-01",
+        },
+      },
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.json().status).toBe("registered");
+    expect(res.json().obligations_created).toBe(2);
+    expect(registrationRepoMock.updateRegistrationStatus).toHaveBeenCalled();
+    expect(registrationRepoMock.ensureRecurringObligationsForTaxpayer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        taxpayer_id: "tp-active-seed",
+        cadence: "half_yearly",
+        effective_date: "2026-01-01",
+      }),
+    );
     await app.close();
   });
 });

@@ -233,6 +233,9 @@ components:
         cadence:
           type: string
           enum: [monthly, quarterly, half_yearly, annual]
+        obligations_created:
+          type: integer
+          minimum: 0
         trace_id:
           type: string
 
@@ -278,6 +281,9 @@ components:
           format: uuid
         status:
           type: string
+        obligations_created:
+          type: integer
+          minimum: 0
         trace_id:
           type: string
 

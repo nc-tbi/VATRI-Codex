@@ -48,3 +48,4 @@ All new designer deliverables should be stored in `design/`.
 
 ## Cross-Role Alignment Notes
 - `design/06-role-instructions-dk-vat-portal-ui-alignment.md` (Danish VAT portal field delta handoff for BA/Architect/Designer/Code Builder/Test roles)
+- `design/12-role-instructions-dk-portal-parity-first-login-and-search-hardening.md` (UX parity + taxpayer onboarding + lookup hardening handoff)

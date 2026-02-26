@@ -2776,6 +2776,18 @@
     {
       "table_schema": "auth",
       "table_name": "users",
+      "indexname": "idx_auth_users_taxpayer_scope_taxpayer",
+      "indexdef": "CREATE INDEX idx_auth_users_taxpayer_scope_taxpayer ON auth.users USING btree (taxpayer_scope) WHERE (role = 'taxpayer'::text)"
+    },
+    {
+      "table_schema": "auth",
+      "table_name": "users",
+      "indexname": "uq_auth_users_taxpayer_scope_taxpayer",
+      "indexdef": "CREATE UNIQUE INDEX uq_auth_users_taxpayer_scope_taxpayer ON auth.users USING btree (taxpayer_scope) WHERE ((role = 'taxpayer'::text) AND (taxpayer_scope IS NOT NULL))"
+    },
+    {
+      "table_schema": "auth",
+      "table_name": "users",
       "indexname": "users_pkey",
       "indexdef": "CREATE UNIQUE INDEX users_pkey ON auth.users USING btree (subject_id)"
     },
@@ -2904,6 +2916,12 @@
       "table_name": "registrations",
       "indexname": "idx_registration_cvr",
       "indexdef": "CREATE INDEX idx_registration_cvr ON registration.registrations USING btree (cvr_number)"
+    },
+    {
+      "table_schema": "registration",
+      "table_name": "registrations",
+      "indexname": "idx_registration_taxpayer_cvr",
+      "indexdef": "CREATE INDEX idx_registration_taxpayer_cvr ON registration.registrations USING btree (taxpayer_id, cvr_number)"
     },
     {
       "table_schema": "registration",

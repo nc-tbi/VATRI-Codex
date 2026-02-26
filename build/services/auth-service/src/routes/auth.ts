@@ -10,6 +10,8 @@ interface AuthRouteOptions extends FastifyPluginOptions {
   store: AuthTokenStore;
 }
 
+const CVR_RE = /^\d{8}$/;
+
 function sendError(
   reply: {
     status: (statusCode: number) => { send: (body: unknown) => unknown };
@@ -150,6 +152,66 @@ export async function authRoutes(app: FastifyInstance, opts: AuthRouteOptions): 
   // Backwards-compatible alias used by older portal clients.
   app.post<{ Body: { current_password: string; new_password: string } }>("/password", async (req, reply) =>
     handlePasswordChange(req, reply),
+  );
+
+  app.post<{ Body: { taxpayer_id?: string; cvr_number?: string; new_password?: string } }>(
+    "/first-login/password",
+    async (req, reply) => {
+      const traceId = req.id;
+      const { taxpayer_id, cvr_number, new_password } = req.body ?? {};
+
+      if (!taxpayer_id || !cvr_number || !new_password) {
+        return sendError(
+          reply,
+          400,
+          traceId,
+          "BAD_REQUEST",
+          "taxpayer_id, cvr_number, and new_password are required",
+        );
+      }
+      if (!CVR_RE.test(cvr_number)) {
+        return sendError(reply, 400, traceId, "BAD_REQUEST", "cvr_number must be 8 digits");
+      }
+      if (new_password.length < 12) {
+        return sendError(reply, 400, traceId, "BAD_REQUEST", "new_password must be at least 12 characters");
+      }
+
+      const validIdentity = await store.isValidTaxpayerRegistrationIdentity(taxpayer_id, cvr_number);
+      if (!validIdentity) {
+        return sendError(reply, 401, traceId, "INVALID_CREDENTIALS", "taxpayer identity could not be verified");
+      }
+
+      const taxpayerUser = await store.findTaxpayerUserByScope(taxpayer_id);
+      if (taxpayerUser) {
+        if (!taxpayerUser.password_change_required) {
+          return sendError(reply, 409, traceId, "STATE_ERROR", "first-login password has already been set");
+        }
+        await store.changePassword(taxpayerUser.subject_id, new_password);
+        return reply.status(200).send({
+          trace_id: traceId,
+          message: "password changed",
+          password_change_required: false,
+        });
+      }
+
+      const usernameCollision = await store.findUserByUsername(taxpayer_id);
+      if (usernameCollision && usernameCollision.role !== "taxpayer") {
+        return sendError(
+          reply,
+          409,
+          traceId,
+          "STATE_ERROR",
+          "taxpayer username cannot be provisioned due to existing non-taxpayer user",
+        );
+      }
+
+      await store.createTaxpayerUserWithPassword(taxpayer_id, new_password);
+      return reply.status(200).send({
+        trace_id: traceId,
+        message: "password created",
+        password_change_required: false,
+      });
+    },
   );
 
   app.post<{ Body: { refresh_token?: string } }>("/logout", async (req, reply) => {

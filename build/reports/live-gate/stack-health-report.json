@@ -1,0 +1,37 @@
+[
+    {
+        "url":  "http://localhost:3009/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"auth-service\"}"
+    },
+    {
+        "url":  "http://localhost:3008/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"registration-service\"}"
+    },
+    {
+        "url":  "http://localhost:3007/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"obligation-service\"}"
+    },
+    {
+        "url":  "http://localhost:3001/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"filing-service\"}"
+    },
+    {
+        "url":  "http://localhost:3004/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"assessment-service\"}"
+    },
+    {
+        "url":  "http://localhost:3006/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"claim-orchestrator\"}"
+    },
+    {
+        "url":  "http://localhost:3005/health",
+        "status":  "ok",
+        "response":  "{\"status\":\"ok\",\"service\":\"amendment-service\"}"
+    }
+]

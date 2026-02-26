@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/core/auth/context";
@@ -16,6 +17,8 @@ export default function LoginPage() {
   const { login, completeFirstLogin } = useAuth();
   const { t } = useOverlayI18n();
   const router = useRouter();
+  const firstTimeDone =
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("first_time") === "done";
   const nextPath =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("next") || "/overview"
@@ -59,6 +62,7 @@ export default function LoginPage() {
   return (
     <div className="mx-auto mt-16 max-w-md rounded border border-[var(--border)] bg-[var(--surface)] p-6">
       <h2 className="mb-2 text-2xl font-semibold">{pendingSession ? t("login.password_setup_title") : t("login.title")}</h2>
+      {firstTimeDone ? <div className="mb-4 rounded border border-success bg-green-50 p-3 text-sm text-success">{t("login.first_time_done")}</div> : null}
       {error ? <div className="mb-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</div> : null}
       {pendingSession ? (
         <form onSubmit={(e) => void onCompleteFirstLogin(e)} className="space-y-4">
@@ -88,6 +92,10 @@ export default function LoginPage() {
           <button className="w-full rounded bg-action px-4 py-2 text-white" type="submit">
             {t("login.submit")}
           </button>
+          <Link className="block text-center text-sm text-action underline" href="/first-time-password">
+            {t("login.first_time_taxpayer_button")}
+          </Link>
+          <p className="text-center text-xs text-[var(--muted)]">{t("login.first_time_taxpayer_note")}</p>
         </form>
       )}
     </div>

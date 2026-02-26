@@ -27,10 +27,14 @@ Required response fields:
   - `taxpayer_scope` (nullable for admin)
 
 First-login flow contract:
-- endpoint accepts temporary credential/token + new password payload
+- endpoint accepts taxpayer onboarding proof payload:
+  - `taxpayer_id`
+  - `cvr_number`
+  - `new_password`
 - returns `200` on successful password creation and challenge clear
-- returns `401` for invalid/expired temporary credential
+- returns `401` for invalid taxpayer onboarding identity
 - returns `409` when first-login is already completed
+- applies to taxpayer onboarding only (admin excluded)
 
 Status:
 - Approved as mandatory contract baseline.

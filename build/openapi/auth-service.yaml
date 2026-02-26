@@ -134,6 +134,34 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
 
+  /auth/first-login/password:
+    post:
+      summary: Taxpayer first-login password setup without prior portal password
+      operationId: firstLoginPasswordSetup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FirstLoginPasswordRequest"
+      responses:
+        "200":
+          description: Password created/updated and first-login challenge cleared
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangePasswordResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: First-login setup already completed or invalid onboarding state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
   /auth/me:
     get:
       summary: Return authenticated user claims
@@ -214,6 +242,25 @@ components:
           type: string
           format: password
           minLength: 8
+
+    FirstLoginPasswordRequest:
+      type: object
+      required:
+        - taxpayer_id
+        - cvr_number
+        - new_password
+      properties:
+        taxpayer_id:
+          type: string
+          description: Taxpayer identifier used during registration.
+        cvr_number:
+          type: string
+          pattern: '^\d{8}$'
+          description: 8-digit CVR used for identity check.
+        new_password:
+          type: string
+          format: password
+          minLength: 12
 
     ChangePasswordResponse:
       type: object

@@ -81,12 +81,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 809,
+                  "duration": 844,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-26T09:54:14.515Z",
+                  "startTime": "2026-02-26T13:38:01.450Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -96,7 +96,7 @@
           ],
           "id": "41d3fd2474a19feb00a1-06c8b0c8cfdb8230740b",
           "file": "login.spec.ts",
-          "line": 3,
+          "line": 4,
           "column": 5
         }
       ]
@@ -104,8 +104,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-26T09:54:06.769Z",
-    "duration": 9616.667,
+    "startTime": "2026-02-26T13:37:58.405Z",
+    "duration": 4361.5419999999995,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

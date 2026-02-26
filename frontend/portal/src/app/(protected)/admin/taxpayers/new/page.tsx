@@ -86,7 +86,11 @@ export default function AdminTaxpayersNewPage() {
         payload,
         user ?? undefined
       );
-      setMessage(t("admin.taxpayers_new.success", { id: String(res.registration_id ?? t("shared.unknown")) }));
+      const obligationsCreated = typeof res.obligations_created === "number" ? res.obligations_created : 0;
+      setMessage(
+        t("admin.taxpayers_new.success", { id: String(res.registration_id ?? t("shared.unknown")) }) +
+          ` ${t("admin.taxpayers_new.obligations_created", { count: obligationsCreated })}`
+      );
     } catch (err) {
       setError(formatApiError(err, t("admin.taxpayers_new.error")));
     }

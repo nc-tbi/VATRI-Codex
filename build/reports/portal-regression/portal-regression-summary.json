@@ -1,6 +1,6 @@
 {
   "gate": "gate-c-portal-regression",
-  "generated_at": "2026-02-26T09:57:11.147Z",
+  "generated_at": "2026-02-26T13:15:40.331Z",
   "include_live": true,
   "executions": [
     {
@@ -35,7 +35,7 @@
     },
     {
       "name": "pack3-playwright-mocked-targeted",
-      "command": "npm run test:e2e:mocked -- --grep \"@mocked (login page loads|sidebar hides obligations and new vat return links for taxpayer)\" --reporter=json",
+      "command": "npm run test:e2e:mocked -- --grep \"@mocked (login page loads|taxpayer first-time password page is reachable from login and returns to login|admin taxpayer search uses taxpayer fallback for non-uuid input|sidebar hides obligations and new vat return links for taxpayer)\" --reporter=json",
       "status": "pass",
       "exit_code": 0
     },

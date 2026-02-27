@@ -13,10 +13,10 @@ import {
   filingRedo,
   filingUndo,
   getLatestEffectiveRegistrationByTaxpayerId,
-  getCadencePolicy,
   getRegistration,
   listAmendments,
   listFilings,
+  patchRegistration,
   updateRegistration,
 } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
@@ -26,6 +26,7 @@ import { useOverlayI18n } from "@/overlays/common/i18n";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type BusinessStatus = "active" | "pending" | "inactive";
+type CadenceValue = "monthly" | "quarterly" | "half_yearly";
 
 type RegistrationDraft = {
   taxpayerId: string;
@@ -79,6 +80,17 @@ function toBusinessStatus(value: unknown): BusinessStatus {
   return value === "pending" || value === "inactive" ? value : "active";
 }
 
+function toCadenceValue(value: unknown): CadenceValue {
+  if (value === "monthly" || value === "quarterly") return value;
+  return "half_yearly";
+}
+
+function turnoverForCadence(cadence: CadenceValue, currentTurnover: number): number {
+  if (cadence === "monthly") return Math.max(currentTurnover, 50_000_000);
+  if (cadence === "quarterly") return Math.min(Math.max(currentTurnover, 5_000_000), 49_999_999);
+  return Math.min(Math.max(currentTurnover, 50_000), 4_999_999);
+}
+
 function toDraft(payload: Record<string, unknown>): RegistrationDraft {
   const businessProfile = readRecord(payload.business_profile);
   const contact = readRecord(payload.contact);
@@ -109,7 +121,7 @@ export default function AdminTaxpayersPage() {
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [draft, setDraft] = useState<RegistrationDraft>(EMPTY_DRAFT);
-  const [cadencePreview, setCadencePreview] = useState<string>("");
+  const [cadenceTarget, setCadenceTarget] = useState<CadenceValue>("quarterly");
   const [registrationMessage, setRegistrationMessage] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [selectedFilingId, setSelectedFilingId] = useState("");
@@ -177,7 +189,7 @@ export default function AdminTaxpayersPage() {
       setResult(payload);
       const nextDraft = toDraft(payload);
       setDraft(nextDraft);
-      setCadencePreview(readString(payload.cadence));
+      setCadenceTarget(toCadenceValue(payload.cadence));
       setSelectedFilingId("");
       setSelectedAmendmentId("");
     } catch (err) {
@@ -193,7 +205,7 @@ export default function AdminTaxpayersPage() {
           setResult(payload);
           const nextDraft = toDraft(payload);
           setDraft(nextDraft);
-          setCadencePreview(readString(payload.cadence));
+          setCadenceTarget(toCadenceValue(payload.cadence));
           setSelectedFilingId("");
           setSelectedAmendmentId("");
           return;
@@ -213,16 +225,32 @@ export default function AdminTaxpayersPage() {
     return getRegistration(resolvedRegistrationId, user ?? undefined);
   };
 
-  const onCalculateCadence = async (): Promise<void> => {
+  const onApplyCadence = async (): Promise<void> => {
     setRegistrationError(null);
-    const turnover = Number(draft.annualTurnoverDkk);
-    if (!Number.isFinite(turnover) || turnover < 0) {
+    setRegistrationMessage(null);
+    const registrationId = readString(result?.registration_id);
+    if (!registrationId) {
       setRegistrationError(t("admin.taxpayers_new.error"));
       return;
     }
     try {
-      const policy = await getCadencePolicy(turnover, user ?? undefined);
-      setCadencePreview(readString(policy.cadence));
+      const currentTurnover = Number(draft.annualTurnoverDkk);
+      const nextTurnover = turnoverForCadence(cadenceTarget, Number.isFinite(currentTurnover) ? currentTurnover : 0);
+      const updateResult = await patchRegistration(
+        registrationId,
+        { annual_turnover_dkk: nextTurnover },
+        user ?? undefined,
+      );
+      const refreshed =
+        typeof updateResult.registration_id === "string"
+          ? await getRegistration(updateResult.registration_id, user ?? undefined)
+          : await refreshRegistrationByTaxpayer(draft.taxpayerId.trim());
+      if (refreshed) {
+        setResult(refreshed);
+        setDraft(toDraft(refreshed));
+        setCadenceTarget(toCadenceValue(refreshed.cadence));
+      }
+      setRegistrationMessage(t("admin.taxpayers.cadence_updated"));
     } catch (err) {
       setRegistrationError(formatApiError(err, t("admin.cadence.error")));
     }
@@ -280,7 +308,7 @@ export default function AdminTaxpayersPage() {
       if (refreshed) {
         setResult(refreshed);
         setDraft(toDraft(refreshed));
-        setCadencePreview(readString(refreshed.cadence));
+        setCadenceTarget(toCadenceValue(refreshed.cadence));
       }
       setRegistrationMessage(t("admin.taxpayers_new.success", { id: String(updateResult.registration_id ?? t("shared.unknown")) }));
     } catch (err) {
@@ -431,11 +459,19 @@ export default function AdminTaxpayersPage() {
               </label>
               <div className="rounded border border-[var(--border)] bg-slate-50 px-3 py-2 text-sm">
                 <p>
-                  {t("obligations.cadence")}: <span className="font-medium">{readString(result.cadence) || "-"}</span>
+                  {t("admin.taxpayers.current_cadence")}: <span className="font-medium">{readString(result.cadence) || "-"}</span>
                 </p>
-                <p className="mt-1 text-[var(--muted)]">
-                  {t("admin.cadence.calculate")}: <span className="font-medium">{cadencePreview || "-"}</span>
-                </p>
+                <label className="mt-2 block">
+                  <span className="mb-1 block text-xs text-[var(--muted)]">{t("admin.taxpayers.target_cadence")}</span>
+                  <select className="w-full rounded border px-3 py-2" value={cadenceTarget} onChange={(e) => setCadenceTarget(toCadenceValue(e.target.value))}>
+                    <option value="half_yearly">{t("admin.taxpayers.cadence_half_yearly")}</option>
+                    <option value="quarterly">{t("admin.taxpayers.cadence_quarterly")}</option>
+                    <option value="monthly">{t("admin.taxpayers.cadence_monthly")}</option>
+                  </select>
+                </label>
+                <button className="mt-2 rounded bg-slate-700 px-3 py-1.5 text-xs text-white" type="button" onClick={() => void onApplyCadence()}>
+                  {t("admin.taxpayers.apply_cadence")}
+                </button>
               </div>
               <label>
                 <span className="mb-1 block text-sm">{t("admin.taxpayers_new.contact_name")}</span>
@@ -470,9 +506,6 @@ export default function AdminTaxpayersPage() {
                 <input className="w-full rounded border px-3 py-2" value={draft.countryCode} onChange={(e) => setDraft((prev) => ({ ...prev, countryCode: e.target.value }))} />
               </label>
               <div className="col-span-full flex flex-wrap gap-2">
-                <button className="rounded bg-slate-700 px-4 py-2 text-white" type="button" onClick={() => void onCalculateCadence()}>
-                  {t("admin.cadence.calculate")}
-                </button>
                 <button className="rounded bg-action px-4 py-2 text-white" type="submit">
                   Save registration changes
                 </button>

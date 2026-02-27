@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: Registration Service
-  version: "1.2.0"
+  version: "1.3.0"
   description: |
     Manages VAT registration status and cadence policy derivation.
     Phase 2: Epic E5 F5.1 — registration threshold (DKK 50,000) and cadence tiers (ML §§ 57-58).
@@ -77,6 +77,10 @@ paths:
     get:
       operationId: getLatestEffectiveRegistrationByTaxpayerId
       summary: Get latest effective registration by taxpayer ID
+      description: |
+        Admin lookup consistency contract.
+        Returns envelope `{ trace_id, taxpayer_id, registration }` and selects the
+        latest effective row by service-defined priority/order.
       parameters:
         - name: taxpayer_id
           in: query
@@ -151,6 +155,11 @@ paths:
     patch:
       operationId: patchRegistration
       summary: Partially update registration fields in place
+      description: |
+        Stable cadence-affecting update contract.
+        When `annual_turnover_dkk` is provided, cadence is deterministically re-derived
+        server-side using cadence policy thresholds and persisted with the update.
+        The response always returns the effective persisted cadence and turnover.
       parameters:
         - $ref: "#/components/parameters/RegistrationId"
       requestBody:
@@ -307,7 +316,7 @@ components:
 
     RegistrationResponse:
       type: object
-      required: [registration_id, taxpayer_id, status, cadence, obligations_created, trace_id]
+      required: [registration_id, taxpayer_id, status, cadence, annual_turnover_dkk, obligations_created, trace_id]
       properties:
         registration_id:
           type: string
@@ -320,11 +329,16 @@ components:
         cadence:
           type: string
           enum: [monthly, quarterly, half_yearly, annual]
+        annual_turnover_dkk:
+          type: number
+          minimum: 0
         obligations_created:
           type: integer
           minimum: 0
         trace_id:
           type: string
+        registration:
+          $ref: "#/components/schemas/RegistrationRecord"
 
     UpdateRegistrationRequest:
       type: object

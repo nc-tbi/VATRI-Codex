@@ -86,6 +86,23 @@ function isActiveRegistrationStatus(status: string): boolean {
   return status === "pending_registration" || status === "registered";
 }
 
+function buildRegistrationResponseFromPersisted(
+  persisted: Record<string, unknown>,
+  traceId: string,
+  obligationsCreated: number,
+): Record<string, unknown> {
+  return {
+    registration_id: String(persisted.registration_id),
+    taxpayer_id: String(persisted.taxpayer_id),
+    status: String(persisted.status),
+    cadence: String(persisted.cadence),
+    annual_turnover_dkk: Number(persisted.annual_turnover_dkk),
+    obligations_created: obligationsCreated,
+    trace_id: traceId,
+    registration: persisted,
+  };
+}
+
 export async function registrationRoutes(
   app: FastifyInstance,
   options: RouteOptions,
@@ -140,14 +157,15 @@ export async function registrationRoutes(
         obligationsCreated = obligations.length;
       }
 
-      return reply.status(201).send({
-        registration_id: registration.registration_id,
-        taxpayer_id: registration.taxpayer_id,
-        status: registrationStatus,
-        cadence: registration.cadence,
-        obligations_created: obligationsCreated,
-        trace_id: traceId,
-      });
+        return reply.status(201).send({
+          registration_id: registration.registration_id,
+          taxpayer_id: registration.taxpayer_id,
+          status: registrationStatus,
+          cadence: registration.cadence,
+          annual_turnover_dkk: registration.annual_turnover_dkk,
+          obligations_created: obligationsCreated,
+          trace_id: traceId,
+        });
     } catch (err) {
       if (err instanceof ActiveRegistrationConflictError) {
         return reply.status(409).send({
@@ -278,14 +296,7 @@ export async function registrationRoutes(
           obligationsCreated = obligations.length;
         }
 
-        return reply.send({
-          registration_id,
-          taxpayer_id,
-          status,
-          cadence,
-          obligations_created: obligationsCreated,
-          trace_id: traceId,
-        });
+        return reply.send(buildRegistrationResponseFromPersisted(persisted, traceId, obligationsCreated));
       } catch (err) {
         if (err instanceof ActiveRegistrationConflictError) {
           return reply.status(409).send({
@@ -387,14 +398,7 @@ export async function registrationRoutes(
           obligationsCreated = obligations.length;
         }
 
-        return reply.send({
-          registration_id,
-          taxpayer_id,
-          status,
-          cadence,
-          obligations_created: obligationsCreated,
-          trace_id: traceId,
-        });
+        return reply.send(buildRegistrationResponseFromPersisted(persisted, traceId, obligationsCreated));
       } catch (err) {
         if (err instanceof ActiveRegistrationConflictError) {
           return reply.status(409).send({

@@ -5,6 +5,8 @@ const registrationRepoMock = {
   saveRegistration: vi.fn(async () => {}),
   findRegistration: vi.fn(async () => null),
   findRegistrationsByTaxpayerId: vi.fn(async () => []),
+  findLatestEffectiveRegistrationByTaxpayerId: vi.fn(async () => null),
+  findActiveRegistrationByTaxpayerId: vi.fn(async () => null),
   updateRegistration: vi.fn(async () => null),
   updateRegistrationStatus: vi.fn(async () => {}),
   loadIntoMemory: vi.fn(async () => {}),
@@ -28,6 +30,12 @@ vi.mock("../../../../services/registration-service/src/db/repository.js", () => 
       }
       async findRegistrationsByTaxpayerId(...args: unknown[]): Promise<unknown[]> {
         return registrationRepoMock.findRegistrationsByTaxpayerId(...args);
+      }
+      async findLatestEffectiveRegistrationByTaxpayerId(...args: unknown[]): Promise<unknown> {
+        return registrationRepoMock.findLatestEffectiveRegistrationByTaxpayerId(...args);
+      }
+      async findActiveRegistrationByTaxpayerId(...args: unknown[]): Promise<unknown> {
+        return registrationRepoMock.findActiveRegistrationByTaxpayerId(...args);
       }
       async updateRegistration(...args: unknown[]): Promise<unknown> {
         return registrationRepoMock.updateRegistration(...args);
@@ -76,6 +84,8 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
     vi.clearAllMocks();
     _clearRegistrationStore();
     registrationRepoMock.findRegistrationsByTaxpayerId.mockResolvedValue([]);
+    registrationRepoMock.findLatestEffectiveRegistrationByTaxpayerId.mockResolvedValue(null);
+    registrationRepoMock.findActiveRegistrationByTaxpayerId.mockResolvedValue(null);
     registrationRepoMock.ensureRecurringObligationsForTaxpayer.mockResolvedValue([]);
     registrationRepoMock.updateRegistration.mockResolvedValue(null);
   });
@@ -194,6 +204,37 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
     await app.close();
   });
 
+  it("[case:TC-PORTAL-ADM-04B] GET /registrations/latest returns stable envelope for admin lookup", async () => {
+    registrationRepoMock.findLatestEffectiveRegistrationByTaxpayerId.mockResolvedValueOnce({
+      registration_id: "reg-latest",
+      taxpayer_id: "tp-latest",
+      cvr_number: "12345678",
+      annual_turnover_dkk: 7_000_000,
+      status: "registered",
+      cadence: "quarterly",
+    });
+    const { buildApp } = await import("../../../../services/registration-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+
+    const res = await app.inject({
+      method: "GET",
+      url: "/registrations/latest?taxpayer_id=tp-latest",
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toEqual(
+      expect.objectContaining({
+        taxpayer_id: "tp-latest",
+        trace_id: expect.any(String),
+        registration: expect.objectContaining({
+          registration_id: "reg-latest",
+          cadence: "quarterly",
+        }),
+      }),
+    );
+    await app.close();
+  });
+
   it("[case:TC-PORTAL-ADM-05] PUT updates existing registration in place without creating duplicate snapshots", async () => {
     registrationRepoMock.findRegistration.mockResolvedValueOnce({
       registration_id: "11111111-1111-4111-8111-111111111111",
@@ -277,6 +318,8 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
     expect(res.statusCode).toBe(200);
     expect(res.json().registration_id).toBe("22222222-2222-4222-8222-222222222222");
     expect(res.json().cadence).toBe("monthly");
+    expect(res.json().annual_turnover_dkk).toBe(55_000_000);
+    expect(res.json().registration).toEqual(expect.objectContaining({ cadence: "monthly", annual_turnover_dkk: 55_000_000 }));
     expect(registrationRepoMock.saveRegistration).not.toHaveBeenCalled();
     expect(registrationRepoMock.updateRegistration).toHaveBeenCalledWith(
       "22222222-2222-4222-8222-222222222222",

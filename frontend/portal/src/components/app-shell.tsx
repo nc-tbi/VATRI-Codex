@@ -14,9 +14,6 @@ const links = [
 const adminLinks = [
   "/admin/taxpayers/new",
   "/admin/taxpayers",
-  "/admin/cadence",
-  "/admin/filings-alter",
-  "/admin/amendments-alter",
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

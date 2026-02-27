@@ -33,16 +33,10 @@ export const dkOverlay: OverlayContract = {
   },
   routes: [
     "/overview",
-    "/obligations",
-    "/filings/new",
-    "/amendments/new",
     "/submissions",
     "/assessments-claims",
     "/admin/taxpayers/new",
     "/admin/taxpayers",
-    "/admin/cadence",
-    "/admin/filings-alter",
-    "/admin/amendments-alter",
   ],
   allowsRole: (pathname, role) => canAccess(pathname, role),
 };

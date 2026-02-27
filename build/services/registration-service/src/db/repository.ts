@@ -10,6 +10,20 @@ import {
 } from "@tax-core/domain";
 import type { ObligationCadence, ObligationRecord } from "@tax-core/domain";
 
+type PgErrorLike = { code?: string; constraint?: string };
+
+function isActiveRegistrationUniqueViolation(err: unknown): boolean {
+  const pgErr = err as PgErrorLike;
+  return pgErr?.code === "23505" && pgErr?.constraint === "uq_registration_single_active_taxpayer";
+}
+
+export class ActiveRegistrationConflictError extends Error {
+  constructor(taxpayerId: string) {
+    super(`An active registration already exists for taxpayer_id=${taxpayerId}`);
+    this.name = "ActiveRegistrationConflictError";
+  }
+}
+
 const PERIODS_PER_YEAR: Record<ObligationCadence, number> = {
   monthly: 12,
   quarterly: 4,
@@ -89,6 +103,31 @@ export function buildRecurringPeriods(
 export class RegistrationRepository {
   constructor(private readonly sql: Sql) {}
 
+  async findActiveRegistrationByTaxpayerId(
+    taxpayerId: string,
+    excludeRegistrationId?: string,
+  ): Promise<Record<string, unknown> | null> {
+    const rows = excludeRegistrationId
+      ? await this.sql`
+          SELECT *
+          FROM registration.registrations
+          WHERE taxpayer_id = ${taxpayerId}
+            AND status IN ('pending_registration', 'registered')
+            AND registration_id <> ${excludeRegistrationId}::uuid
+          ORDER BY COALESCE(registered_at, created_at) DESC, created_at DESC, registration_id DESC
+          LIMIT 1
+        `
+      : await this.sql`
+          SELECT *
+          FROM registration.registrations
+          WHERE taxpayer_id = ${taxpayerId}
+            AND status IN ('pending_registration', 'registered')
+          ORDER BY COALESCE(registered_at, created_at) DESC, created_at DESC, registration_id DESC
+          LIMIT 1
+        `;
+    return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
+  }
+
   async saveRegistration(
     registration: RegistrationRecord,
     metadata?: {
@@ -97,21 +136,28 @@ export class RegistrationRepository {
       address?: Record<string, unknown>;
     },
   ): Promise<void> {
-    await this.sql`
-      INSERT INTO registration.registrations (
-        registration_id, taxpayer_id, cvr_number, status, cadence,
-        annual_turnover_dkk, trace_id, created_at,
-        business_profile, contact, address
-      ) VALUES (
-        ${registration.registration_id}, ${registration.taxpayer_id},
-        ${registration.cvr_number}, ${registration.status}, ${registration.cadence},
-        ${registration.annual_turnover_dkk}, ${registration.trace_id}, ${registration.created_at},
-        ${metadata?.business_profile ? JSON.stringify(metadata.business_profile) : null}::jsonb,
-        ${metadata?.contact ? JSON.stringify(metadata.contact) : null}::jsonb,
-        ${metadata?.address ? JSON.stringify(metadata.address) : null}::jsonb
-      )
-      ON CONFLICT (registration_id) DO NOTHING
-    `;
+    try {
+      await this.sql`
+        INSERT INTO registration.registrations (
+          registration_id, taxpayer_id, cvr_number, status, cadence,
+          annual_turnover_dkk, trace_id, created_at,
+          business_profile, contact, address
+        ) VALUES (
+          ${registration.registration_id}, ${registration.taxpayer_id},
+          ${registration.cvr_number}, ${registration.status}, ${registration.cadence},
+          ${registration.annual_turnover_dkk}, ${registration.trace_id}, ${registration.created_at},
+          ${metadata?.business_profile ? JSON.stringify(metadata.business_profile) : null}::jsonb,
+          ${metadata?.contact ? JSON.stringify(metadata.contact) : null}::jsonb,
+          ${metadata?.address ? JSON.stringify(metadata.address) : null}::jsonb
+        )
+        ON CONFLICT (registration_id) DO NOTHING
+      `;
+    } catch (err) {
+      if (isActiveRegistrationUniqueViolation(err)) {
+        throw new ActiveRegistrationConflictError(registration.taxpayer_id);
+      }
+      throw err;
+    }
   }
 
   async findRegistration(registrationId: string): Promise<Record<string, unknown> | null> {
@@ -129,6 +175,27 @@ export class RegistrationRepository {
       ORDER BY created_at ASC, registration_id ASC
     `;
     return rows as Record<string, unknown>[];
+  }
+
+  async findLatestEffectiveRegistrationByTaxpayerId(
+    taxpayerId: string,
+  ): Promise<Record<string, unknown> | null> {
+    const rows = await this.sql`
+      SELECT *
+      FROM registration.registrations
+      WHERE taxpayer_id = ${taxpayerId}
+      ORDER BY
+        CASE
+          WHEN status IN ('registered', 'pending_registration') THEN 0
+          WHEN status = 'not_registered' THEN 1
+          ELSE 2
+        END ASC,
+        COALESCE(registered_at, created_at) DESC,
+        created_at DESC,
+        registration_id DESC
+      LIMIT 1
+    `;
+    return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
   }
 
   async ensureRecurringObligationsForTaxpayer(args: {
@@ -189,13 +256,63 @@ export class RegistrationRepository {
     status: string,
     extra: Record<string, unknown>,
   ): Promise<void> {
-    await this.sql`
-      UPDATE registration.registrations
-      SET status = ${status},
-          registered_at = COALESCE(${extra.registered_at as string | null ?? null}, registered_at),
-          deregistered_at = COALESCE(${extra.deregistered_at as string | null ?? null}, deregistered_at)
-      WHERE registration_id = ${registrationId}::uuid
-    `;
+    try {
+      await this.sql`
+        UPDATE registration.registrations
+        SET status = ${status},
+            registered_at = COALESCE(${extra.registered_at as string | null ?? null}, registered_at),
+            deregistered_at = COALESCE(${extra.deregistered_at as string | null ?? null}, deregistered_at)
+        WHERE registration_id = ${registrationId}::uuid
+      `;
+    } catch (err) {
+      if (isActiveRegistrationUniqueViolation(err)) {
+        const current = await this.findRegistration(registrationId);
+        throw new ActiveRegistrationConflictError(String(current?.taxpayer_id ?? "unknown"));
+      }
+      throw err;
+    }
+  }
+
+  async updateRegistration(
+    registrationId: string,
+    patch: {
+      taxpayer_id: string;
+      cvr_number: string;
+      annual_turnover_dkk: number;
+      cadence: ObligationCadence;
+      status: string;
+      trace_id: string;
+      business_profile: Record<string, unknown> | null;
+      contact: Record<string, unknown> | null;
+      address: Record<string, unknown> | null;
+      registered_at?: string | null;
+      deregistered_at?: string | null;
+    },
+  ): Promise<Record<string, unknown> | null> {
+    try {
+      const rows = await this.sql`
+        UPDATE registration.registrations
+        SET taxpayer_id = ${patch.taxpayer_id},
+            cvr_number = ${patch.cvr_number},
+            annual_turnover_dkk = ${patch.annual_turnover_dkk},
+            cadence = ${patch.cadence},
+            status = ${patch.status},
+            trace_id = ${patch.trace_id},
+            business_profile = ${patch.business_profile ? JSON.stringify(patch.business_profile) : null}::jsonb,
+            contact = ${patch.contact ? JSON.stringify(patch.contact) : null}::jsonb,
+            address = ${patch.address ? JSON.stringify(patch.address) : null}::jsonb,
+            registered_at = COALESCE(${patch.registered_at ?? null}::timestamptz, registered_at),
+            deregistered_at = COALESCE(${patch.deregistered_at ?? null}::timestamptz, deregistered_at)
+        WHERE registration_id = ${registrationId}::uuid
+        RETURNING *
+      `;
+      return rows.length > 0 ? (rows[0] as Record<string, unknown>) : null;
+    } catch (err) {
+      if (isActiveRegistrationUniqueViolation(err)) {
+        throw new ActiveRegistrationConflictError(patch.taxpayer_id);
+      }
+      throw err;
+    }
   }
 
   /** Load registration from DB into in-memory domain store for state-machine operations. */

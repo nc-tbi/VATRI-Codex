@@ -122,3 +122,31 @@ export async function apiPostWithMeta<T>(service: ServiceName, path: string, bod
   };
 }
 
+export async function apiPut<T>(service: ServiceName, path: string, body: unknown, user?: UserClaims): Promise<T> {
+  const res = await fetch(`${serviceBaseUrl(service)}${path}`, { method: "PUT", headers: buildHeaders(user), body: JSON.stringify(body) });
+  if (!res.ok) {
+    const parsed = (await parseJsonSafe(res)) as Partial<ApiErrorBody> | undefined;
+    const text = parsed ? undefined : await res.text();
+    throw new ApiError(
+      res.status,
+      buildErrorMessage(res.status, text || `PUT ${path} failed with ${res.status}`, parsed),
+      parsed ? { code: parsed.error, traceId: parsed.trace_id, body: parsed } : undefined
+    );
+  }
+  return (await res.json()) as T;
+}
+
+export async function apiPatch<T>(service: ServiceName, path: string, body: unknown, user?: UserClaims): Promise<T> {
+  const res = await fetch(`${serviceBaseUrl(service)}${path}`, { method: "PATCH", headers: buildHeaders(user), body: JSON.stringify(body) });
+  if (!res.ok) {
+    const parsed = (await parseJsonSafe(res)) as Partial<ApiErrorBody> | undefined;
+    const text = parsed ? undefined : await res.text();
+    throw new ApiError(
+      res.status,
+      buildErrorMessage(res.status, text || `PATCH ${path} failed with ${res.status}`, parsed),
+      parsed ? { code: parsed.error, traceId: parsed.trace_id, body: parsed } : undefined
+    );
+  }
+  return (await res.json()) as T;
+}
+

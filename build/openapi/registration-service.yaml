@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: Registration Service
-  version: "1.1.0"
+  version: "1.2.0"
   description: |
     Manages VAT registration status and cadence policy derivation.
     Phase 2: Epic E5 F5.1 — registration threshold (DKK 50,000) and cadence tiers (ML §§ 57-58).
@@ -68,8 +68,40 @@ paths:
                 $ref: "#/components/schemas/RegistrationResponse"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "500":
           $ref: "#/components/responses/InternalError"
+
+  /registrations/latest:
+    get:
+      operationId: getLatestEffectiveRegistrationByTaxpayerId
+      summary: Get latest effective registration by taxpayer ID
+      parameters:
+        - name: taxpayer_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Latest effective registration for taxpayer
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [trace_id, taxpayer_id, registration]
+                properties:
+                  trace_id:
+                    type: string
+                  taxpayer_id:
+                    type: string
+                  registration:
+                    $ref: "#/components/schemas/RegistrationRecord"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   /registrations/{registration_id}:
     get:
@@ -88,6 +120,60 @@ paths:
           $ref: "#/components/responses/NotFound"
         "422":
           $ref: "#/components/responses/UnprocessableEntity"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    put:
+      operationId: replaceRegistration
+      summary: Replace registration fields in place
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRegistrationRequest"
+      responses:
+        "200":
+          description: Registration updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    patch:
+      operationId: patchRegistration
+      summary: Partially update registration fields in place
+      parameters:
+        - $ref: "#/components/parameters/RegistrationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRegistrationRequest"
+      responses:
+        "200":
+          description: Registration updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntity"
+        "409":
+          $ref: "#/components/responses/Conflict"
 
   /registrations/{registration_id}/promote:
     post:
@@ -221,6 +307,7 @@ components:
 
     RegistrationResponse:
       type: object
+      required: [registration_id, taxpayer_id, status, cadence, obligations_created, trace_id]
       properties:
         registration_id:
           type: string
@@ -238,6 +325,33 @@ components:
           minimum: 0
         trace_id:
           type: string
+
+    UpdateRegistrationRequest:
+      type: object
+      minProperties: 1
+      properties:
+        taxpayer_id:
+          type: string
+        cvr_number:
+          type: string
+          minLength: 8
+          maxLength: 8
+          description: 8-digit Danish CVR number
+        annual_turnover_dkk:
+          type: number
+          minimum: 0
+        business_profile:
+          type: object
+          nullable: true
+          additionalProperties: true
+        contact:
+          type: object
+          nullable: true
+          additionalProperties: true
+        address:
+          type: object
+          nullable: true
+          additionalProperties: true
 
     RegistrationRecord:
       type: object
@@ -308,6 +422,15 @@ components:
                 type: string
     UnprocessableEntity:
       description: Invalid state transition
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    Conflict:
+      description: Request conflicts with active registration invariants
       content:
         application/json:
           schema:

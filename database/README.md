@@ -56,6 +56,7 @@ database/
 - `V1.2.001` / `U1.2.001` auth/session persistence (`auth.users`, `auth.refresh_tokens`)
 - `V1.2.002` / `U1.2.002` assessment type-constraint normalization (single deterministic constraint)
 - `V1.2.003` / `U1.2.003` lookup indexes and taxpayer auth uniqueness (`registration(taxpayer_id,cvr_number)`, partial `auth.users` taxpayer indexes/uniqueness)
+- `V1.2.004` / `U1.2.004` registration active-record uniqueness + latest-effective lookup index
 - CI migration-compat gate compares `database/migrations/V*` against runtime mirror `build/db/migrations/*.sql` (currently passing)
 
 ### Runbooks and Evidence

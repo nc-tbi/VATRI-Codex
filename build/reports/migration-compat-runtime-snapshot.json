@@ -2920,6 +2920,12 @@
     {
       "table_schema": "registration",
       "table_name": "registrations",
+      "indexname": "idx_registration_latest_effective",
+      "indexdef": "CREATE INDEX idx_registration_latest_effective ON registration.registrations USING btree (taxpayer_id, status, registered_at DESC, created_at DESC, registration_id DESC)"
+    },
+    {
+      "table_schema": "registration",
+      "table_name": "registrations",
       "indexname": "idx_registration_taxpayer_cvr",
       "indexdef": "CREATE INDEX idx_registration_taxpayer_cvr ON registration.registrations USING btree (taxpayer_id, cvr_number)"
     },
@@ -2934,6 +2940,12 @@
       "table_name": "registrations",
       "indexname": "registrations_pkey",
       "indexdef": "CREATE UNIQUE INDEX registrations_pkey ON registration.registrations USING btree (registration_id)"
+    },
+    {
+      "table_schema": "registration",
+      "table_name": "registrations",
+      "indexname": "uq_registration_single_active_taxpayer",
+      "indexdef": "CREATE UNIQUE INDEX uq_registration_single_active_taxpayer ON registration.registrations USING btree (taxpayer_id) WHERE (status = ANY (ARRAY['pending_registration'::text, 'registered'::text]))"
     }
   ],
   "triggers": [

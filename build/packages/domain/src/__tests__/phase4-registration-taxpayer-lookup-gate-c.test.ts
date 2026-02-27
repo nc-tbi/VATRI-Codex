@@ -5,6 +5,7 @@ const registrationRepoMock = {
   saveRegistration: vi.fn(async () => {}),
   findRegistration: vi.fn(async () => null),
   findRegistrationsByTaxpayerId: vi.fn(async () => []),
+  updateRegistration: vi.fn(async () => null),
   updateRegistrationStatus: vi.fn(async () => {}),
   loadIntoMemory: vi.fn(async () => {}),
   ensureRecurringObligationsForTaxpayer: vi.fn(async () => []),
@@ -27,6 +28,9 @@ vi.mock("../../../../services/registration-service/src/db/repository.js", () => 
       }
       async findRegistrationsByTaxpayerId(...args: unknown[]): Promise<unknown[]> {
         return registrationRepoMock.findRegistrationsByTaxpayerId(...args);
+      }
+      async updateRegistration(...args: unknown[]): Promise<unknown> {
+        return registrationRepoMock.updateRegistration(...args);
       }
       async updateRegistrationStatus(...args: unknown[]): Promise<void> {
         await registrationRepoMock.updateRegistrationStatus(...args);
@@ -73,6 +77,7 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
     _clearRegistrationStore();
     registrationRepoMock.findRegistrationsByTaxpayerId.mockResolvedValue([]);
     registrationRepoMock.ensureRecurringObligationsForTaxpayer.mockResolvedValue([]);
+    registrationRepoMock.updateRegistration.mockResolvedValue(null);
   });
 
   it("[case:TC-PORTAL-ADM-01] returns empty list when taxpayer has no registrations", async () => {
@@ -184,6 +189,100 @@ describe("Phase 4 registration lookup contract [gate:C][backlog:TB-S4B-03]", () 
         taxpayer_id: "tp-active-seed",
         cadence: "half_yearly",
         effective_date: "2026-01-01",
+      }),
+    );
+    await app.close();
+  });
+
+  it("[case:TC-PORTAL-ADM-05] PUT updates existing registration in place without creating duplicate snapshots", async () => {
+    registrationRepoMock.findRegistration.mockResolvedValueOnce({
+      registration_id: "11111111-1111-4111-8111-111111111111",
+      taxpayer_id: "tp-update",
+      cvr_number: "12345678",
+      annual_turnover_dkk: 60000,
+      status: "pending_registration",
+      cadence: "half_yearly",
+      business_profile: { status: "pending" },
+      contact: { email: "old@example.com" },
+      address: { city: "Aarhus" },
+    });
+    registrationRepoMock.updateRegistration.mockResolvedValueOnce({
+      registration_id: "11111111-1111-4111-8111-111111111111",
+      taxpayer_id: "tp-update",
+      cvr_number: "12345678",
+      annual_turnover_dkk: 7_000_000,
+      status: "registered",
+      cadence: "quarterly",
+    });
+
+    const { buildApp } = await import("../../../../services/registration-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+    const res = await app.inject({
+      method: "PUT",
+      url: "/registrations/11111111-1111-4111-8111-111111111111",
+      payload: {
+        taxpayer_id: "tp-update",
+        cvr_number: "12345678",
+        annual_turnover_dkk: 7_000_000,
+        business_profile: { status: "active", effective_date: "2026-01-01" },
+        contact: { email: "new@example.com" },
+        address: { city: "Copenhagen" },
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().registration_id).toBe("11111111-1111-4111-8111-111111111111");
+    expect(registrationRepoMock.saveRegistration).not.toHaveBeenCalled();
+    expect(registrationRepoMock.updateRegistration).toHaveBeenCalledWith(
+      "11111111-1111-4111-8111-111111111111",
+      expect.objectContaining({
+        cadence: "quarterly",
+        status: "registered",
+      }),
+    );
+    await app.close();
+  });
+
+  it("[case:TC-PORTAL-ADM-06] PATCH updates cadence-driving turnover without creating new registration rows", async () => {
+    registrationRepoMock.findRegistration.mockResolvedValueOnce({
+      registration_id: "22222222-2222-4222-8222-222222222222",
+      taxpayer_id: "tp-patch",
+      cvr_number: "87654321",
+      annual_turnover_dkk: 7_000_000,
+      status: "registered",
+      cadence: "quarterly",
+      business_profile: { status: "active", effective_date: "2026-02-01" },
+      contact: { email: "patch@example.com" },
+      address: { city: "Odense" },
+    });
+    registrationRepoMock.updateRegistration.mockResolvedValueOnce({
+      registration_id: "22222222-2222-4222-8222-222222222222",
+      taxpayer_id: "tp-patch",
+      cvr_number: "87654321",
+      annual_turnover_dkk: 55_000_000,
+      status: "registered",
+      cadence: "monthly",
+    });
+
+    const { buildApp } = await import("../../../../services/registration-service/src/app.js");
+    const app = buildApp({ sql: {} as never, kafka: makeKafkaStub() as never });
+    const res = await app.inject({
+      method: "PATCH",
+      url: "/registrations/22222222-2222-4222-8222-222222222222",
+      payload: {
+        annual_turnover_dkk: 55_000_000,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().registration_id).toBe("22222222-2222-4222-8222-222222222222");
+    expect(res.json().cadence).toBe("monthly");
+    expect(registrationRepoMock.saveRegistration).not.toHaveBeenCalled();
+    expect(registrationRepoMock.updateRegistration).toHaveBeenCalledWith(
+      "22222222-2222-4222-8222-222222222222",
+      expect.objectContaining({
+        annual_turnover_dkk: 55_000_000,
+        cadence: "monthly",
       }),
     );
     await app.close();

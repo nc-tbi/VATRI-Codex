@@ -4,10 +4,13 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { listFilings, submitAmendment } from "@/core/api/tax-core";
+import { getFiling, submitAmendment } from "@/core/api/tax-core";
 import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
+import { formatVatAmount, readAmount } from "@/core/format/amount";
+import { formatDateOnly, formatPeriod } from "@/core/format/date";
+import { calculateAmendmentStageSummary } from "@/features/amendments/summary";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
 type VatField = {
@@ -52,35 +55,6 @@ function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 }
 
-function parseAmount(value: string): number {
-  const compact = value.trim().replace(/\s/g, "");
-  const normalized =
-    compact.includes(",") && compact.includes(".")
-      ? compact.replace(/\./g, "").replace(",", ".")
-      : compact.replace(",", ".");
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function readNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("da-DK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function periodText(start: unknown, end: unknown): string {
-  const startText = typeof start === "string" ? start : "";
-  const endText = typeof end === "string" ? end : "";
-  if (startText && endText) return `${startText} - ${endText}`;
-  if (endText) return endText;
-  return "-";
-}
-
 export default function NewAmendmentPage() {
   const searchParams = useSearchParams();
   const filingFromContext = searchParams.get("original_filing_id") ?? "";
@@ -94,22 +68,24 @@ export default function NewAmendmentPage() {
 
   const originalFilingQuery = useQuery({
     queryKey: ["amendment", "original-filing", filingFromContext, taxpayerId],
-    queryFn: async () => {
-      const filings = await listFilings(taxpayerId, undefined, user ?? undefined);
-      return filings.find((entry) => entry.filing_id === filingFromContext) ?? null;
-    },
+    queryFn: () => getFiling(filingFromContext, user ?? undefined),
     enabled: Boolean(hasContext && taxpayerId),
   });
 
   const original = originalFilingQuery.data;
-  const period = periodText(original?.tax_period_start, original?.tax_period_end);
+  const period = formatPeriod(original?.tax_period_start, original?.tax_period_end);
+
+  const stageSummary = useMemo(() => {
+    if (!original) return null;
+    return calculateAmendmentStageSummary(original, draftValues);
+  }, [draftValues, original]);
 
   useEffect(() => {
     if (!original) return;
     const next: Record<string, string> = {};
     for (const section of SECTION_FIELDS) {
       for (const field of section.fields) {
-        next[field.key] = String(readNumber(original[field.key]));
+        next[field.key] = String(readAmount(original[field.key]));
       }
     }
     setDraftValues(next);
@@ -143,40 +119,29 @@ export default function NewAmendmentPage() {
       setError(t("shared.fetch_error"));
       return;
     }
+    if (!stageSummary) {
+      setError(t("shared.fetch_error"));
+      return;
+    }
     try {
       const now = new Date().toISOString();
-
-      const amended = {
-        output: parseAmount(draftValues.output_vat_amount_domestic ?? "0"),
-        reverseGoods: parseAmount(draftValues.reverse_charge_output_vat_goods_abroad_amount ?? "0"),
-        reverseServices: parseAmount(draftValues.reverse_charge_output_vat_services_abroad_amount ?? "0"),
-        input: parseAmount(draftValues.input_vat_deductible_amount_total ?? "0"),
-      };
-      const originalStage1 = readNumber(original.output_vat_amount_domestic) + readNumber(original.reverse_charge_output_vat_goods_abroad_amount) + readNumber(original.reverse_charge_output_vat_services_abroad_amount);
-      const originalStage2 = readNumber(original.input_vat_deductible_amount_total);
-      const originalStage3 = originalStage1 - originalStage2;
-      const originalStage4 = originalStage3;
-      const amendedStage1 = amended.output + amended.reverseGoods + amended.reverseServices;
-      const amendedStage2 = amended.input;
-      const amendedStage3 = amendedStage1 - amendedStage2;
-      const amendedStage4 = amendedStage3;
 
       const body = {
         original_filing_id: filingFromContext,
         taxpayer_id: taxpayerId,
-        tax_period_end: String(original.tax_period_end ?? "2026-03-31"),
+        tax_period_end: formatDateOnly(original.tax_period_end) || "2026-03-31",
         original_assessment: {
           filing_id: filingFromContext,
           trace_id: "portal-amendment",
           rule_version_id: "DK-VAT-001",
           assessed_at: now,
           assessment_version: 1,
-          stage1_gross_output_vat: originalStage1,
-          stage2_total_deductible_input_vat: originalStage2,
-          stage3_pre_adjustment_net_vat: originalStage3,
-          stage4_net_vat: originalStage4,
-          result_type: originalStage4 > 0 ? "payable" : originalStage4 < 0 ? "refund" : "zero",
-          claim_amount: Math.abs(originalStage4),
+          stage1_gross_output_vat: stageSummary.originalStage1,
+          stage2_total_deductible_input_vat: stageSummary.originalStage2,
+          stage3_pre_adjustment_net_vat: stageSummary.originalStage3,
+          stage4_net_vat: stageSummary.originalStage4,
+          result_type: stageSummary.originalStage4 > 0 ? "payable" : stageSummary.originalStage4 < 0 ? "refund" : "zero",
+          claim_amount: Math.abs(stageSummary.originalStage4),
         },
         new_assessment: {
           filing_id: uuid(),
@@ -184,12 +149,12 @@ export default function NewAmendmentPage() {
           rule_version_id: "DK-VAT-001",
           assessed_at: now,
           assessment_version: 2,
-          stage1_gross_output_vat: amendedStage1,
-          stage2_total_deductible_input_vat: amendedStage2,
-          stage3_pre_adjustment_net_vat: amendedStage3,
-          stage4_net_vat: amendedStage4,
-          result_type: amendedStage4 > 0 ? "payable" : amendedStage4 < 0 ? "refund" : "zero",
-          claim_amount: Math.abs(amendedStage4),
+          stage1_gross_output_vat: stageSummary.amendedStage1,
+          stage2_total_deductible_input_vat: stageSummary.amendedStage2,
+          stage3_pre_adjustment_net_vat: stageSummary.amendedStage3,
+          stage4_net_vat: stageSummary.amendedStage4,
+          result_type: stageSummary.amendedStage4 > 0 ? "payable" : stageSummary.amendedStage4 < 0 ? "refund" : "zero",
+          claim_amount: Math.abs(stageSummary.amendedStage4),
         },
       };
       const result = await submitAmendment(body, user ?? undefined);
@@ -223,39 +188,85 @@ export default function NewAmendmentPage() {
       {error ? <p className="mt-4 rounded border border-danger bg-red-50 p-3 text-sm text-danger">{error}</p> : null}
 
       {original ? (
-        <form className="mt-6 space-y-6" onSubmit={(e) => void onSubmit(e)}>
-          {SECTION_FIELDS.map((section) => (
-            <section key={section.titleKey} className="space-y-3">
-              <h3 className="text-lg font-medium">{t(section.titleKey)}</h3>
-              <div className="grid grid-cols-[1fr_160px_160px_36px] gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-                <span>{t("amendments_new.field_column")}</span>
-                <span className="text-right">{t("amendments_new.latest_values_column")}</span>
-                <span className="text-right">{t("amendments_new.amended_values_column")}</span>
-                <span />
-              </div>
-              {section.fields.map((field) => (
-                <label key={field.key} className="grid grid-cols-[1fr_160px_160px_36px] items-center gap-2 rounded border border-[var(--border)] px-3 py-2 text-sm">
-                  <span>
-                    {field.rubrik ? <span className="mr-2 rounded bg-slate-100 px-2 py-0.5 text-xs font-medium">{field.rubrik}</span> : null}
-                    {t(field.labelKey)}
-                  </span>
-                  <span className="rounded border border-[var(--border)] bg-slate-50 px-3 py-2 text-right">
-                    {formatAmount(readNumber(original[field.key]))}
-                  </span>
-                  <input
-                    className="rounded border border-[var(--border)] px-3 py-2 text-right"
-                    inputMode="decimal"
-                    value={draftValues[field.key] ?? "0"}
-                    onChange={(event) => onValueChange(field.key, event.target.value)}
-                  />
-                  <span className="text-[var(--muted)]">kr.</span>
-                </label>
+        <form className="mt-6" onSubmit={(e) => void onSubmit(e)}>
+          <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+            <div className="space-y-6">
+              {SECTION_FIELDS.map((section) => (
+                <section key={section.titleKey} className="space-y-3">
+                  <h3 className="text-lg font-medium">{t(section.titleKey)}</h3>
+                  <div className="grid grid-cols-[1fr_160px_160px_36px] gap-2 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
+                    <span>{t("amendments_new.field_column")}</span>
+                    <span className="text-right">{t("amendments_new.latest_values_column")}</span>
+                    <span className="text-right">{t("amendments_new.amended_values_column")}</span>
+                    <span />
+                  </div>
+                  {section.fields.map((field) => (
+                    <label key={field.key} className="grid grid-cols-[1fr_160px_160px_36px] items-center gap-2 rounded border border-[var(--border)] px-3 py-2 text-sm">
+                      <span>
+                        {field.rubrik ? <span className="mr-2 rounded bg-slate-100 px-2 py-0.5 text-xs font-medium">{field.rubrik}</span> : null}
+                        {t(field.labelKey)}
+                      </span>
+                      <span className="rounded border border-[var(--border)] bg-slate-50 px-3 py-2 text-right">
+                        {formatVatAmount(original[field.key])}
+                      </span>
+                      <input
+                        className="rounded border border-[var(--border)] px-3 py-2 text-right"
+                        inputMode="decimal"
+                        value={draftValues[field.key] ?? String(readAmount(original[field.key]))}
+                        onChange={(event) => onValueChange(field.key, event.target.value)}
+                      />
+                      <span className="text-[var(--muted)]">kr.</span>
+                    </label>
+                  ))}
+                </section>
               ))}
-            </section>
-          ))}
-          <button className="rounded bg-action px-4 py-2 text-white" type="submit">
-            {t("amendments_new.submit")}
-          </button>
+              <button className="rounded bg-action px-4 py-2 text-white" type="submit">
+                {t("amendments_new.submit")}
+              </button>
+            </div>
+
+            {stageSummary ? (
+              <aside aria-labelledby="amendment-summary-title" className="h-fit rounded border border-[var(--border)] bg-slate-50 p-4">
+                <h3 id="amendment-summary-title" className="text-base font-semibold">
+                  {t("filings_new.summary_title")}
+                </h3>
+                <dl className="mt-3 space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt>Stage 1</dt>
+                    <dd>{formatVatAmount(stageSummary.amendedStage1)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Stage 2</dt>
+                    <dd>{formatVatAmount(stageSummary.amendedStage2)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>Stage 3</dt>
+                    <dd>{formatVatAmount(stageSummary.amendedStage3)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 font-semibold">
+                    <dt>Stage 4</dt>
+                    <dd data-testid="amendment-summary-stage4-amended">{formatVatAmount(stageSummary.amendedStage4)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t border-[var(--border)] pt-2">
+                    <dt>{t("assessments_claims.result")}</dt>
+                    <dd>{t(stageSummary.resultType)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>{t("assessments_claims.amount")}</dt>
+                    <dd>{formatVatAmount(stageSummary.claimAmount)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4 border-t border-[var(--border)] pt-2">
+                    <dt>{t("amendments_new.latest_values_column")} (Stage 4)</dt>
+                    <dd data-testid="amendment-summary-stage4-original">{formatVatAmount(stageSummary.originalStage4)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt>{t("amendments_new.summary_delta_stage4")}</dt>
+                    <dd data-testid="amendment-summary-stage4-delta">{formatVatAmount(stageSummary.stage4Delta)}</dd>
+                  </div>
+                </dl>
+              </aside>
+            ) : null}
+          </div>
         </form>
       ) : null}
     </section>

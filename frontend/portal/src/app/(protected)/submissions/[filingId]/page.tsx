@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { listAmendments, listFilings } from "@/core/api/tax-core";
+import { getFiling, listAmendments } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { formatVatAmount } from "@/core/format/amount";
+import { formatPeriod } from "@/core/format/date";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
 type VatField = {
@@ -44,25 +46,6 @@ const SECTION_FIELDS: Array<{ titleKey: string; fields: VatField[] }> = [
   },
 ];
 
-function readNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("da-DK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function periodText(start: unknown, end: unknown): string {
-  const startText = typeof start === "string" ? start : "";
-  const endText = typeof end === "string" ? end : "";
-  if (startText && endText) return `${startText} - ${endText}`;
-  if (endText) return endText;
-  return "-";
-}
-
 export default function SubmissionDetailsPage() {
   const params = useParams<{ filingId: string }>();
   const filingId = params?.filingId ?? "";
@@ -72,10 +55,7 @@ export default function SubmissionDetailsPage() {
 
   const filingQuery = useQuery({
     queryKey: ["submission", "filing", filingId, taxpayerId],
-    queryFn: async () => {
-      const filings = await listFilings(taxpayerId, undefined, user ?? undefined);
-      return filings.find((entry) => entry.filing_id === filingId) ?? null;
-    },
+    queryFn: () => getFiling(filingId, user ?? undefined),
     enabled: Boolean(filingId && taxpayerId),
   });
 
@@ -90,7 +70,7 @@ export default function SubmissionDetailsPage() {
 
   const filing = filingQuery.data;
   const amendments = amendmentQuery.data ?? [];
-  const period = periodText(filing?.tax_period_start, filing?.tax_period_end);
+  const period = formatPeriod(filing?.tax_period_start, filing?.tax_period_end);
 
   return (
     <section>
@@ -114,7 +94,7 @@ export default function SubmissionDetailsPage() {
                         {t(field.labelKey)}
                       </span>
                       <span className="rounded border border-[var(--border)] bg-slate-50 px-3 py-2 text-right">
-                        {formatAmount(readNumber(filing[field.key]))}
+                        {formatVatAmount(filing[field.key])}
                       </span>
                       <span className="text-[var(--muted)]">kr.</span>
                     </div>
@@ -133,7 +113,7 @@ export default function SubmissionDetailsPage() {
               {amendments.map((amendment) => (
                 <li key={amendment.amendment_id} className="rounded border border-[var(--border)] p-3">
                   <p className="font-medium">
-                    {t("shared.amendment_period", { period: periodText(undefined, amendment.tax_period_end) })}
+                    {t("shared.amendment_period", { period: formatPeriod(undefined, amendment.tax_period_end) })}
                   </p>
                   <p className="text-[var(--muted)]">{String(amendment.delta_classification)}</p>
                 </li>

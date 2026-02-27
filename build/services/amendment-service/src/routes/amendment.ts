@@ -10,6 +10,7 @@ import {
 } from "@tax-core/domain";
 import { AmendmentRepository, type AmendmentAlterEventRecord } from "../db/repository.js";
 import { AmendmentEventPublisher } from "../events/publisher.js";
+import { normalizeAmendmentRecordContract } from "../contracts.js";
 
 interface RouteOptions extends FastifyPluginOptions {
   sql: Sql;
@@ -106,7 +107,8 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
         trace_id: traceId,
         idempotent: false,
         amendment_id: amendment.amendment_id,
-        amendment,
+        payload_shape_version: "amendment-nesting-v1",
+        amendment: normalizeAmendmentRecordContract(amendment as unknown as Record<string, unknown>),
       });
     } catch (err) {
       if (err instanceof ManualLegalRoutingRequiredError) {
@@ -133,14 +135,15 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
       if (!taxpayer_id) {
         return reply.status(400).send({ error: "BAD_REQUEST", message: "taxpayer_id is required", trace_id: req.id });
       }
-      const amendments = await repo.findByTaxpayerId(taxpayer_id, tax_period_end);
+      const amendments = (await repo.findByTaxpayerId(taxpayer_id, tax_period_end))
+        .map(normalizeAmendmentRecordContract);
       return reply.send({ trace_id: req.id, taxpayer_id, amendments });
     }
   );
 
   app.get<{ Params: { filing_id: string } }>("/:filing_id", async (req, reply) => {
     const { filing_id } = req.params;
-    const records = await repo.findByFilingId(filing_id);
+    const records = (await repo.findByFilingId(filing_id)).map(normalizeAmendmentRecordContract);
     return reply.send({ trace_id: req.id, filing_id, amendments: records });
   });
 
@@ -186,7 +189,12 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
           created_at: new Date().toISOString(),
         });
 
-        return reply.send({ trace_id: traceId, amendment_id, alter_id, effective_state: afterState });
+        return reply.send({
+          trace_id: traceId,
+          amendment_id,
+          alter_id,
+          effective_state: normalizeAmendmentRecordContract(afterState),
+        });
       } catch (err) {
         req.log.error(err);
         return reply.status(500).send({ error: "INTERNAL_ERROR", trace_id: traceId });
@@ -238,7 +246,7 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
         trace_id: traceId,
         amendment_id,
         undone_alter_id: lastApplied.alter_id,
-        effective_state: afterState,
+        effective_state: normalizeAmendmentRecordContract(afterState),
       });
     } catch (err) {
       req.log.error(err);
@@ -290,7 +298,7 @@ export async function amendmentRoutes(app: FastifyInstance, opts: RouteOptions):
         trace_id: traceId,
         amendment_id,
         redone_alter_id: lastUndone.alter_id,
-        effective_state: afterState,
+        effective_state: normalizeAmendmentRecordContract(afterState),
       });
     } catch (err) {
       req.log.error(err);

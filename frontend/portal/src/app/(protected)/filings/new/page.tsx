@@ -14,27 +14,12 @@ import {
 import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
 import { ApiError } from "@/core/api/http";
+import { formatVatAmount, readAmount } from "@/core/format/amount";
+import { formatDateOnly, formatPeriod } from "@/core/format/date";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
 function uuid(): string {
   return typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
-}
-
-function parseAmount(value: string): number {
-  const compact = value.trim().replace(/\s/g, "");
-  const normalized =
-    compact.includes(",") && compact.includes(".")
-      ? compact.replace(/\./g, "").replace(",", ".")
-      : compact.replace(",", ".");
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("da-DK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
 }
 
 interface AmountFieldProps {
@@ -94,10 +79,10 @@ export default function NewFilingPage() {
   const [error, setError] = useState<string | null>(null);
 
   const stageSummary = useMemo(() => {
-    const stage1 = parseAmount(outputVat) + parseAmount(reverseGoodsVat) + parseAmount(reverseServicesVat);
-    const stage2 = parseAmount(inputVat);
+    const stage1 = readAmount(outputVat) + readAmount(reverseGoodsVat) + readAmount(reverseServicesVat);
+    const stage2 = readAmount(inputVat);
     const stage3 = stage1 - stage2;
-    const stage4 = stage3 - parseAmount(energyOilGas) - parseAmount(energyElectricity);
+    const stage4 = stage3 - readAmount(energyOilGas) - readAmount(energyElectricity);
     const result = stage4 > 0 ? t("status.payable") : stage4 < 0 ? t("status.refund") : t("status.zero");
     const claimAmount = Math.abs(stage4);
     return { stage1, stage2, stage3, stage4, result, claimAmount };
@@ -113,8 +98,8 @@ export default function NewFilingPage() {
     }
     try {
       const now = new Date();
-      const energyOilGasAmount = parseAmount(energyOilGas);
-      const energyElectricityAmount = parseAmount(energyElectricity);
+      const energyOilGasAmount = readAmount(energyOilGas);
+      const energyElectricityAmount = readAmount(energyElectricity);
       const payload = {
         filing_id: uuid(),
         trace_id: uuid(),
@@ -130,17 +115,17 @@ export default function NewFilingPage() {
         assessment_version: 1,
         prior_filing_id: null,
         obligation_id: obligationId,
-        output_vat_amount_domestic: parseAmount(outputVat),
-        reverse_charge_output_vat_goods_abroad_amount: parseAmount(reverseGoodsVat),
-        reverse_charge_output_vat_services_abroad_amount: parseAmount(reverseServicesVat),
-        input_vat_deductible_amount_total: parseAmount(inputVat),
+        output_vat_amount_domestic: readAmount(outputVat),
+        reverse_charge_output_vat_goods_abroad_amount: readAmount(reverseGoodsVat),
+        reverse_charge_output_vat_services_abroad_amount: readAmount(reverseServicesVat),
+        input_vat_deductible_amount_total: readAmount(inputVat),
         adjustments_amount: 0,
-        rubrik_a_goods_eu_purchase_value: parseAmount(rubrikAGoods),
-        rubrik_a_services_eu_purchase_value: parseAmount(rubrikAServices),
-        rubrik_b_services_eu_sale_value: parseAmount(rubrikBServices),
-        rubrik_c_other_vat_exempt_supplies_value: parseAmount(rubrikC),
-        rubrik_b_goods_eu_sale_value_reportable: parseAmount(rubrikBGoodsReported),
-        rubrik_b_goods_eu_sale_value_non_reportable: parseAmount(rubrikBGoodsNotReported),
+        rubrik_a_goods_eu_purchase_value: readAmount(rubrikAGoods),
+        rubrik_a_services_eu_purchase_value: readAmount(rubrikAServices),
+        rubrik_b_services_eu_sale_value: readAmount(rubrikBServices),
+        rubrik_c_other_vat_exempt_supplies_value: readAmount(rubrikC),
+        rubrik_b_goods_eu_sale_value_reportable: readAmount(rubrikBGoodsReported),
+        rubrik_b_goods_eu_sale_value_non_reportable: readAmount(rubrikBGoodsNotReported),
         reimbursement_oil_and_bottled_gas_duty_amount: energyOilGasAmount,
         reimbursement_electricity_duty_amount: energyElectricityAmount,
       };
@@ -198,8 +183,8 @@ export default function NewFilingPage() {
           </p>
           {obligationQuery.data ? (
             <p className="mt-1 text-[var(--muted)]">
-              {obligationQuery.data.tax_period_start} - {obligationQuery.data.tax_period_end} | {t("obligations.due_date")}:{" "}
-              {obligationQuery.data.due_date}
+              {formatPeriod(obligationQuery.data.tax_period_start, obligationQuery.data.tax_period_end)} | {t("obligations.due_date")}:{" "}
+              {formatDateOnly(obligationQuery.data.due_date)}
             </p>
           ) : null}
         </div>
@@ -249,19 +234,19 @@ export default function NewFilingPage() {
           <dl className="mt-3 space-y-2 text-sm">
             <div className="flex justify-between gap-4">
               <dt>Stage 1</dt>
-              <dd>{formatAmount(stageSummary.stage1)}</dd>
+              <dd>{formatVatAmount(stageSummary.stage1)}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Stage 2</dt>
-              <dd>{formatAmount(stageSummary.stage2)}</dd>
+              <dd>{formatVatAmount(stageSummary.stage2)}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Stage 3</dt>
-              <dd>{formatAmount(stageSummary.stage3)}</dd>
+              <dd>{formatVatAmount(stageSummary.stage3)}</dd>
             </div>
             <div className="flex justify-between gap-4 font-semibold">
               <dt>Stage 4</dt>
-              <dd>{formatAmount(stageSummary.stage4)}</dd>
+              <dd>{formatVatAmount(stageSummary.stage4)}</dd>
             </div>
             <div className="flex justify-between gap-4 border-t border-[var(--border)] pt-2">
               <dt>{t("assessments_claims.result")}</dt>
@@ -269,7 +254,7 @@ export default function NewFilingPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt>{t("assessments_claims.amount")}</dt>
-              <dd>{formatAmount(stageSummary.claimAmount)}</dd>
+              <dd>{formatVatAmount(stageSummary.claimAmount)}</dd>
             </div>
           </dl>
         </aside>

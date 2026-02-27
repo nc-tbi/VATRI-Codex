@@ -297,6 +297,11 @@ components:
 
     AmendmentResponse:
       type: object
+      description: |
+        Contract note:
+        - VAT amount fields are always surfaced at top level on amendment records.
+        - Nested object "amendment" is intentional for create responses.
+        - Nested shape version is carried in payload_shape_version.
       required: [trace_id, idempotent, amendment_id, amendment]
       properties:
         trace_id:
@@ -307,6 +312,9 @@ components:
         amendment_id:
           type: string
           format: uuid
+        payload_shape_version:
+          type: string
+          enum: [amendment-nesting-v1]
         amendment:
           $ref: "#/components/schemas/AmendmentRecord"
 

@@ -7,6 +7,7 @@ import type { Kafka } from "kafkajs";
 import { computeStagedAssessment, type CanonicalFiling } from "@tax-core/domain";
 import { AssessmentRepository } from "../db/repository.js";
 import { AssessmentEventPublisher } from "../events/publisher.js";
+import { normalizeAssessmentRecordContract } from "../contracts.js";
 
 interface RouteOptions extends FastifyPluginOptions {
   sql: Sql;
@@ -32,8 +33,9 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
       })) ?? crypto.randomUUID();
       const assessmentResponse = { ...assessment, assessment_id };
       await publisher.publishAssessed(assessmentResponse, traceId);
+      const normalizedAssessmentResponse = normalizeAssessmentRecordContract(assessmentResponse);
 
-      return reply.status(201).send({ trace_id: traceId, assessment: assessmentResponse });
+      return reply.status(201).send({ trace_id: traceId, assessment: normalizedAssessmentResponse });
     }
   );
 
@@ -46,7 +48,7 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
         return reply.status(400).send({ error: "BAD_REQUEST", message: "taxpayer_id is required", trace_id: req.id });
       }
       const rows = await repo.findByTaxpayerId(taxpayer_id, tax_period_end);
-      const assessments = rows.map((r) => buildTransparencyEnvelope(r));
+      const assessments = rows.map((r) => buildTransparencyEnvelope(normalizeAssessmentRecordContract(r)));
       return reply.send({ trace_id: req.id, taxpayer_id, assessments });
     }
   );
@@ -58,7 +60,8 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
     if (!record) {
       return reply.status(404).send({ error: "NOT_FOUND", trace_id: req.id });
     }
-    return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(record) });
+    const normalizedRecord = normalizeAssessmentRecordContract(record);
+    return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(normalizedRecord) });
   });
 
   // GET /assessments/by-filing/:filing_id
@@ -68,7 +71,8 @@ export async function assessmentRoutes(app: FastifyInstance, opts: RouteOptions)
     if (!record) {
       return reply.status(404).send({ error: "NOT_FOUND", trace_id: req.id });
     }
-    return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(record) });
+    const normalizedRecord = normalizeAssessmentRecordContract(record);
+    return reply.send({ trace_id: req.id, ...buildTransparencyEnvelope(normalizedRecord) });
   });
 }
 

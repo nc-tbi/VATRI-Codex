@@ -10,6 +10,7 @@ import {
 } from "@tax-core/domain";
 import { FilingRepository, type FilingAlterEventRecord } from "../db/repository.js";
 import { FilingEventPublisher } from "../events/publisher.js";
+import { normalizeFilingRecordContract, normalizeFilingResponseContract } from "../contracts.js";
 
 interface RouteOptions extends FastifyPluginOptions {
   sql: Sql;
@@ -80,7 +81,11 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
 
       const existing = await repo.findFiling(filing.filing_id);
       if (existing) {
-        return reply.status(200).send({ ...existing, trace_id: traceId, idempotent: true });
+        return reply.status(200).send({
+          ...normalizeFilingRecordContract(existing),
+          trace_id: traceId,
+          idempotent: true,
+        });
       }
 
       const result = processFiling(
@@ -107,11 +112,13 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
         state: ctx.state,
         trace_id: traceId,
         idempotent: false,
+        payload_shape_version: "filing-nesting-v1",
         assessment: ctx.assessment,
         claim_intent: ctx.claim_intent,
       };
-      inProcessIdempotency.set(ctx.filing.filing_id, response);
-      return reply.status(201).send(response);
+      const normalizedResponse = normalizeFilingResponseContract(response);
+      inProcessIdempotency.set(ctx.filing.filing_id, normalizedResponse);
+      return reply.status(201).send(normalizedResponse);
     } catch (err) {
       if (err instanceof ValidationFailedError) {
         return reply.status(422).send({ error: "VALIDATION_FAILED", message: err.message, trace_id: traceId });
@@ -129,7 +136,8 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
     if (!taxpayer_id) {
       return reply.status(400).send({ error: "BAD_REQUEST", message: "taxpayer_id is required", trace_id: req.id });
     }
-    const filings = await repo.findByTaxpayerId(taxpayer_id, tax_period_end);
+    const filings = (await repo.findByTaxpayerId(taxpayer_id, tax_period_end))
+      .map(normalizeFilingRecordContract);
     return reply.send({ trace_id: req.id, taxpayer_id, filings });
   });
 
@@ -142,7 +150,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
     const history = await repo.findAlterEvents(filing_id);
     const states = deriveAlterStates(history);
     const effective_state = applyAlters(record, states);
-    return reply.send({ ...effective_state, trace_id: req.id });
+    return reply.send({ ...normalizeFilingRecordContract(effective_state), trace_id: req.id });
   });
 
   app.post<{ Params: { filing_id: string }; Body: { field_deltas: Record<string, unknown> } }>(
@@ -180,7 +188,12 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
         created_at: new Date().toISOString(),
       });
 
-      return reply.send({ trace_id: traceId, filing_id, alter_id, effective_state: afterState });
+      return reply.send({
+        trace_id: traceId,
+        filing_id,
+        alter_id,
+        effective_state: normalizeFilingRecordContract(afterState),
+      });
     }
   );
 
@@ -224,7 +237,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
       trace_id: traceId,
       filing_id,
       undone_alter_id: lastApplied.alter_id,
-      effective_state: afterState,
+      effective_state: normalizeFilingRecordContract(afterState),
     });
   });
 
@@ -268,7 +281,7 @@ export async function filingRoutes(app: FastifyInstance, opts: RouteOptions): Pr
       trace_id: traceId,
       filing_id,
       redone_alter_id: lastUndone.alter_id,
-      effective_state: afterState,
+      effective_state: normalizeFilingRecordContract(afterState),
     });
   });
 }

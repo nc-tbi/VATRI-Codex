@@ -390,6 +390,12 @@ components:
 
     FilingResponse:
       type: object
+      description: |
+        Contract note:
+        - VAT amount fields are always surfaced at top level on filing records.
+        - Nested objects are intentional for create responses:
+          assessment + claim_intent.
+        - Nested shape version is carried in payload_shape_version.
       required: [filing_id, state, trace_id, idempotent]
       properties:
         filing_id:
@@ -402,6 +408,10 @@ components:
         idempotent:
           type: boolean
           description: True when the response is an idempotent replay of an existing filing (200). False on first create (201).
+        payload_shape_version:
+          type: string
+          description: Present when nested create-response payload shape is used.
+          enum: [filing-nesting-v1]
         assessment:
           $ref: "#/components/schemas/FilingAssessmentSummary"
           nullable: true

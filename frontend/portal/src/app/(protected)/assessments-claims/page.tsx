@@ -21,6 +21,16 @@ function formatAmount(value: number): string {
   }).format(value);
 }
 
+function toMonthEndDate(value: string): string | undefined {
+  const match = /^(\d{4})-(\d{2})$/.exec(value);
+  if (!match) return undefined;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return undefined;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+}
+
 export default function AssessmentsClaimsPage() {
   const { user } = useAuth();
   const { t } = useOverlayI18n();
@@ -30,7 +40,7 @@ export default function AssessmentsClaimsPage() {
     () => (user?.role === "taxpayer" ? (user.taxpayer_scope ?? "") : taxpayerInput),
     [taxpayerInput, user],
   );
-  const taxPeriodEnd = periodFilter ? `${periodFilter}-01` : undefined;
+  const taxPeriodEnd = toMonthEndDate(periodFilter);
 
   const [assessmentQuery, claimQuery] = useQueries({
     queries: [

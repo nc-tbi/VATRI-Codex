@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { listObligations } from "@/core/api/tax-core";
 import { useAuth } from "@/core/auth/context";
+import { formatDateOnly, formatPeriod } from "@/core/format/date";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
 export default function ObligationsPage() {
@@ -48,9 +49,9 @@ export default function ObligationsPage() {
           {(query.data ?? []).map((obl) => (
             <tr className="border-b" key={obl.obligation_id}>
               <td className="py-2">
-                {obl.tax_period_start} - {obl.tax_period_end}
+                {formatPeriod(obl.tax_period_start, obl.tax_period_end)}
               </td>
-              <td className="py-2">{obl.due_date}</td>
+              <td className="py-2">{formatDateOnly(obl.due_date)}</td>
               <td className="py-2">{obl.cadence}</td>
               <td className="py-2">{statusLabel(obl.state)}</td>
             </tr>

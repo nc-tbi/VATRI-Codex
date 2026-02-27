@@ -24,3 +24,8 @@ CREATE TABLE IF NOT EXISTS registration.registrations (
 CREATE INDEX IF NOT EXISTS idx_registration_taxpayer ON registration.registrations (taxpayer_id);
 CREATE INDEX IF NOT EXISTS idx_registration_cvr ON registration.registrations (cvr_number);
 CREATE INDEX IF NOT EXISTS idx_registration_taxpayer_cvr ON registration.registrations (taxpayer_id, cvr_number);
+CREATE INDEX IF NOT EXISTS idx_registration_latest_effective
+  ON registration.registrations (taxpayer_id, status, registered_at DESC, created_at DESC, registration_id DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_registration_single_active_taxpayer
+  ON registration.registrations (taxpayer_id)
+  WHERE status IN ('pending_registration', 'registered');

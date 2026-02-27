@@ -6,19 +6,12 @@ import { useQueries } from "@tanstack/react-query";
 import { listFilings, listObligations, wipeUserDataPreservingAdmin } from "@/core/api/tax-core";
 import { formatApiError } from "@/core/api/error-display";
 import { useAuth } from "@/core/auth/context";
+import { formatDateOnly, formatPeriod } from "@/core/format/date";
 import { StatusChip } from "@/features/shared/status-chip";
 import { useOverlayI18n } from "@/overlays/common/i18n";
 
 function isOpenable(state: string): boolean {
   return state === "due" || state === "overdue" || state === "draft";
-}
-
-function periodText(start: unknown, end: unknown): string {
-  const startText = typeof start === "string" ? start : "";
-  const endText = typeof end === "string" ? end : "";
-  if (startText && endText) return `${startText} - ${endText}`;
-  if (endText) return endText;
-  return "-";
 }
 
 export default function OverviewPage() {
@@ -101,10 +94,10 @@ export default function OverviewPage() {
             {(obligationsQuery.data ?? []).map((obligation) => (
               <li key={obligation.obligation_id} className="rounded border border-[var(--border)] p-3">
                 <p className="text-sm">
-                  {obligation.tax_period_start} - {obligation.tax_period_end}
+                  {formatPeriod(obligation.tax_period_start, obligation.tax_period_end)}
                 </p>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  {t("obligations.due_date")}: {obligation.due_date}
+                  {t("obligations.due_date")}: {formatDateOnly(obligation.due_date)}
                 </p>
                 <div className="mt-2 flex items-center justify-between gap-2">
                   <StatusChip text={statusLabel(obligation.state)} />
@@ -130,13 +123,13 @@ export default function OverviewPage() {
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-medium">
                     {t("shared.vat_return_period", {
-                      period: periodText(filing.tax_period_start, filing.tax_period_end),
+                      period: formatPeriod(filing.tax_period_start, filing.tax_period_end),
                     })}
                   </p>
                   {typeof filing.state === "string" ? <StatusChip text={statusLabel(filing.state)} /> : null}
                 </div>
                 <p className="mt-1 text-sm text-[var(--muted)]">
-                  {t("obligations.period")}: {periodText(filing.tax_period_start, filing.tax_period_end)}
+                  {t("obligations.period")}: {formatPeriod(filing.tax_period_start, filing.tax_period_end)}
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <Link className="inline-block text-sm text-action underline" href={`/submissions/${encodeURIComponent(filing.filing_id)}`}>

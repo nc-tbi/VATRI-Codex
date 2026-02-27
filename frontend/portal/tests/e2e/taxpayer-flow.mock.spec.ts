@@ -112,3 +112,63 @@ test("@mocked amendment page requires filing context from overview/submission fl
   await expect(page.locator("main").getByRole("link", { name: /overblik|overview/i }).last()).toBeVisible();
 });
 
+test("@mocked submit filing then create amendment shows original values and summary delta", async ({ page }) => {
+  const filingId = "f1111111-1111-4111-8111-111111111111";
+
+  await mockPortalApis(page, {
+    filingResponseId: filingId,
+    obligations: [
+      {
+        obligation_id: "OBL-2026Q1",
+        taxpayer_id: "TXP-12345678",
+        tax_period_start: "2026-01-01",
+        tax_period_end: "2026-03-31",
+        due_date: "2026-04-30",
+        cadence: "quarterly",
+        state: "due",
+      },
+    ],
+    filings: [
+      {
+        filing_id: filingId,
+        taxpayer_id: "TXP-12345678",
+        tax_period_start: "2026-01-01",
+        tax_period_end: "2026-03-31",
+        state: "submitted",
+        output_vat_amount_domestic: 1000,
+        reverse_charge_output_vat_goods_abroad_amount: 100,
+        reverse_charge_output_vat_services_abroad_amount: 50,
+        input_vat_deductible_amount_total: 400,
+        reimbursement_oil_and_bottled_gas_duty_amount: 30,
+        reimbursement_electricity_duty_amount: 20,
+      },
+    ],
+  });
+
+  await loginAsTaxpayer(page);
+
+  await page.getByRole("link", { name: /Open VAT obligation|momsforpligtelse/i }).click();
+  await page.getByRole("button", { name: /Indsend momsangivelse|Submit VAT return/i }).click();
+  await expect(page.locator("p").filter({ hasText: /trace/i }).first()).toContainText(/trace-100/);
+
+  await page.goto("/overview");
+  await page.getByRole("link", { name: /View VAT return|Vis momsangivelse/i }).first().click();
+  await expect(page).toHaveURL(new RegExp(`/submissions/${filingId}`));
+
+  const originalFilingPanel = page.locator("article").first();
+  await expect(originalFilingPanel.getByRole("heading", { name: /Original momsangivelse|Original VAT return/i })).toBeVisible();
+  await expect(originalFilingPanel).toContainText("1.000,00");
+
+  await page.getByRole("link", { name: /Opret ændring|Create amendment/i }).click();
+  await expect(page).toHaveURL(new RegExp(`/amendments/new\\?original_filing_id=${filingId}`));
+
+  await expect(page.getByTestId("amendment-summary-stage4-original")).toHaveText("700,00");
+  await expect(page.getByTestId("amendment-summary-stage4-amended")).toHaveText("700,00");
+  await expect(page.getByTestId("amendment-summary-stage4-delta")).toHaveText("0,00");
+
+  await page.locator("form input[inputmode='decimal']").first().fill("1100");
+  await expect(page.getByTestId("amendment-summary-stage4-original")).toHaveText("700,00");
+  await expect(page.getByTestId("amendment-summary-stage4-amended")).toHaveText("800,00");
+  await expect(page.getByTestId("amendment-summary-stage4-delta")).toHaveText("100,00");
+});
+

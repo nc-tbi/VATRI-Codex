@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+﻿import { expect, test, type Page } from "@playwright/test";
 import { mockPortalApis } from "./utils/session-mocks";
 
 async function loginAsAdmin(page: Page): Promise<void> {
@@ -14,7 +14,7 @@ test("@mocked admin taxpayer search uses taxpayer fallback for non-uuid input", 
 
   let nonUuidRouteCalled = false;
   let taxpayerQueryCalled = false;
-  await page.route("**/registrations?taxpayer_id=001", async (route) => {
+  await page.route("**/registrations/latest?taxpayer_id=001", async (route) => {
     taxpayerQueryCalled = true;
     await route.fulfill({
       status: 200,
@@ -22,7 +22,7 @@ test("@mocked admin taxpayer search uses taxpayer fallback for non-uuid input", 
       body: JSON.stringify({
         trace_id: "trace-reg-001",
         taxpayer_id: "001",
-        registrations: [{ registration_id: "11111111-1111-4111-8111-111111111111" }],
+        registration_id: "11111111-1111-4111-8111-111111111111",
       }),
     });
   });
@@ -50,8 +50,10 @@ test("@mocked admin taxpayer search uses taxpayer fallback for non-uuid input", 
   await loginAsAdmin(page);
   await page.goto("/admin/taxpayers");
   await page.getByPlaceholder(/Registrerings-id|Registration ID/i).fill("001");
-  await page.getByRole("button", { name: /Søg|Search/i }).click();
-  await expect(page.locator("dd").filter({ hasText: "001" }).first()).toBeVisible();
+  await page.locator("form").first().getByRole("button").click();
+  await expect(page.getByLabel(/Taxpayer|Skatteyder/i)).toHaveValue("001");
   expect(taxpayerQueryCalled).toBe(true);
   expect(nonUuidRouteCalled).toBe(false);
 });
+
+

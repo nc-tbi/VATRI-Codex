@@ -12,6 +12,44 @@ interface MockPortalApisOptions {
   filingTraceId?: string;
 }
 
+const REQUIRED_FILING_NUMBER_FIELDS = [
+  "output_vat_amount_domestic",
+  "reverse_charge_output_vat_goods_abroad_amount",
+  "reverse_charge_output_vat_services_abroad_amount",
+  "input_vat_deductible_amount_total",
+  "adjustments_amount",
+  "reimbursement_oil_and_bottled_gas_duty_amount",
+  "reimbursement_electricity_duty_amount",
+  "rubrik_a_goods_eu_purchase_value",
+  "rubrik_a_services_eu_purchase_value",
+  "rubrik_b_goods_eu_sale_value_reportable",
+  "rubrik_b_goods_eu_sale_value_non_reportable",
+  "rubrik_b_services_eu_sale_value",
+  "rubrik_c_other_vat_exempt_supplies_value",
+  "claim_amount",
+] as const;
+
+function withFilingDefaults(record: Record<string, unknown>): Record<string, unknown> {
+  const enriched: Record<string, unknown> = {
+    tax_period_start: "2026-01-01",
+    tax_period_end: "2026-03-31",
+    ...record,
+  };
+  for (const key of REQUIRED_FILING_NUMBER_FIELDS) {
+    if (typeof enriched[key] !== "number") {
+      enriched[key] = 0;
+    }
+  }
+  return enriched;
+}
+
+function withAmendmentDefaults(record: Record<string, unknown>): Record<string, unknown> {
+  return {
+    delta_net_vat: 0,
+    ...record,
+  };
+}
+
 function json(route: Route, body: unknown, status = 200): Promise<void> {
   return route.fulfill({
     status,
@@ -61,11 +99,25 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
   await page.route("**/obligations*", obligationHandler);
   await page.route("**/obligations/**", obligationHandler);
 
-  await page.route("**/vat-filings*", async (route) => {
+  const vatFilingsHandler = async (route: Route): Promise<void> => {
     const method = route.request().method().toUpperCase();
     if (method === "GET") {
+      const url = new URL(route.request().url());
+      const detailMatch = /\/vat-filings\/([^/?]+)$/.exec(url.pathname);
+      if (detailMatch) {
+        const filingId = decodeURIComponent(detailMatch[1]);
+        const found = (options.filings ?? []).find((entry) => String(entry.filing_id ?? "") === filingId);
+        await json(
+          route,
+          withFilingDefaults({
+            filing_id: filingId,
+            ...(found ?? {}),
+          })
+        );
+        return;
+      }
       await json(route, {
-        filings: options.filings ?? [],
+        filings: (options.filings ?? []).map((entry) => withFilingDefaults(entry)),
       });
       return;
     }
@@ -89,13 +141,15 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
       return;
     }
     await json(route, {});
-  });
+  };
+  await page.route("**/vat-filings*", vatFilingsHandler);
+  await page.route("**/vat-filings/**", vatFilingsHandler);
 
   await page.route("**/amendments*", async (route) => {
     const method = route.request().method().toUpperCase();
     if (method === "GET") {
       await json(route, {
-        amendments: options.amendments ?? [],
+        amendments: (options.amendments ?? []).map((entry) => withAmendmentDefaults(entry)),
       });
       return;
     }
@@ -109,7 +163,7 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
     });
   });
 
-  await page.route("**/assessments*", async (route) => {
+  const assessmentsHandler = async (route: Route): Promise<void> => {
     const method = route.request().method().toUpperCase();
     if (method === "GET") {
       await json(route, { assessments: [] });
@@ -135,9 +189,11 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
       return;
     }
     await json(route, {});
-  });
+  };
+  await page.route(/\/assessments(?:\?|$).*/, assessmentsHandler);
+  await page.route(/\/assessments$/, assessmentsHandler);
 
-  await page.route("**/claims*", async (route) => {
+  const claimsHandler = async (route: Route): Promise<void> => {
     const method = route.request().method().toUpperCase();
     if (method === "GET") {
       await json(route, { claims: [] });
@@ -156,5 +212,7 @@ export async function mockPortalApis(page: Page, options: MockPortalApisOptions 
       return;
     }
     await json(route, {});
-  });
+  };
+  await page.route(/\/claims(?:\?|$).*/, claimsHandler);
+  await page.route(/\/claims$/, claimsHandler);
 }
